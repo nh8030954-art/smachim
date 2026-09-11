@@ -48,22 +48,34 @@
         .area-switch { display:inline-flex; gap:.35rem; background:#f1f5f9; padding:.35rem; border-radius:.8rem; border:1px solid #e2e8f0; }
         .area-switch button { padding:.65rem 1rem; border-radius:.6rem; font-weight:700; font-size:.9rem; color:#64748b; }
         .area-switch button.active { background:#fff; color:#0f766e; box-shadow:0 1px 4px rgba(15,23,42,.08); }
-        .home-hero { width:100%; border-bottom:6px solid #14b8a6; background:#f8fafc; }
+        .home-hero { width:100%; background:#f8fafc; }
         .home-hero img { width:100%; height:auto; display:block; object-fit:contain; }
+        .site-header { background:#fff; }
+        .site-header-inner { position:relative; min-height:112px; display:flex; align-items:center; justify-content:center; }
+        .site-title-wrap { width:380px; height:110px; overflow:hidden; display:block; cursor:pointer; flex:0 0 auto; }
+        .site-title-wrap img { width:380px; height:auto; display:block; transform:translateY(-26px); }
+        .site-header-actions { position:absolute; left:1.5rem; top:50%; transform:translateY(-50%); z-index:2; }
+        @media (max-width:640px) {
+            .site-header-inner { min-height:76px; padding-left:.75rem; padding-right:.75rem; }
+            .site-title-wrap { width:230px; height:68px; }
+            .site-title-wrap img { width:230px; transform:translateY(-15px); }
+            .site-header-actions { left:.5rem; }
+            .site-header-actions button { font-size:.72rem !important; }
+            .site-header-actions .flex { gap:.45rem !important; }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
-    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="cursor-pointer flex items-center gap-2" onclick="navigate('home')">
-                <i class="fa-solid fa-ring text-brand-600 text-xl"></i>
-                <h1 class="text-xl font-serif font-bold text-brand-dark tracking-wide">שמחים בשמחתם</h1>
-            </div>
-            <div id="header-actions">
+    <header class="site-header sticky top-0 z-50">
+        <div class="site-header-inner max-w-7xl mx-auto px-6">
+            <div id="header-actions" class="site-header-actions">
                 <button onclick="navigate('home')" class="text-sm font-semibold text-slate-500 hover:text-brand-600 transition">
                     <i class="fa-solid fa-house ml-1"></i> דף הבית
                 </button>
             </div>
+            <button type="button" class="site-title-wrap" onclick="navigate('home')" aria-label="שמחים בשמחתם - דף הבית">
+                <img src="./assets/site-title.jpg" alt="שמחים בשמחתם" width="2048" height="938" decoding="async">
+            </button>
         </div>
     </header>
 
@@ -71,7 +83,7 @@
         <!-- דף הבית -->
         <div id="view-home" class="screen active">
             <div class="home-hero"><img src="./assets/hero-banner.jpg" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async"></div>
-            <div class="max-w-5xl mx-auto px-6 py-16">
+            <div class="max-w-5xl mx-auto px-6 pt-6 pb-14">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <button onclick="navigate('register-volunteer')" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4 text-brand-600 text-2xl"><i class="fa-solid fa-hand-holding-heart"></i></div>

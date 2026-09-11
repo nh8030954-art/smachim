@@ -282,9 +282,24 @@
     <script>
         const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_JjkT61xxSWFUImTeMNHWxA_e1zkZWr-';
-        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-        });
+        let sessionToken = localStorage.getItem('smachimSession') || '';
+
+        function createAppClient() {
+            const headers = sessionToken ? { 'x-app-session': sessionToken } : {};
+            return window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+                auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+                global: { headers }
+            });
+        }
+
+        let _supabase = createAppClient();
+
+        function applySessionToken(token) {
+            sessionToken = token || '';
+            if (sessionToken) localStorage.setItem('smachimSession', sessionToken);
+            else localStorage.removeItem('smachimSession');
+            _supabase = createAppClient();
+        }
 
         let currentUser = null;
         let currentProfile = null;
@@ -326,9 +341,6 @@
             return raw;
         }
 
-        function phoneLoginIdentity(phone) {
-            return 'u' + normalizePhone(phone).replace(/\D/g, '') + '@example.com';
-        }
 
         function formatDate(dateStr) {
             if (!dateStr) return '';
@@ -370,8 +382,12 @@
                 ['gender_change_with_active_registrations','לא ניתן לשנות מין כל עוד יש לך הרשמות פעילות לאירועים עתידיים.'],
                 ['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],
                 ['event_date_in_past','לא ניתן לבחור תאריך שכבר עבר.'],
-                ['Invalid login credentials','מספר הטלפון או הסיסמה שגויים.'],
-                ['User already registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.']
+                ['invalid_login','מספר הטלפון או הסיסמה שגויים.'],
+                ['already_registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.'],
+                ['account_not_initialized','המספר קיים במערכת אך עדיין לא הוגדרה לו סיסמה. בצע הרשמה חד-פעמית.'],
+                ['invalid_phone','מספר הטלפון אינו תקין.'],
+                ['invalid_password','הסיסמה חייבת לכלול לפחות 8 תווים.'],
+                ['invalid_name','יש להזין שם מלא.']
             ];
             for (const [key, text] of pairs) if (m.includes(key)) return text;
             return m;
@@ -391,54 +407,42 @@
             }
         }
 
-        async function loadProfile(retries=3) {
-            if (!currentUser) return null;
+        async function loadProfile(retries=2) {
+            if (!sessionToken) return null;
             for (let i=0; i<retries; i++) {
-                const { data, error } = await _supabase.from('profiles').select('*').eq('auth_user_id', currentUser.id).maybeSingle();
-                if (!error && data) {
-                    currentProfile = data;
-                    return data;
+                const { data, error } = await _supabase.rpc('username_my_profile');
+                const profile = Array.isArray(data) ? data[0] : data;
+                if (!error && profile) {
+                    currentProfile = profile;
+                    currentUser = { id: profile.id };
+                    return profile;
                 }
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 250));
             }
             currentProfile = null;
+            currentUser = null;
             return null;
         }
 
-        async function handleSession(session) {
-            currentUser = session?.user || null;
-            if (!currentUser) {
-                currentProfile = null;
-                currentIsAdmin = false;
+        async function initSession() {
+            if (!sessionToken) return;
+            const profile = await loadProfile();
+            if (!profile) {
+                applySessionToken('');
                 return;
             }
-
-            await loadProfile();
             const { data: adminFlag } = await _supabase.rpc('is_admin');
             currentIsAdmin = !!adminFlag;
-
-            if (currentProfile?.is_blocked) {
-                alert('החשבון חסום כרגע.');
-                await _supabase.auth.signOut();
-                navigate('home');
-                return;
-            }
-
             await finalizePendingEvent();
         }
 
-        async function initAuth() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            await handleSession(session);
-            _supabase.auth.onAuthStateChange((_event, session) => {
-                setTimeout(() => handleSession(session), 0);
-            });
-        }
-
         async function openPersonalArea() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (!session) return navigate('login');
-            await handleSession(session);
+            if (!sessionToken) return navigate('login');
+            const profile = await loadProfile();
+            if (!profile) {
+                applySessionToken('');
+                return navigate('login');
+            }
             await loadDashboard();
         }
 
@@ -456,30 +460,26 @@
                 const separation = $('vol-separation').checked;
 
                 const coords = await geocodeAddress(address);
-                const { data, error } = await _supabase.auth.signUp({
-                    email: phoneLoginIdentity(phone),
-                    password,
-                    options: {
-                        data: {
-                            full_name:name, phone, gender, sector, address,
-                            radius, max_days_per_week:maxDays,
-                            strict_separation:separation,
-                            lat:coords.lat, lng:coords.lng,
-                            role:'volunteer'
-                        }
-                    }
+                const { data: token, error } = await _supabase.rpc('username_register', {
+                    p_phone: phone,
+                    p_password: password,
+                    p_full_name: name,
+                    p_role: 'volunteer',
+                    p_gender: gender,
+                    p_sector: sector,
+                    p_address: address,
+                    p_radius: radius,
+                    p_max_days_per_week: maxDays,
+                    p_strict_separation: separation,
+                    p_lat: coords.lat,
+                    p_lng: coords.lng
                 });
                 if (error) throw error;
-                if (data.session) {
-                    currentUser = data.user;
-                    await loadProfile();
-                    alert('ההרשמה הושלמה בהצלחה!');
-                    await loadDashboard();
-                } else {
-                    alert('החשבון נוצר אך ההתחברות האוטומטית לא הופעלה. פנה למנהל המערכת.');
-                    navigate('login');
-                    $('login-phone').value = phone;
-                }
+
+                applySessionToken(token);
+                await loadProfile();
+                alert('ההרשמה הושלמה בהצלחה!');
+                await loadDashboard();
             } catch (e) {
                 alert(readableError(e));
             } finally {
@@ -492,12 +492,15 @@
             try {
                 const phone = normalizePhone($('login-phone').value);
                 const password = $('login-password').value;
-                const { data, error } = await _supabase.auth.signInWithPassword({
-                    email: phoneLoginIdentity(phone),
-                    password
+                const { data: token, error } = await _supabase.rpc('username_login', {
+                    p_phone: phone,
+                    p_password: password
                 });
                 if (error) throw error;
-                await handleSession(data.session);
+
+                applySessionToken(token);
+                const profile = await loadProfile();
+                if (!profile) throw new Error('session_failed');
                 await loadDashboard();
             } catch (e) {
                 alert(readableError(e));
@@ -508,7 +511,11 @@
 
 
         async function handleLogout() {
-            await _supabase.auth.signOut();
+            const token = sessionToken;
+            try {
+                if (token) await _supabase.rpc('username_logout', { p_token: token });
+            } catch (_) {}
+            applySessionToken('');
             currentUser = null;
             currentProfile = null;
             currentIsAdmin = false;
@@ -516,12 +523,10 @@
         }
 
         async function openAddEvent() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            currentUser = session?.user || null;
-            if (currentUser && !currentProfile) await loadProfile();
+            if (sessionToken && !currentProfile) await loadProfile();
             const block = $('host-account-block');
             const fields = ['host-name','host-phone','host-pass'];
-            if (currentUser) {
+            if (currentProfile) {
                 block.classList.add('hidden');
                 fields.forEach(id => $(id).required = false);
             } else {
@@ -580,33 +585,42 @@
             try {
                 const ev = collectEventForm('');
                 validateEventPayload(ev);
-                const { data: { session } } = await _supabase.auth.getSession();
-                if (session) {
-                    currentUser = session.user;
-                    await loadProfile();
-                    await createEventRpc(ev);
-                    await loadProfile();
-                    alert('האירוע פורסם בהצלחה!');
-                    $('event-form').reset();
-                    await loadDashboard();
-                    return;
+
+                if (sessionToken) {
+                    const profile = currentProfile || await loadProfile();
+                    if (profile) {
+                        await createEventRpc(ev);
+                        await loadProfile();
+                        alert('האירוע פורסם בהצלחה!');
+                        $('event-form').reset();
+                        await loadDashboard();
+                        return;
+                    }
+                    applySessionToken('');
                 }
 
                 const name = $('host-name').value.trim();
                 const phone = normalizePhone($('host-phone').value);
                 const password = $('host-pass').value;
-                if (password.length < 8) throw new Error('הסיסמה חייבת לכלול לפחות 8 תווים.');
+                if (password.length < 8) throw new Error('invalid_password');
 
                 localStorage.setItem('pendingHostEvent', JSON.stringify(ev));
-                const { data, error } = await _supabase.auth.signUp({
-                    email: phoneLoginIdentity(phone),
-                    password,
-                    options: {
-                        data: { full_name:name, phone, role:'host', sector:ev.sector_pref, address:ev.public_location }
-                    }
+                const { data: token, error } = await _supabase.rpc('username_register', {
+                    p_phone: phone,
+                    p_password: password,
+                    p_full_name: name,
+                    p_role: 'host',
+                    p_gender: null,
+                    p_sector: ev.sector_pref,
+                    p_address: ev.public_location,
+                    p_radius: 30,
+                    p_max_days_per_week: 3,
+                    p_strict_separation: false,
+                    p_lat: null,
+                    p_lng: null
                 });
                 if (error) {
-                    if (String(error.message).toLowerCase().includes('already registered')) {
+                    if (String(error.message).includes('already_registered')) {
                         $('login-phone').value = phone;
                         alert('כבר קיים חשבון עם מספר הטלפון הזה. פרטי האירוע נשמרו בדפדפן — התחבר והאירוע יפורסם לאחר הכניסה.');
                         navigate('login');
@@ -614,17 +628,12 @@
                     }
                     throw error;
                 }
-                if (data.session) {
-                    currentUser = data.user;
-                    await loadProfile();
-                    await finalizePendingEvent();
-                    alert('החשבון והאירוע נוצרו בהצלחה!');
-                    await loadDashboard();
-                } else {
-                    alert('החשבון נוצר אך ההתחברות האוטומטית לא הופעלה. פרטי האירוע נשמרו ותוכל להמשיך לאחר הכניסה.');
-                    navigate('login');
-                    $('login-phone').value = phone;
-                }
+
+                applySessionToken(token);
+                await loadProfile();
+                await finalizePendingEvent();
+                alert('החשבון והאירוע נוצרו בהצלחה!');
+                await loadDashboard();
             } catch (e) {
                 alert(readableError(e));
             } finally {
@@ -633,7 +642,7 @@
         }
 
         async function finalizePendingEvent() {
-            if (!currentUser) return;
+            if (!sessionToken || !currentProfile) return;
             const raw = localStorage.getItem('pendingHostEvent');
             if (!raw) return;
             try {
@@ -648,12 +657,11 @@
         }
 
         async function loadDashboard() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (!session) return navigate('login');
-            currentUser = session.user;
+            if (!sessionToken) return navigate('login');
             await loadProfile();
             if (!currentProfile) {
-                alert('לא נמצא פרופיל עבור החשבון. נסה להתנתק ולהתחבר שוב.');
+                applySessionToken('');
+                alert('ההתחברות פגה. יש להתחבר מחדש.');
                 return navigate('login');
             }
             const { data: adminFlag } = await _supabase.rpc('is_admin');
@@ -989,7 +997,7 @@
             if (error) alert(readableError(error)); else await loadDashboard();
         }
 
-        initAuth();
+        initSession();
     </script>
 </body>
 </html>

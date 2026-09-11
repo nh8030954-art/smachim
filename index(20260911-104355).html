@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שמחים בשמחתם</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Frank+Ruhl+Libre:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Assistant', 'sans-serif'], serif: ['Frank Ruhl Libre', 'serif'] },
+                    colors: { brand: { 50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488', 900: '#134e4a', dark: '#0f172a' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F8FAFC; color: #0f172a; }
+        .screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .screen.active { display: block; opacity: 1; }
+        .glass-card { background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05); border-radius: 1rem; overflow: hidden; }
+        .input-clean { width: 100%; padding: 0.75rem 1rem; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #0f172a; transition: all 0.2s; font-family: 'Assistant', sans-serif; }
+        .input-clean:focus { background-color: #fff; border-color: #0d9488; outline: none; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="cursor-pointer flex items-center gap-2" onclick="navigate('home')">
+                <i class="fa-solid fa-ring text-brand-600 text-xl"></i>
+                <h1 class="text-xl font-serif font-bold text-brand-dark tracking-wide">שמחים בשמחתם</h1>
+            </div>
+            <div id="header-actions">
+                <button onclick="navigate('home')" class="text-sm font-semibold text-slate-500 hover:text-brand-600 transition">
+                    <i class="fa-solid fa-house ml-1"></i> דף הבית
+                </button>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow w-full">
+        <!-- דף הבית -->
+        <div id="view-home" class="screen active">
+            <div class="bg-brand-dark text-white py-20 px-4 text-center border-b-[6px] border-brand-500 relative overflow-hidden">
+                <div class="max-w-4xl mx-auto relative z-10">
+                    <h1 class="text-5xl md:text-7xl font-serif font-black mb-6 tracking-tight">שמחים בשמחתם</h1>
+                    <p class="text-2xl md:text-3xl font-serif font-light text-brand-100 italic">"כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים"</p>
+                </div>
+            </div>
+            <div class="max-w-5xl mx-auto px-6 py-16">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <button onclick="navigate('register-volunteer')" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4 text-brand-600 text-2xl"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                        <span class="text-2xl font-bold text-slate-800 mb-2">אני רוצה לשמח</span>
+                        <span class="text-slate-500">הרשמה מלאה וחיפוש אירועים מתאימים.</span>
+                    </button>
+                    <button onclick="navigate('add-event')" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-700 text-2xl"><i class="fa-solid fa-calendar-plus"></i></div>
+                        <span class="text-2xl font-bold text-slate-800 mb-2">יש לי אירוע</span>
+                        <span class="text-slate-500">הרשמה כבעל שמחה ופרסום החתונה.</span>
+                    </button>
+                    <button onclick="navigate('login')" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-700 text-2xl"><i class="fa-solid fa-user"></i></div>
+                        <span class="text-2xl font-bold text-slate-800 mb-2">אזור אישי</span>
+                        <span class="text-slate-500">התחברות וניהול אירועים או התנדבויות.</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- התחברות -->
+        <div id="view-login" class="screen max-w-md mx-auto px-6 py-20">
+            <div class="glass-card p-8 text-center">
+                <h2 class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h2>
+                <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6">
+                    <input type="text" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required>
+                    <input type="password" id="login-password" class="input-clean" placeholder="סיסמה" required>
+                    <button type="submit" class="w-full bg-brand-dark text-white py-3 rounded-lg font-bold hover:bg-slate-800 transition">כניסה למערכת</button>
+                </form>
+            </div>
+        </div>
+        <!-- הרשמה למשמח -->
+        <div id="view-register-volunteer" class="screen max-w-2xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <h2 class="text-2xl font-bold mb-2 text-brand-dark">הרשמה - משמח חתן וכלה</h2>
+                <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-4 mt-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="vol-name" class="input-clean" placeholder="שם מלא" required>
+                        <input type="text" id="vol-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="password" id="vol-pass" class="input-clean" placeholder="סיסמה" required>
+                        <select id="vol-sector" class="input-clean bg-white" required>
+                            <option value="" disabled selected>שיוך מגזרי</option>
+                            <option value="haredi">חרדי</option>
+                            <option value="religious">דתי לאומי</option>
+                            <option value="traditional">מסורתי</option>
+                            <option value="secular">חילוני</option>
+                        </select>
+                    </div>
+                    <input type="text" id="vol-address" class="input-clean" placeholder="כתובת מגורים מלאה" required>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="number" id="vol-radius" class="input-clean" placeholder="רדיוס מקסימלי (ק״מ)" required>
+                        <select id="vol-days" class="input-clean bg-white" required>
+                            <option value="1">עד יום אחד בשבוע</option>
+                            <option value="2">עד יומיים בשבוע</option>
+                            <option value="3" selected>עד 3 ימים בשבוע</option>
+                            <option value="7">ללא הגבלה</option>
+                        </select>
+                    </div>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">
+                        <input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded">
+                        <span class="font-bold text-slate-700 text-sm">קבל אך ורק אירועים בהפרדה מלאה</span>
+                    </label>
+                    <button type="submit" class="w-full bg-brand-600 text-white py-4 rounded-lg font-bold hover:bg-brand-700 transition">השלם הרשמה</button>
+                </form>
+            </div>
+        </div>
+        <!-- פרסום כבעל שמחה -->
+        <div id="view-add-event" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הרשמה ופרסום כבעל שמחה</h2>
+                <form id="event-form" onsubmit="event.preventDefault(); handleRegisterHostAndEvent();" class="space-y-6">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-sm">פרטי התחברות לחשבון</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="host-phone" class="input-clean bg-white" placeholder="מספר טלפון" dir="ltr" required>
+                            <input type="password" id="host-pass" class="input-clean bg-white" placeholder="סיסמה" required>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="text" id="ev-name" class="input-clean" placeholder="שמות החתן והכלה" required>
+                        <input type="date" id="ev-date" class="input-clean" required>
+                    </div>
+                    <input type="text" id="ev-address" class="input-clean" placeholder="כתובת האולם המלאה" required>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="time" id="ev-start" class="input-clean" required>
+                        <input type="time" id="ev-close" class="input-clean" required>
+                    </div>
+                    <select id="ev-sector" class="input-clean bg-white" required>
+                        <option value="all" class="font-bold text-brand-600">כל המגזרים (לא משנה לי)</option>
+                        <option value="haredi">חרדי</option>
+                        <option value="religious">דתי לאומי</option>
+                        <option value="traditional">מסורתי</option>
+                        <option value="secular">חילוני</option>
+                    </select>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer">
+                        <input type="checkbox" id="ev-separation" class="w-5 h-5 text-brand-600 rounded">
+                        <span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span>
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="number" id="ev-men" class="input-clean" placeholder="מכסת משמחים (גברים)" min="0" required>
+                        <input type="number" id="ev-women" class="input-clean" placeholder="מכסת משמחות (נשים)" min="0" required>
+                    </div>
+                    <button type="submit" class="w-full bg-brand-dark text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition">פרסם אירוע</button>
+                </form>
+            </div>
+        </div>
+        <!-- אזור אישי -->
+        <div id="view-dashboard" class="screen max-w-6xl mx-auto px-6 py-10">
+            <div class="flex justify-between items-center mb-8">
+                <h2 id="user-greeting" class="text-3xl font-bold text-brand-dark">אזור אישי</h2>
+                <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold text-sm">התנתק</button>
+            </div>
+            <div id="dashboard-content" class="space-y-8"></div>
+        </div>
+    </main>
+    <script>
+        const SUPABASE_URL = 'https://eaqtenyclcpzrgscgfbk.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhcXRlbnljbGNwenJnc2NnZmFBazIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzg1OTQxMTM1LCJleHAiOjIxMDE1MTcxMzV9.yaMxeUpkG8DFOfJVWzvnRgXBJh5BGZk7XCtoK3XtUfA';
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let currentProfile = null;
+
+        function navigate(view) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('view-' + view);
+            if (target) {
+                target.classList.add('active');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        async function handleRegisterVolunteer() {
+            const name = document.getElementById('vol-name').value;
+            const phone = document.getElementById('vol-phone').value;
+            const password = document.getElementById('vol-pass').value;
+            const sector = document.getElementById('vol-sector').value;
+            const address = document.getElementById('vol-address').value;
+            const radius = document.getElementById('vol-radius').value;
+            const separation = document.getElementById('vol-separation').checked;
+
+            const { data: existing } = await _supabase.from('profiles').select('id').eq('phone', phone).single();
+            if (existing) { alert('מספר טלפון זהה כבר רשום במערכת.'); return; }
+
+            const newUserId = crypto.randomUUID();
+            const { error: profileError } = await _supabase.from('profiles').insert([{
+                id: newUserId, phone, password, full_name: name, address, sector, role: 'volunteer', radius: parseInt(radius), strict_separation: separation
+            }]);
+
+            if (profileError) { alert('שגיאה בשמירת פרופיל: ' + profileError.message); return; }
+            alert('ההרשמה הוצלחה!');
+            loadDashboard(newUserId);
+        }
+
+        async function handleRegisterHostAndEvent() {
+            const phone = document.getElementById('host-phone').value;
+            const password = document.getElementById('host-pass').value;
+            const couple = document.getElementById('ev-name').value;
+            const date = document.getElementById('ev-date').value;
+            const address = document.getElementById('ev-address').value;
+            const start = document.getElementById('ev-start').value;
+            const close = document.getElementById('ev-close').value;
+            const sector = document.getElementById('ev-sector').value;
+            const separation = document.getElementById('ev-separation').checked;
+            const men = document.getElementById('ev-men').value;
+            const women = document.getElementById('ev-women').value;
+
+            let userId;
+            const { data: existing } = await _supabase.from('profiles').select('*').eq('phone', phone).single();
+
+            if (existing) {
+                if (existing.password !== password) { alert('סיסמה שגויה עבור מספר טלפון קיים.'); return; }
+                userId = existing.id;
+            } else {
+                userId = crypto.randomUUID();
+                const { error: profileError } = await _supabase.from('profiles').insert([{
+                    id: userId, phone, password, full_name: 'בעל שמחה', address: address, sector: sector, role: 'host'
+                }]);
+                if (profileError) { alert('שגיאה ביצירת משתמש: ' + profileError.message); return; }
+            }
+
+            const { error: eventError } = await _supabase.from('events').insert([{
+                host_id: userId, couple_names: couple, event_date: date, hall_address: address, start_time: start, close_time: close, sector_pref: sector, is_separated: separation, quota_men: parseInt(men), quota_women: parseInt(women)
+            }]);
+
+            if (eventError) { alert('שגיאה ביצירת אירוע: ' + eventError.message); return; }
+            alert('האירוע פורסם בהצלחה!');
+            loadDashboard(userId);
+        }
+
+        async function handleLogin() {
+            const phone = document.getElementById('login-phone').value;
+            const password = document.getElementById('login-password').value;
+
+            const { data: user, error } = await _supabase.from('profiles').select('*').eq('phone', phone).single();
+            if (error || !user || user.password !== password) { alert('מספר הטלפון או הסיסמה שגויים.'); return; }
+            loadDashboard(user.id);
+        }
+
+        async function loadDashboard(userId) {
+            currentUser = userId;
+            const { data: profile } = await _supabase.from('profiles').select('*').eq('id', userId).single();
+            currentProfile = profile;
+
+            document.getElementById('user-greeting').innerText = `שלום, ${profile ? profile.full_name : 'משתמש'}`;
+            navigate('dashboard');
+
+            const container = document.getElementById('dashboard-content');
+            container.innerHTML = '<div class="text-slate-500">טוען נתונים מהשרת...</div>';
+
+            const { data: events } = await _supabase.from('events').select('*');
+
+            container.innerHTML = `
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4">אירועים פעילים במערכת</h3>
+                    <div class="space-y-4">
+                        ${events && events.length > 0 ? events.map(ev => `
+                            <div class="border p-4 rounded-xl flex justify-between items-center bg-slate-50">
+                                <div>
+                                    <h4 class="font-bold text-lg">${ev.couple_names}</h4>
+                                    <p class="text-sm text-slate-600">📅 ${ev.event_date} | 📍 ${ev.hall_address}</p>
+                                </div>
+                                <button onclick="rsvpEvent('${ev.id}')" class="bg-brand-600 text-white px-4 py-2 rounded-lg font-bold text-sm">הירשם לשמח</button>
+                            </div>
+                        `).join('') : '<p class="text-slate-500">אין אירועים פעילים כרגע.</p>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function rsvpEvent(eventId) {
+            const { error } = await _supabase.from('registrations').insert([{ event_id: eventId, user_id: currentUser }]);
+            if (error) alert('כבר נרשמת לאירוע זה או ששגיאה אירעה.');
+            else alert('נרשמת בהצלחה!');
+        }
+
+        async function handleLogout() {
+            currentUser = null;
+            currentProfile = null;
+            navigate('home');
+        }
+    </script>
+</body>
+</html>

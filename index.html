@@ -326,6 +326,10 @@
             return raw;
         }
 
+        function phoneLoginIdentity(phone) {
+            return normalizePhone(phone).replace(/\D/g, '') + '@login.invalid';
+        }
+
         function formatDate(dateStr) {
             if (!dateStr) return '';
             const d = new Date(dateStr + 'T12:00:00');
@@ -453,7 +457,8 @@
 
                 const coords = await geocodeAddress(address);
                 const { data, error } = await _supabase.auth.signUp({
-                    phone, password,
+                    email: phoneLoginIdentity(phone),
+                    password,
                     options: {
                         data: {
                             full_name:name, phone, gender, sector, address,
@@ -471,7 +476,7 @@
                     alert('ההרשמה הושלמה בהצלחה!');
                     await loadDashboard();
                 } else {
-                    alert('החשבון נוצר. אם נדרש אימות טלפון בהגדרות המערכת, יש להשלים אותו לפני הכניסה.');
+                    alert('החשבון נוצר אך ההתחברות האוטומטית לא הופעלה. פנה למנהל המערכת.');
                     navigate('login');
                     $('login-phone').value = phone;
                 }
@@ -487,7 +492,10 @@
             try {
                 const phone = normalizePhone($('login-phone').value);
                 const password = $('login-password').value;
-                const { data, error } = await _supabase.auth.signInWithPassword({ phone, password });
+                const { data, error } = await _supabase.auth.signInWithPassword({
+                    email: phoneLoginIdentity(phone),
+                    password
+                });
                 if (error) throw error;
                 await handleSession(data.session);
                 await loadDashboard();
@@ -591,7 +599,8 @@
 
                 localStorage.setItem('pendingHostEvent', JSON.stringify(ev));
                 const { data, error } = await _supabase.auth.signUp({
-                    phone, password,
+                    email: phoneLoginIdentity(phone),
+                    password,
                     options: {
                         data: { full_name:name, phone, role:'host', sector:ev.sector_pref, address:ev.public_location }
                     }
@@ -612,7 +621,7 @@
                     alert('החשבון והאירוע נוצרו בהצלחה!');
                     await loadDashboard();
                 } else {
-                    alert('החשבון נוצר. אם נדרש אימות טלפון בהגדרות המערכת, יש להשלים אותו ולאחר מכן להתחבר; האירוע יפורסם אוטומטית.');
+                    alert('החשבון נוצר אך ההתחברות האוטומטית לא הופעלה. פרטי האירוע נשמרו ותוכל להמשיך לאחר הכניסה.');
                     navigate('login');
                     $('login-phone').value = phone;
                 }

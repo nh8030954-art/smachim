@@ -35,6 +35,13 @@
         .btn-soft:hover { background:#e2e8f0; }
         .status-pill { display:inline-flex; align-items:center; padding:.25rem .65rem; border-radius:999px; font-size:.75rem; font-weight:700; }
         button:disabled { opacity:.55; cursor:not-allowed; }
+        .field-label { display:block; font-size:.8rem; font-weight:700; color:#475569; margin:0 0 .35rem .15rem; }
+        .field-help { font-size:.75rem; color:#64748b; margin-top:.35rem; }
+        .toast-card { background:#fff; border:1px solid #e2e8f0; box-shadow:0 12px 30px -8px rgba(15,23,42,.22); border-radius:.75rem; padding:.85rem 1rem; min-width:260px; max-width:390px; font-weight:600; }
+        .modal-shell { background:rgba(15,23,42,.48); backdrop-filter:blur(2px); }
+        .mini-stat { background:#fff; border:1px solid #e2e8f0; border-radius:.85rem; padding:1rem; }
+        .progress-track { height:.4rem; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+        .progress-fill { height:100%; background:#0d9488; border-radius:999px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -99,174 +106,109 @@
         <div id="view-register-volunteer" class="screen max-w-2xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <h2 class="text-2xl font-bold mb-2 text-brand-dark">הרשמה - משמח חתן וכלה</h2>
-                <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-4 mt-6">
+                <p class="text-sm text-slate-500">כמה פרטים כדי שנוכל להציג לך רק אירועים שבאמת מתאימים לך.</p>
+                <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-5 mt-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="vol-name" class="input-clean" placeholder="שם מלא" required>
-                        <input type="text" id="vol-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required>
+                        <label><span class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" placeholder="ישראל ישראלי" autocomplete="name" required></label>
+                        <label><span class="field-label">מספר טלפון — שם המשתמש שלך</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required><div class="field-help">המספר משמש לכניסה לאתר ולא ניתן לשינוי כרגע.</div></label>
                     </div>
-                    <input type="password" id="vol-pass" class="input-clean" placeholder="סיסמה (לפחות 8 תווים)" minlength="8" required>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <select id="vol-gender" class="input-clean bg-white" required>
-                            <option value="" disabled selected>מין לצורך התאמת המכסה</option>
-                            <option value="male">גבר</option>
-                            <option value="female">אישה</option>
-                        </select>
-                        <select id="vol-sector" class="input-clean bg-white" required>
-                            <option value="" disabled selected>שיוך מגזרי</option>
-                            <option value="haredi">חרדי</option>
-                            <option value="religious">דתי לאומי</option>
-                            <option value="traditional">מסורתי</option>
-                            <option value="secular">חילוני</option>
-                        </select>
+                        <label><span class="field-label">סיסמה</span><input type="password" id="vol-pass" class="input-clean" placeholder="לפחות 8 תווים" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                        <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" placeholder="הקלד שוב את הסיסמה" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                     </div>
-                    <input type="text" id="vol-address" class="input-clean" placeholder="כתובת מגורים מלאה" required>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="number" id="vol-radius" min="1" max="300" class="input-clean" placeholder="רדיוס מקסימלי (ק״מ)" required>
-                        <select id="vol-days" class="input-clean bg-white" required>
-                            <option value="1">עד יום אחד בשבוע</option>
-                            <option value="2">עד יומיים בשבוע</option>
-                            <option value="3" selected>עד 3 ימים בשבוע</option>
-                            <option value="7">ללא הגבלה</option>
-                        </select>
+                        <label><span class="field-label">מין לצורך מכסת האירוע</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="male">גבר</option><option value="female">אישה</option></select></label>
+                        <label><span class="field-label">שיוך מגזרי</span><select id="vol-sector" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
                     </div>
-                    <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">
-                        <input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded">
-                        <span class="font-bold text-slate-700 text-sm">קבל אך ורק אירועים בהפרדה מלאה</span>
-                    </label>
+                    <label><span class="field-label">כתובת מגורים</span><input type="text" id="vol-address" class="input-clean" placeholder="רחוב, מספר, עיר" autocomplete="street-address" required><div class="field-help">הכתובת משמשת לחישוב מרחק בלבד ואינה מוצגת לבעלי שמחה.</div></label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">רדיוס מקסימלי</span><input type="number" id="vol-radius" min="1" max="300" value="10" class="input-clean" placeholder="ק״מ" required></label>
+                        <label><span class="field-label">כמה ימים בשבוע לכל היותר</span><select id="vol-days" class="input-clean bg-white" required><option value="1">עד יום אחד בשבוע</option><option value="2">עד יומיים בשבוע</option><option value="3" selected>עד 3 ימים בשבוע</option><option value="7">ללא הגבלה</option></select></label>
+                    </div>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"><input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700 text-sm">קבל אך ורק אירועים בהפרדה מלאה</span></label>
+                    <div class="bg-brand-50 border border-brand-100 rounded-xl p-3 text-sm text-brand-900"><i class="fa-solid fa-circle-info ml-1"></i> אחרי ההרשמה תוכל לשנות את ההעדפות באזור האישי.</div>
                     <button id="vol-submit" type="submit" class="w-full btn-brand py-4">השלם הרשמה</button>
                 </form>
             </div>
         </div>
 
-        <!-- פרסום כבעל שמחה -->
+                <!-- פרסום כבעל שמחה -->
         <div id="view-add-event" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
-                <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הרשמה ופרסום כבעל שמחה</h2>
+                <div class="flex flex-wrap justify-between gap-3 items-center border-b pb-4 mb-6">
+                    <div><h2 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h2><p class="text-sm text-slate-500 mt-1">אפשר לחזור לטופס גם אם יצאת — טיוטת האירוע נשמרת אוטומטית.</p></div>
+                    <span id="draft-indicator" class="text-xs font-bold text-slate-400"></span>
+                </div>
                 <form id="event-form" onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6">
                     <div id="host-account-block" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                        <h3 class="font-bold text-slate-800 text-sm">פרטי התחברות לחשבון</h3>
+                        <h3 class="font-bold text-slate-800 text-sm">פרטי החשבון</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" id="host-name" class="input-clean bg-white" placeholder="שם מלא">
-                            <input type="text" id="host-phone" class="input-clean bg-white" placeholder="מספר טלפון" dir="ltr">
+                            <label><span class="field-label">שם מלא</span><input type="text" id="host-name" class="input-clean bg-white" placeholder="שם בעל השמחה"></label>
+                            <label><span class="field-label">מספר טלפון — שם המשתמש שלך</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel"></label>
                         </div>
-                        <input type="password" id="host-pass" class="input-clean bg-white" placeholder="סיסמה (לפחות 8 תווים)" minlength="8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label><span class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" placeholder="לפחות 8 תווים" minlength="8" maxlength="72"></label>
+                            <label><span class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" placeholder="הקלד שוב" minlength="8" maxlength="72"></label>
+                        </div>
+                        <div class="field-help">אם כבר יש לך חשבון, היכנס דרך האזור האישי ואז פרסם את האירוע.</div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="text" id="ev-name" class="input-clean" placeholder="שמות החתן והכלה" required>
-                        <input type="date" id="ev-date" class="input-clean" required>
+                        <label><span class="field-label">שמות החתן והכלה</span><input type="text" id="ev-name" class="input-clean" placeholder="ישראל & שרה" required></label>
+                        <label><span class="field-label">תאריך האירוע</span><input type="date" id="ev-date" class="input-clean" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="ev-public-location" class="input-clean" placeholder="עיר / אזור שיוצגו לפני הרשמה" required>
-                        <input type="text" id="ev-address" class="input-clean" placeholder="כתובת האולם המלאה (פרטית)" required>
+                        <label><span class="field-label">עיר / אזור שיוצגו לפני הרשמה</span><input type="text" id="ev-public-location" class="input-clean" placeholder="ירושלים" required></label>
+                        <label><span class="field-label">כתובת האולם המלאה — פרטית</span><input type="text" id="ev-address" class="input-clean" placeholder="רחוב, מספר, אולם" required><div class="field-help">תוצג רק למי שנרשם ואושר.</div></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="time" id="ev-start" class="input-clean" required>
-                        <input type="time" id="ev-close" class="input-clean" required>
+                        <label><span class="field-label">שעת התחלה</span><input type="time" id="ev-start" class="input-clean" required></label>
+                        <label><span class="field-label">שעת סיום</span><input type="time" id="ev-close" class="input-clean" required></label>
                     </div>
-                    <select id="ev-sector" class="input-clean bg-white" required>
-                        <option value="all" class="font-bold text-brand-600">כל המגזרים (לא משנה לי)</option>
-                        <option value="haredi">חרדי</option>
-                        <option value="religious">דתי לאומי</option>
-                        <option value="traditional">מסורתי</option>
-                        <option value="secular">חילוני</option>
-                    </select>
-                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer">
-                        <input type="checkbox" id="ev-separation" class="w-5 h-5 text-brand-600 rounded">
-                        <span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span>
-                    </label>
+                    <label><span class="field-label">התאמה מגזרית</span><select id="ev-sector" class="input-clean bg-white" required><option value="all" class="font-bold text-brand-600">כל המגזרים (לא משנה לי)</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span></label>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="number" id="ev-men" class="input-clean" placeholder="מכסת משמחים (גברים)" min="0" required>
-                        <input type="number" id="ev-women" class="input-clean" placeholder="מכסת משמחות (נשים)" min="0" required>
+                        <label><span class="field-label">מכסת משמחים — גברים</span><input type="number" id="ev-men" class="input-clean" value="5" min="0" max="500" required></label>
+                        <label><span class="field-label">מכסת משמחות — נשים</span><input type="number" id="ev-women" class="input-clean" value="5" min="0" max="500" required></label>
                     </div>
                     <button id="event-submit" type="submit" class="w-full btn-dark py-4">פרסם אירוע</button>
                 </form>
             </div>
         </div>
 
-        <!-- עריכת אירוע -->
+                <!-- עריכת אירוע -->
         <div id="view-edit-event" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">עריכת אירוע</h2>
                 <form id="edit-event-form" onsubmit="event.preventDefault(); saveEditEvent();" class="space-y-6">
                     <input type="hidden" id="edit-event-id">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="text" id="edit-ev-name" class="input-clean" placeholder="שמות החתן והכלה" required>
-                        <input type="date" id="edit-ev-date" class="input-clean" required>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="edit-ev-public-location" class="input-clean" placeholder="עיר / אזור" required>
-                        <input type="text" id="edit-ev-address" class="input-clean" placeholder="כתובת האולם המלאה" required>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="time" id="edit-ev-start" class="input-clean" required>
-                        <input type="time" id="edit-ev-close" class="input-clean" required>
-                    </div>
-                    <select id="edit-ev-sector" class="input-clean bg-white" required>
-                        <option value="all">כל המגזרים</option>
-                        <option value="haredi">חרדי</option>
-                        <option value="religious">דתי לאומי</option>
-                        <option value="traditional">מסורתי</option>
-                        <option value="secular">חילוני</option>
-                    </select>
-                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer">
-                        <input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded">
-                        <span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span>
-                    </label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="number" id="edit-ev-men" class="input-clean" placeholder="מכסת משמחים" min="0" required>
-                        <input type="number" id="edit-ev-women" class="input-clean" placeholder="מכסת משמחות" min="0" required>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button type="button" onclick="navigate('dashboard')" class="btn-soft py-3">ביטול</button>
-                        <button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button>
-                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><label><span class="field-label">שמות החתן והכלה</span><input type="text" id="edit-ev-name" class="input-clean" required></label><label><span class="field-label">תאריך האירוע</span><input type="date" id="edit-ev-date" class="input-clean" required></label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">עיר / אזור שיוצגו</span><input type="text" id="edit-ev-public-location" class="input-clean" required></label><label><span class="field-label">כתובת האולם המלאה — פרטית</span><input type="text" id="edit-ev-address" class="input-clean" required></label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">שעת התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">שעת סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
+                    <label><span class="field-label">התאמה מגזרית</span><select id="edit-ev-sector" class="input-clean bg-white" required><option value="all">כל המגזרים</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span></label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><label><span class="field-label">מכסת גברים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת נשים</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
+                    <div class="grid grid-cols-2 gap-3"><button type="button" onclick="navigate('dashboard')" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
                 </form>
             </div>
         </div>
 
-        <!-- הגדרות פרופיל -->
+                <!-- הגדרות פרופיל -->
         <div id="view-profile-settings" class="screen max-w-2xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הגדרות פרופיל</h2>
-                <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-4">
-                    <input type="text" id="profile-name" class="input-clean" placeholder="שם מלא" required>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <select id="profile-gender" class="input-clean bg-white">
-                            <option value="">לא רלוונטי / לא הוגדר</option>
-                            <option value="male">גבר</option>
-                            <option value="female">אישה</option>
-                        </select>
-                        <select id="profile-sector" class="input-clean bg-white" required>
-                            <option value="haredi">חרדי</option>
-                            <option value="religious">דתי לאומי</option>
-                            <option value="traditional">מסורתי</option>
-                            <option value="secular">חילוני</option>
-                            <option value="all">כללי</option>
-                        </select>
-                    </div>
-                    <input type="text" id="profile-address" class="input-clean" placeholder="כתובת מגורים">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="number" id="profile-radius" min="1" max="300" class="input-clean" placeholder="רדיוס בק״מ">
-                        <select id="profile-days" class="input-clean bg-white">
-                            <option value="1">עד יום אחד בשבוע</option>
-                            <option value="2">עד יומיים בשבוע</option>
-                            <option value="3">עד 3 ימים בשבוע</option>
-                            <option value="7">ללא הגבלה</option>
-                        </select>
-                    </div>
-                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer">
-                        <input type="checkbox" id="profile-separation" class="w-5 h-5 text-brand-600 rounded">
-                        <span class="font-bold text-slate-700">קבל אך ורק אירועים בהפרדה מלאה</span>
-                    </label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button type="button" onclick="navigate('dashboard')" class="btn-soft py-3">ביטול</button>
-                        <button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button>
-                    </div>
+                <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש שלך</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div class="field-help">מספר הטלפון משמש לכניסה ואינו ניתן לשינוי כרגע.</div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div></div>
+                <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-5">
+                    <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מין לצורך מכסות</span><select id="profile-gender" class="input-clean bg-white"><option value="">לא הוגדר</option><option value="male">גבר</option><option value="female">אישה</option></select></label><label><span class="field-label">שיוך מגזרי</span><select id="profile-sector" class="input-clean bg-white" required><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label></div>
+                    <label><span class="field-label">כתובת מגורים</span><input type="text" id="profile-address" class="input-clean" placeholder="רחוב, מספר, עיר"><div class="field-help">משמשת רק לחישוב מרחק מאירועים.</div></label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">רדיוס מקסימלי בק״מ</span><input type="number" id="profile-radius" min="1" max="300" class="input-clean"></label><label><span class="field-label">מספר ימי התנדבות בשבוע</span><select id="profile-days" class="input-clean bg-white"><option value="1">עד יום אחד בשבוע</option><option value="2">עד יומיים בשבוע</option><option value="3">עד 3 ימים בשבוע</option><option value="7">ללא הגבלה</option></select></label></div>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="profile-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">קבל אך ורק אירועים בהפרדה מלאה</span></label>
+                    <div class="grid grid-cols-2 gap-3"><button type="button" onclick="navigate('dashboard')" class="btn-soft py-3">ביטול</button><button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button></div>
                 </form>
             </div>
         </div>
 
-        <!-- אזור אישי -->
+                <!-- אזור אישי -->
         <div id="view-dashboard" class="screen max-w-6xl mx-auto px-6 py-10">
             <div class="flex flex-wrap gap-3 justify-between items-center mb-8">
                 <h2 id="user-greeting" class="text-3xl font-bold text-brand-dark">אזור אישי</h2>
@@ -277,6 +219,8 @@
             </div>
             <div id="dashboard-content" class="space-y-8"></div>
         </div>
+        <div id="toast-container" class="fixed top-20 left-4 z-[90] flex flex-col gap-2"></div>
+        <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><input id="modal-input" class="input-clean mt-4 hidden" type="text"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
     </main>
 
     <script>
@@ -306,6 +250,12 @@
         let currentIsAdmin = false;
         let hostEventsCache = new Map();
         let privateEventCache = new Map();
+        let matchingEventsCache = [];
+        let matchingRegsCache = [];
+        let adminUsersCache = [];
+        let calendarEventCache = new Map();
+        let modalResolver = null;
+        const EVENT_DRAFT_KEY = 'smachimEventDraftV3';
 
         const $ = (id) => document.getElementById(id);
         const esc = (value) => String(value ?? '')
@@ -331,6 +281,31 @@
                 if (btn.dataset.oldText) btn.innerHTML = btn.dataset.oldText;
             }
         }
+
+        function showToast(message, type='info') {
+            const box=$('toast-container'); if(!box) return;
+            const el=document.createElement('div');
+            const accent=type==='error'?'border-red-200 text-red-700':type==='success'?'border-emerald-200 text-emerald-800':type==='warning'?'border-amber-200 text-amber-800':'border-slate-200 text-slate-700';
+            el.className='toast-card '+accent; el.textContent=message; box.appendChild(el);
+            setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(-4px)';el.style.transition='.25s';},4200);
+            setTimeout(()=>el.remove(),4550);
+        }
+        function openAppModal({title,message='',confirmText='אישור',cancelText='ביטול',input=false,placeholder=''}) {
+            return new Promise(resolve=>{ modalResolver=resolve; $('modal-title').textContent=title; $('modal-message').textContent=message; $('modal-confirm').textContent=confirmText; $('modal-cancel').textContent=cancelText; const inp=$('modal-input'); inp.classList.toggle('hidden',!input); inp.value=''; inp.placeholder=placeholder; const modal=$('app-modal'); modal.classList.remove('hidden'); modal.classList.add('flex'); if(input)setTimeout(()=>inp.focus(),50); });
+        }
+        function resolveAppModal(ok) { const modal=$('app-modal'); const inputVisible=!$('modal-input').classList.contains('hidden'); const value=inputVisible?$('modal-input').value.trim():true; modal.classList.add('hidden');modal.classList.remove('flex'); if(modalResolver){const r=modalResolver;modalResolver=null;r(ok?value:null);} }
+        const askConfirm=(title,message,confirmText='אישור')=>openAppModal({title,message,confirmText});
+        const askText=(title,message,placeholder='')=>openAppModal({title,message,confirmText:'שלח',input:true,placeholder});
+        function roleLabel(role){return ({volunteer:'משמח/ת',host:'בעל/ת שמחה',both:'משמח/ת + בעל/ת שמחה'})[role]||'משתמש';}
+        function displayPhone(phone){const p=String(phone||'');return p.startsWith('+972')?'0'+p.slice(4):p;}
+        function isValidPhone(phone){return /^\+972\d{8,9}$/.test(normalizePhone(phone));}
+        function dayName(dateStr){if(!dateStr)return'';return new Intl.DateTimeFormat('he-IL',{weekday:'long'}).format(new Date(dateStr+'T12:00:00'));}
+        function relativeDateLabel(dateStr){if(!dateStr)return'';const today=new Date();today.setHours(12,0,0,0);const d=new Date(dateStr+'T12:00:00');const days=Math.round((d-today)/86400000);if(days===0)return'היום';if(days===1)return'מחר';if(days>1&&days<=7)return'בעוד '+days+' ימים';if(days<0)return'הסתיים';return dayName(dateStr);}
+        function timeRange(start,close){return [start?.slice(0,5),close?.slice(0,5)].filter(Boolean).join('–');}
+        function mapButtons(address){if(!address)return'';const q=encodeURIComponent(address);return '<div class="flex flex-wrap gap-2 mt-2"><a target="_blank" rel="noopener" href="https://waze.com/ul?q='+q+'&navigate=yes" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-brands fa-waze ml-1"></i> Waze</a><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+q+'" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-solid fa-map-location-dot ml-1"></i> Google Maps</a></div>';}
+        function icsEscape(v){return String(v||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
+        function downloadCalendar(eventId){const e=calendarEventCache.get(eventId);if(!e)return showToast('לא מצאתי את פרטי האירוע ליומן.','error');const d=String(e.event_date||'').replaceAll('-','');const start=String(e.start_time||'00:00').slice(0,5).replace(':','')+'00';const end=String(e.close_time||e.start_time||'00:00').slice(0,5).replace(':','')+'00';const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Smachim//HE','BEGIN:VEVENT','UID:'+eventId+'@smachim','DTSTART;TZID=Asia/Jerusalem:'+d+'T'+start,'DTEND;TZID=Asia/Jerusalem:'+d+'T'+end,'SUMMARY:'+icsEscape('שמחים בשמחתם - '+(e.couple_names||'אירוע')),'LOCATION:'+icsEscape(e.exact_address||e.public_location||''),'DESCRIPTION:'+icsEscape('אירוע דרך שמחים בשמחתם'),'END:VEVENT','END:VCALENDAR'].join('\r\n');const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='event.ics';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+        function updateHeaderActions(){const box=$('header-actions');if(!box)return;box.innerHTML=sessionToken&&currentProfile?'<div class="flex gap-4 items-center"><button onclick="navigate(\'home\')" class="text-sm font-semibold text-slate-500 hover:text-brand-600"><i class="fa-solid fa-house ml-1"></i> דף הבית</button><button onclick="loadDashboard()" class="text-sm font-bold text-brand-700 hover:text-brand-900"><i class="fa-solid fa-user ml-1"></i> אזור אישי</button></div>':'<button onclick="navigate(\'home\')" class="text-sm font-semibold text-slate-500 hover:text-brand-600 transition"><i class="fa-solid fa-house ml-1"></i> דף הבית</button>';}
 
         function normalizePhone(phone) {
             const raw = String(phone || '').replace(/[\s\-()]/g, '');
@@ -370,27 +345,11 @@
         }
 
         function readableError(error) {
-            const m = String(error?.message || error || 'שגיאה לא ידועה');
-            const pairs = [
-                ['weekly_limit_reached','הגעת למספר ימי ההתנדבות המקסימלי שהגדרת לשבוע זה.'],
-                ['gender_required','יש להגדיר מין בפרופיל כדי להתאים למכסת האירוע.'],
-                ['user_blocked','החשבון חסום כרגע.'],
-                ['event_unavailable','האירוע אינו זמין להרשמה.'],
-                ['cannot_register_own_event','לא ניתן להירשם כמשמח לאירוע שפרסמת.'],
-                ['quota_below_existing_registrations','אי אפשר להקטין מכסה מתחת למספר הנרשמים שכבר אושרו.'],
-                ['invalid_event_times','שעת הסיום חייבת להיות מאוחרת משעת ההתחלה.'],
-                ['gender_change_with_active_registrations','לא ניתן לשנות מין כל עוד יש לך הרשמות פעילות לאירועים עתידיים.'],
-                ['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],
-                ['event_date_in_past','לא ניתן לבחור תאריך שכבר עבר.'],
-                ['invalid_login','מספר הטלפון או הסיסמה שגויים.'],
-                ['already_registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.'],
-                ['account_not_initialized','המספר קיים במערכת אך עדיין לא הוגדרה לו סיסמה. בצע הרשמה חד-פעמית.'],
-                ['invalid_phone','מספר הטלפון אינו תקין.'],
-                ['invalid_password','הסיסמה חייבת לכלול לפחות 8 תווים.'],
-                ['invalid_name','יש להזין שם מלא.']
-            ];
-            for (const [key, text] of pairs) if (m.includes(key)) return text;
-            return m;
+            const m=String(error?.message||error||'שגיאה לא ידועה');
+            const pairs=[['session_expired','ההתחברות פגה. התחבר מחדש.'],['profile_missing','לא הצלחנו לטעון את הפרופיל. נסה להתחבר מחדש.'],['weekly_limit_reached','הגעת למספר ימי ההתנדבות המקסימלי שהגדרת לשבוע זה.'],['time_conflict','כבר יש לך התנדבות אחרת שחופפת בשעות לאירוע הזה.'],['gender_required','יש להגדיר מין בפרופיל כדי להתאים למכסת האירוע.'],['address_required','יש להגדיר כתובת מגורים לפני הפעלת מצב משמח.'],['user_blocked','החשבון חסום כרגע.'],['event_unavailable','האירוע אינו זמין להרשמה.'],['event_not_found','האירוע כבר לא קיים.'],['cannot_register_own_event','לא ניתן להירשם כמשמח לאירוע שפרסמת.'],['quota_below_existing_registrations','אי אפשר להקטין מכסה מתחת למספר הנרשמים שכבר אושרו.'],['invalid_event_times','שעת הסיום חייבת להיות מאוחרת משעת ההתחלה.'],['duplicate_event','נראה שכבר פרסמת את האירוע הזה.'],['invalid_event_name','יש להזין את שמות החתן והכלה.'],['invalid_location','יש להשלים עיר/אזור וכתובת אולם.'],['gender_change_with_active_registrations','לא ניתן לשנות מין כל עוד יש הרשמות פעילות לאירועים עתידיים.'],['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],['event_date_in_past','לא ניתן לבחור תאריך שכבר עבר.'],['invalid_login','מספר הטלפון או הסיסמה שגויים.'],['already_registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.'],['invalid_phone','מספר הטלפון אינו תקין.'],['invalid_password','הסיסמה חייבת לכלול לפחות 8 תווים.'],['invalid_name','יש להזין שם מלא.'],['not_allowed','אין הרשאה לבצע את הפעולה הזאת.'],['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.']];
+            for(const [key,text] of pairs)if(m.includes(key))return text;
+            if(m.includes('אינן זהות')) return 'הסיסמאות אינן זהות.';
+            return 'אירעה שגיאה. נסה שוב בעוד רגע.';
         }
 
         async function geocodeAddress(address) {
@@ -424,120 +383,31 @@
             return null;
         }
 
-        async function initSession() {
-            if (!sessionToken) return;
-            const profile = await loadProfile();
-            if (!profile) {
-                applySessionToken('');
-                return;
-            }
-            const { data: adminFlag } = await _supabase.rpc('is_admin');
-            currentIsAdmin = !!adminFlag;
-            await finalizePendingEvent();
+        async function initSession(){if(!sessionToken){updateHeaderActions();return;}const profile=await loadProfile();if(!profile){applySessionToken('');updateHeaderActions();return;}const {data:adminFlag}=await _supabase.rpc('is_admin');currentIsAdmin=!!adminFlag;updateHeaderActions();await finalizePendingEvent();}
+        async function openPersonalArea(){if(!sessionToken)return navigate('login');const profile=await loadProfile();if(!profile){applySessionToken('');updateHeaderActions();showToast('ההתחברות פגה. יש להתחבר מחדש.','warning');return navigate('login');}await loadDashboard();}
+
+        async function handleRegisterVolunteer(){
+            setBusy('vol-submit',true,'יוצר חשבון...');
+            try{const name=$('vol-name').value.trim();const phone=normalizePhone($('vol-phone').value);const password=$('vol-pass').value;const confirmPassword=$('vol-pass-confirm').value;const gender=$('vol-gender').value;const sector=$('vol-sector').value;const address=$('vol-address').value.trim();const radius=Number($('vol-radius').value);const maxDays=Number($('vol-days').value);const separation=$('vol-separation').checked;
+                if(!isValidPhone(phone))throw new Error('invalid_phone');if(password.length<8)throw new Error('invalid_password');if(password!==confirmPassword)throw new Error('הסיסמאות אינן זהות.');
+                const coords=await geocodeAddress(address);if(coords.lat==null)showToast('לא הצלחנו לזהות את הכתובת במפה. אפשר להמשיך, אך המרחק לאירועים עלול לא להופיע עד שתעדכן כתובת.','warning');
+                const {data:token,error}=await _supabase.rpc('username_register',{p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',p_gender:gender,p_sector:sector,p_address:address,p_radius:radius,p_max_days_per_week:maxDays,p_strict_separation:separation,p_lat:coords.lat,p_lng:coords.lng});
+                if(error)throw error;applySessionToken(token);await loadProfile();updateHeaderActions();$('volunteer-form').reset();showToast('ההרשמה הושלמה בהצלחה!','success');await loadDashboard();
+            }catch(e){showToast(readableError(e),'error');}finally{setBusy('vol-submit',false);}
         }
 
-        async function openPersonalArea() {
-            if (!sessionToken) return navigate('login');
-            const profile = await loadProfile();
-            if (!profile) {
-                applySessionToken('');
-                return navigate('login');
-            }
-            await loadDashboard();
-        }
-
-        async function handleRegisterVolunteer() {
-            setBusy('vol-submit', true, 'יוצר חשבון...');
-            try {
-                const name = $('vol-name').value.trim();
-                const phone = normalizePhone($('vol-phone').value);
-                const password = $('vol-pass').value;
-                const gender = $('vol-gender').value;
-                const sector = $('vol-sector').value;
-                const address = $('vol-address').value.trim();
-                const radius = Number($('vol-radius').value);
-                const maxDays = Number($('vol-days').value);
-                const separation = $('vol-separation').checked;
-
-                const coords = await geocodeAddress(address);
-                const { data: token, error } = await _supabase.rpc('username_register', {
-                    p_phone: phone,
-                    p_password: password,
-                    p_full_name: name,
-                    p_role: 'volunteer',
-                    p_gender: gender,
-                    p_sector: sector,
-                    p_address: address,
-                    p_radius: radius,
-                    p_max_days_per_week: maxDays,
-                    p_strict_separation: separation,
-                    p_lat: coords.lat,
-                    p_lng: coords.lng
-                });
-                if (error) throw error;
-
-                applySessionToken(token);
-                await loadProfile();
-                alert('ההרשמה הושלמה בהצלחה!');
-                await loadDashboard();
-            } catch (e) {
-                alert(readableError(e));
-            } finally {
-                setBusy('vol-submit', false);
-            }
-        }
-
-        async function handleLogin() {
-            setBusy('login-submit', true, 'מתחבר...');
-            try {
-                const phone = normalizePhone($('login-phone').value);
-                const password = $('login-password').value;
-                const { data: token, error } = await _supabase.rpc('username_login', {
-                    p_phone: phone,
-                    p_password: password
-                });
-                if (error) throw error;
-
-                applySessionToken(token);
-                const profile = await loadProfile();
-                if (!profile) throw new Error('session_failed');
-                await loadDashboard();
-            } catch (e) {
-                alert(readableError(e));
-            } finally {
-                setBusy('login-submit', false);
-            }
-        }
+        async function handleLogin(){setBusy('login-submit',true,'מתחבר...');try{const phone=normalizePhone($('login-phone').value);const password=$('login-password').value;if(!isValidPhone(phone))throw new Error('invalid_phone');const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});if(error)throw error;applySessionToken(token);const profile=await loadProfile();if(!profile)throw new Error('session_expired');updateHeaderActions();showToast('ברוך הבא!','success');await loadDashboard();}catch(e){showToast(readableError(e),'error');}finally{setBusy('login-submit',false);}}
 
 
-        async function handleLogout() {
-            const token = sessionToken;
-            try {
-                if (token) await _supabase.rpc('username_logout', { p_token: token });
-            } catch (_) {}
-            applySessionToken('');
-            currentUser = null;
-            currentProfile = null;
-            currentIsAdmin = false;
-            navigate('home');
-        }
+        async function handleLogout(){const token=sessionToken;try{if(token)await _supabase.rpc('username_logout',{p_token:token});}catch(_){}applySessionToken('');currentUser=null;currentProfile=null;currentIsAdmin=false;updateHeaderActions();navigate('home');showToast('התנתקת מהמערכת.');}
 
-        async function openAddEvent() {
-            if (sessionToken && !currentProfile) await loadProfile();
-            const block = $('host-account-block');
-            const fields = ['host-name','host-phone','host-pass'];
-            if (currentProfile) {
-                block.classList.add('hidden');
-                fields.forEach(id => $(id).required = false);
-            } else {
-                block.classList.remove('hidden');
-                fields.forEach(id => $(id).required = true);
-            }
-            $('ev-date').min = new Date().toISOString().slice(0,10);
-            navigate('add-event');
-        }
+        async function openAddEvent(){if(sessionToken&&!currentProfile)await loadProfile();const block=$('host-account-block');const fields=['host-name','host-phone','host-pass','host-pass-confirm'];if(currentProfile){block.classList.add('hidden');fields.forEach(id=>$(id).required=false);}else{block.classList.remove('hidden');fields.forEach(id=>$(id).required=true);}$('ev-date').min=new Date().toISOString().slice(0,10);restoreEventDraft();navigate('add-event');}
+        function saveEventDraft(){const form=$('event-form');if(!form)return;const draft={couple_names:$('ev-name')?.value||'',event_date:$('ev-date')?.value||'',public_location:$('ev-public-location')?.value||'',hall_address:$('ev-address')?.value||'',start_time:$('ev-start')?.value||'',close_time:$('ev-close')?.value||'',sector_pref:$('ev-sector')?.value||'all',is_separated:!!$('ev-separation')?.checked,quota_men:$('ev-men')?.value||'',quota_women:$('ev-women')?.value||''};if(Object.values(draft).some(v=>v&&v!==false&&v!=='all')){localStorage.setItem(EVENT_DRAFT_KEY,JSON.stringify(draft));if($('draft-indicator'))$('draft-indicator').textContent='הטיוטה נשמרה';}}
+        function restoreEventDraft(){const raw=localStorage.getItem(EVENT_DRAFT_KEY);if(!raw)return;try{const d=JSON.parse(raw);const map={couple_names:'ev-name',event_date:'ev-date',public_location:'ev-public-location',hall_address:'ev-address',start_time:'ev-start',close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women'};Object.entries(map).forEach(([k,id])=>{if(d[k]!==undefined&&$(id))$(id).value=d[k];});if($('ev-separation'))$('ev-separation').checked=!!d.is_separated;if($('draft-indicator'))$('draft-indicator').textContent='שוחזרה טיוטה';}catch(_){}}
+        function clearEventDraft(){localStorage.removeItem(EVENT_DRAFT_KEY);if($('draft-indicator'))$('draft-indicator').textContent='';}
+        function initEventDraftAutosave(){const form=$('event-form');if(!form)return;form.querySelectorAll('input,select').forEach(el=>{if(['host-pass','host-pass-confirm'].includes(el.id))return;el.addEventListener('input',saveEventDraft);el.addEventListener('change',saveEventDraft);});}
 
-        function collectEventForm(prefix='') {
+        function collectEventForm(prefix='') {        function collectEventForm(prefix='') {
             const id = (name) => $(prefix + name);
             return {
                 couple_names: id('ev-name').value.trim(),
@@ -557,6 +427,8 @@
             if (ev.event_date < new Date().toISOString().slice(0,10)) throw new Error('event_date_in_past');
             if (ev.close_time <= ev.start_time) throw new Error('invalid_event_times');
             if (ev.quota_men < 0 || ev.quota_women < 0) throw new Error('invalid_quota');
+            if (!ev.couple_names || ev.couple_names.length < 2) throw new Error('invalid_event_name');
+            if (!ev.public_location || !ev.hall_address) throw new Error('invalid_location');
         }
 
         async function createEventRpc(ev) {
@@ -580,116 +452,22 @@
             return data;
         }
 
-        async function handleCreateEvent() {
-            setBusy('event-submit', true, 'מפרסם אירוע...');
-            try {
-                const ev = collectEventForm('');
-                validateEventPayload(ev);
+        async function handleCreateEvent(){setBusy('event-submit',true,'מפרסם אירוע...');try{const ev=collectEventForm('');validateEventPayload(ev);if(sessionToken){const profile=currentProfile||await loadProfile();if(profile){await createEventRpc(ev);await loadProfile();$('event-form').reset();clearEventDraft();showToast('האירוע פורסם בהצלחה!','success');await loadDashboard();return;}applySessionToken('');}
+            const name=$('host-name').value.trim();const phone=normalizePhone($('host-phone').value);const password=$('host-pass').value;const confirmPassword=$('host-pass-confirm').value;if(!isValidPhone(phone))throw new Error('invalid_phone');if(password.length<8)throw new Error('invalid_password');if(password!==confirmPassword)throw new Error('הסיסמאות אינן זהות.');
+            localStorage.setItem('pendingHostEvent',JSON.stringify(ev));const {data:token,error}=await _supabase.rpc('username_register',{p_phone:phone,p_password:password,p_full_name:name,p_role:'host',p_gender:null,p_sector:ev.sector_pref,p_address:ev.public_location,p_radius:30,p_max_days_per_week:3,p_strict_separation:false,p_lat:null,p_lng:null});
+            if(error){if(String(error.message).includes('already_registered')){$('login-phone').value=displayPhone(phone);showToast('כבר קיים חשבון עם המספר הזה. האירוע נשמר כטיוטה — התחבר ואז הוא יפורסם.','warning');navigate('login');return;}throw error;}
+            applySessionToken(token);await loadProfile();updateHeaderActions();await finalizePendingEvent();$('event-form').reset();clearEventDraft();showToast('החשבון והאירוע נוצרו בהצלחה!','success');await loadDashboard();
+        }catch(e){showToast(readableError(e),'error');}finally{setBusy('event-submit',false);}}
 
-                if (sessionToken) {
-                    const profile = currentProfile || await loadProfile();
-                    if (profile) {
-                        await createEventRpc(ev);
-                        await loadProfile();
-                        alert('האירוע פורסם בהצלחה!');
-                        $('event-form').reset();
-                        await loadDashboard();
-                        return;
-                    }
-                    applySessionToken('');
-                }
+        async function finalizePendingEvent(){if(!sessionToken||!currentProfile)return;const raw=localStorage.getItem('pendingHostEvent');if(!raw)return;try{const ev=JSON.parse(raw);await createEventRpc(ev);localStorage.removeItem('pendingHostEvent');clearEventDraft();await loadProfile();showToast('האירוע ששמרת פורסם בהצלחה.','success');}catch(e){if(String(e?.message||'').includes('duplicate_event')){localStorage.removeItem('pendingHostEvent');clearEventDraft();}else console.error('Pending event publication failed:',e);}}
 
-                const name = $('host-name').value.trim();
-                const phone = normalizePhone($('host-phone').value);
-                const password = $('host-pass').value;
-                if (password.length < 8) throw new Error('invalid_password');
+        async function loadDashboard(){if(!sessionToken)return navigate('login');await loadProfile();if(!currentProfile){applySessionToken('');updateHeaderActions();showToast('ההתחברות פגה. יש להתחבר מחדש.','warning');return navigate('login');}await _supabase.rpc('sync_event_statuses');const {data:adminFlag}=await _supabase.rpc('is_admin');currentIsAdmin=!!adminFlag;updateHeaderActions();$('user-greeting').innerText='שלום, '+(currentProfile.full_name||'משתמש');navigate('dashboard');const container=$('dashboard-content');container.innerHTML='<div class="text-slate-500">טוען נתונים מהשרת...</div>';const parts=[];parts.push(renderProfileOverview());parts.push(await renderQuickStats());parts.push(renderProfileCompleteness());parts.push(await renderNotifications());if(['volunteer','both'].includes(currentProfile.role)){parts.push(await renderMyRegistrations());parts.push(await renderMatchingEvents());}if(['host','both'].includes(currentProfile.role)){parts.push(await renderHostEvents());}if(currentProfile.role==='volunteer'){parts.push('<div class="glass-card p-6 flex flex-wrap gap-3 items-center justify-between"><div><h3 class="font-bold text-lg">רוצה לפרסם גם אירוע?</h3><p class="text-sm text-slate-500">אותו חשבון יכול לשמש גם כבעל שמחה.</p></div><button onclick="openAddEvent()" class="btn-dark px-4 py-2">פרסם אירוע</button></div>');}else if(currentProfile.role==='host'){parts.push('<div class="glass-card p-6 flex flex-wrap gap-3 items-center justify-between"><div><h3 class="font-bold text-lg">רוצה גם לשמח?</h3><p class="text-sm text-slate-500">הגדר מין, כתובת והעדפות ואז נתחיל להציע לך אירועים.</p></div><button onclick="enableVolunteerMode()" class="btn-brand px-4 py-2">הפעל מצב משמח</button></div>');}if(currentIsAdmin)parts.push(await renderAdminPanel());container.innerHTML=parts.filter(Boolean).join('');}
+        function renderProfileOverview(){return '<div class="glass-card p-5 flex flex-wrap gap-4 justify-between items-center"><div><div class="text-xs font-bold text-slate-500">החשבון שלך</div><div class="font-bold text-lg">'+esc(roleLabel(currentProfile.role))+'</div><div class="text-sm text-slate-500 mt-1" dir="ltr">'+esc(displayPhone(currentProfile.phone))+'</div></div><div class="text-sm text-slate-600">'+(currentProfile.address?'<i class="fa-solid fa-location-dot ml-1"></i>'+esc(currentProfile.address):'לא הוגדרה כתובת')+(currentProfile.radius?' · עד '+esc(currentProfile.radius)+' ק״מ':'')+'</div><button onclick="openProfileSettings()" class="btn-soft px-4 py-2 text-sm">ערוך העדפות</button></div>';}
+        async function renderQuickStats(){const {data,error}=await _supabase.rpc('get_dashboard_stats');if(error||!data?.length)return'';const s=data[0];return '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3"><div class="mini-stat"><div class="text-xs text-slate-500">התנדבויות קרובות</div><div class="text-2xl font-bold mt-1">'+Number(s.upcoming_approved||0)+'</div></div><div class="mini-stat"><div class="text-xs text-slate-500">ברשימת המתנה</div><div class="text-2xl font-bold mt-1">'+Number(s.waitlist_count||0)+'</div></div><div class="mini-stat"><div class="text-xs text-slate-500">אירועים פעילים שלי</div><div class="text-2xl font-bold mt-1">'+Number(s.hosted_active||0)+'</div></div><div class="mini-stat"><div class="text-xs text-slate-500">התראות חדשות</div><div class="text-2xl font-bold mt-1">'+Number(s.unread_notifications||0)+'</div></div></div>';}
+        function renderProfileCompleteness(){if(!['volunteer','both'].includes(currentProfile.role))return'';const missing=[];if(!currentProfile.gender)missing.push('מין');if(!currentProfile.address)missing.push('כתובת');if(currentProfile.lat==null||currentProfile.lng==null)missing.push('מיקום לחישוב מרחק');if(!missing.length)return'';return '<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-wrap gap-3 justify-between items-center"><div><div class="font-bold text-amber-900">כדאי להשלים את הפרופיל</div><div class="text-sm text-amber-800">חסר: '+esc(missing.join(', '))+'. בלי זה חלק מההתאמות יהיו פחות מדויקות.</div></div><button onclick="openProfileSettings()" class="bg-white border border-amber-200 px-3 py-2 rounded-lg font-bold text-sm text-amber-900">להשלמה</button></div>';}
+        async function enableVolunteerMode(){if(!currentProfile.gender||!currentProfile.address){showToast('לפני הפעלת מצב משמח יש להשלים מין וכתובת בהגדרות.','warning');return openProfileSettings();}const {error}=await _supabase.rpc('enable_volunteer_mode');if(error)return showToast(readableError(error),'error');await loadProfile();showToast('מצב משמח הופעל!','success');await loadDashboard();}
 
-                localStorage.setItem('pendingHostEvent', JSON.stringify(ev));
-                const { data: token, error } = await _supabase.rpc('username_register', {
-                    p_phone: phone,
-                    p_password: password,
-                    p_full_name: name,
-                    p_role: 'host',
-                    p_gender: null,
-                    p_sector: ev.sector_pref,
-                    p_address: ev.public_location,
-                    p_radius: 30,
-                    p_max_days_per_week: 3,
-                    p_strict_separation: false,
-                    p_lat: null,
-                    p_lng: null
-                });
-                if (error) {
-                    if (String(error.message).includes('already_registered')) {
-                        $('login-phone').value = phone;
-                        alert('כבר קיים חשבון עם מספר הטלפון הזה. פרטי האירוע נשמרו בדפדפן — התחבר והאירוע יפורסם לאחר הכניסה.');
-                        navigate('login');
-                        return;
-                    }
-                    throw error;
-                }
-
-                applySessionToken(token);
-                await loadProfile();
-                await finalizePendingEvent();
-                alert('החשבון והאירוע נוצרו בהצלחה!');
-                await loadDashboard();
-            } catch (e) {
-                alert(readableError(e));
-            } finally {
-                setBusy('event-submit', false);
-            }
-        }
-
-        async function finalizePendingEvent() {
-            if (!sessionToken || !currentProfile) return;
-            const raw = localStorage.getItem('pendingHostEvent');
-            if (!raw) return;
-            try {
-                const ev = JSON.parse(raw);
-                await createEventRpc(ev);
-                localStorage.removeItem('pendingHostEvent');
-                await loadProfile();
-                alert('האירוע ששמרת פורסם בהצלחה.');
-            } catch (e) {
-                console.error('Pending event publication failed:', e);
-            }
-        }
-
-        async function loadDashboard() {
-            if (!sessionToken) return navigate('login');
-            await loadProfile();
-            if (!currentProfile) {
-                applySessionToken('');
-                alert('ההתחברות פגה. יש להתחבר מחדש.');
-                return navigate('login');
-            }
-            const { data: adminFlag } = await _supabase.rpc('is_admin');
-            currentIsAdmin = !!adminFlag;
-            $('user-greeting').innerText = `שלום, ${currentProfile.full_name || 'משתמש'}`;
-            navigate('dashboard');
-            const container = $('dashboard-content');
-            container.innerHTML = '<div class="text-slate-500">טוען נתונים מהשרת...</div>';
-
-            const parts = [];
-            parts.push(await renderNotifications());
-            if (['volunteer','both'].includes(currentProfile.role)) {
-                parts.push(await renderMyRegistrations());
-                parts.push(await renderMatchingEvents());
-            }
-            if (['host','both'].includes(currentProfile.role)) {
-                parts.push(await renderHostEvents());
-            } else {
-                parts.push(`<div class="glass-card p-6 flex flex-wrap gap-3 items-center justify-between">
-                    <div><h3 class="font-bold text-lg">רוצה לפרסם גם אירוע?</h3><p class="text-sm text-slate-500">אפשר להפוך את החשבון לחשבון משולב בלי לפתוח משתמש נוסף.</p></div>
-                    <button onclick="openAddEvent()" class="btn-dark px-4 py-2">פרסם אירוע</button>
-                </div>`);
-            }
-            if (currentIsAdmin) parts.push(await renderAdminPanel());
-            container.innerHTML = parts.filter(Boolean).join('');
-        }
-
-        async function renderNotifications() {
+        async function renderNotifications() {        async function renderNotifications() {
             const { data, error } = await _supabase.from('notifications').select('*').order('created_at', {ascending:false}).limit(8);
             if (error || !data?.length) return '';
             const unread = data.filter(n => !n.read_at).length;
@@ -709,159 +487,33 @@
 
         async function markNotificationsRead() {
             const { error } = await _supabase.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id', currentProfile.id).is('read_at', null);
-            if (error) alert(readableError(error)); else await loadDashboard();
+            if (error) showToast(readableError(error),'error'); else await loadDashboard();
         }
 
-        async function fetchMyRegistrations() {
-            const { data, error } = await _supabase.from('registrations')
-                .select('id,event_id,status,created_at,events(id,couple_names,event_date,public_location,start_time,close_time,status)')
-                .eq('user_id', currentProfile.id)
-                .neq('status','cancelled')
-                .order('created_at', {ascending:false});
-            if (error) return [];
-            return data || [];
-        }
+        async function fetchMyRegistrations(){const {data,error}=await _supabase.from('registrations').select('id,event_id,status,created_at,events(id,couple_names,event_date,public_location,start_time,close_time,status,sector_pref,is_separated)').eq('user_id',currentProfile.id).neq('status','cancelled');if(error)return[];return(data||[]).sort((a,b)=>String(a.events?.event_date||'').localeCompare(String(b.events?.event_date||''))||String(a.events?.start_time||'').localeCompare(String(b.events?.start_time||'')));}
 
-        async function renderMyRegistrations() {
-            const regs = await fetchMyRegistrations();
-            if (!regs.length) return `<div class="glass-card p-6"><h3 class="text-xl font-bold mb-2">ההתנדבויות שלי</h3><p class="text-slate-500">עדיין לא נרשמת לאירוע.</p></div>`;
-            const approvedIds = regs.filter(r => r.status==='approved').map(r => r.event_id);
-            const privateMap = new Map();
-            if (approvedIds.length) {
-                const { data } = await _supabase.from('event_private_details').select('event_id,hall_address').in('event_id', approvedIds);
-                (data || []).forEach(x => privateMap.set(x.event_id, x.hall_address));
-            }
-            return `<div class="glass-card p-6">
-                <h3 class="text-xl font-bold mb-4">ההתנדבויות שלי</h3>
-                <div class="space-y-4">${regs.map(r => {
-                    const e = r.events || {};
-                    const exact = privateMap.get(r.event_id);
-                    return `<div class="border p-4 rounded-xl bg-slate-50">
-                        <div class="flex flex-wrap gap-3 justify-between items-start">
-                            <div>
-                                <div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">${esc(e.couple_names)}</h4>${registrationPill(r.status)}</div>
-                                <p class="text-sm text-slate-600 mt-1">📅 ${formatDate(e.event_date)} · ⏰ ${esc(e.start_time?.slice(0,5))} · 📍 ${esc(e.public_location)}</p>
-                                ${r.status==='approved' && exact ? `<p class="text-sm font-semibold text-brand-700 mt-1">כתובת מדויקת: ${esc(exact)}</p>` : ''}
-                                ${e.status==='cancelled' ? '<p class="text-sm text-red-600 font-bold mt-1">האירוע בוטל</p>' : ''}
-                            </div>
-                            ${e.status!=='cancelled' ? `<button onclick="cancelMyRegistration('${esc(r.event_id)}')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm">בטל הרשמה</button>` : ''}
-                        </div>
-                    </div>`;
-                }).join('')}</div>
-            </div>`;
-        }
+        async function renderMyRegistrations(){const regs=await fetchMyRegistrations();if(!regs.length)return'<div class="glass-card p-6"><h3 class="text-xl font-bold mb-2">ההתנדבויות שלי</h3><p class="text-slate-500">עדיין לא נרשמת לאירוע. בהמשך העמוד מחכים לך אירועים מתאימים.</p></div>';const approvedIds=regs.filter(r=>r.status==='approved').map(r=>r.event_id);const privateMap=new Map();if(approvedIds.length){const {data}=await _supabase.from('event_private_details').select('event_id,hall_address').in('event_id',approvedIds);(data||[]).forEach(x=>privateMap.set(x.event_id,x.hall_address));}const today=new Date().toISOString().slice(0,10);const upcoming=regs.filter(r=>(r.events?.event_date||'')>=today&&r.events?.status!=='completed');const history=regs.filter(r=>!upcoming.includes(r));const cards=(list,historyMode=false)=>list.map(r=>{const e=r.events||{};const exact=privateMap.get(r.event_id);calendarEventCache.set(r.event_id,{...e,exact_address:exact||''});const nav=r.status==='approved'&&exact?mapButtons(exact):'';const calendar=r.status==='approved'?'<button onclick="downloadCalendar(\''+esc(r.event_id)+'\')" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-regular fa-calendar-plus ml-1"></i> הוסף ליומן</button>':'';return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-wrap gap-3 justify-between items-start"><div><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(e.couple_names)+'</h4>'+registrationPill(r.status)+'</div><p class="text-sm text-slate-600 mt-1">📅 '+esc(relativeDateLabel(e.event_date))+' · '+formatDate(e.event_date)+' · ⏰ '+esc(timeRange(e.start_time,e.close_time))+' · 📍 '+esc(e.public_location)+'</p>'+(r.status==='approved'&&exact?'<p class="text-sm font-semibold text-brand-700 mt-1">כתובת מדויקת: '+esc(exact)+'</p>':'')+(e.status==='cancelled'?'<p class="text-sm text-red-600 font-bold mt-1">האירוע בוטל</p>':'')+nav+'</div><div class="flex flex-wrap gap-2">'+calendar+(!historyMode&&e.status!=='cancelled'?'<button onclick="cancelMyRegistration(\''+esc(r.event_id)+'\')" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-bold text-xs">בטל הרשמה</button>':'')+'</div></div></div>';}).join('');return '<div class="glass-card p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">ההתנדבויות שלי</h3><span class="text-xs text-slate-500">'+upcoming.length+' קרובות</span></div><div class="space-y-4">'+(upcoming.length?cards(upcoming):'<p class="text-slate-500">אין כרגע התנדבויות קרובות.</p>')+'</div>'+(history.length?'<details class="mt-5 border-t pt-4"><summary class="cursor-pointer font-bold text-sm text-slate-600">היסטוריה ('+history.length+')</summary><div class="space-y-3 mt-3">'+cards(history,true)+'</div></details>':'')+'</div>';}
 
-        async function renderMatchingEvents() {
-            const [{ data: events, error }, regs] = await Promise.all([
-                _supabase.rpc('get_matching_events'),
-                fetchMyRegistrations()
-            ]);
-            if (error) return `<div class="glass-card p-6"><h3 class="text-xl font-bold mb-2">אירועים מתאימים</h3><p class="text-red-600">${esc(readableError(error))}</p></div>`;
-            const regMap = new Map(regs.map(r => [r.event_id, r.status]));
-            return `<div class="glass-card p-6">
-                <div class="flex flex-wrap gap-3 justify-between items-center mb-4">
-                    <div><h3 class="text-xl font-bold">אירועים שמתאימים לך</h3><p class="text-sm text-slate-500">לפי מגזר, הפרדה, רדיוס ומכסה.</p></div>
-                    <button onclick="loadDashboard()" class="btn-soft px-3 py-2 text-sm"><i class="fa-solid fa-rotate"></i> רענן</button>
-                </div>
-                <div class="space-y-4">
-                    ${events?.length ? events.map(ev => {
-                        const existing = regMap.get(ev.id);
-                        const count = currentProfile.gender==='male' ? Number(ev.men_registered) : Number(ev.women_registered);
-                        const quota = currentProfile.gender==='male' ? ev.quota_men : ev.quota_women;
-                        const fullForMe = count >= quota;
-                        const distance = ev.distance_km == null ? 'מרחק לא זמין' : `${ev.distance_km} ק״מ`;
-                        let btn = `<button onclick="rsvpEvent('${esc(ev.id)}')" class="btn-brand px-4 py-2 text-sm">${fullForMe ? 'הצטרף לרשימת המתנה' : 'הירשם לשמח'}</button>`;
-                        if (existing==='approved') btn = '<button disabled class="btn-brand px-4 py-2 text-sm">כבר רשום</button>';
-                        if (existing==='waitlist') btn = '<button disabled class="bg-amber-100 text-amber-700 px-4 py-2 rounded-lg font-bold text-sm">ברשימת המתנה</button>';
-                        return `<div class="border p-4 rounded-xl flex flex-col md:flex-row gap-4 md:justify-between md:items-center bg-slate-50">
-                            <div>
-                                <h4 class="font-bold text-lg">${esc(ev.couple_names)}</h4>
-                                <p class="text-sm text-slate-600">📅 ${formatDate(ev.event_date)} · ⏰ ${esc(ev.start_time?.slice(0,5))} · 📍 ${esc(ev.public_location)}</p>
-                                <p class="text-xs text-slate-500 mt-1">${esc(sectorLabel(ev.sector_pref))} · ${ev.is_separated ? 'בהפרדה' : 'ללא דרישת הפרדה'} · ${distance}</p>
-                                <p class="text-xs text-slate-500 mt-1">גברים ${ev.men_registered}/${ev.quota_men} · נשים ${ev.women_registered}/${ev.quota_women}</p>
-                            </div><div class="flex gap-2 items-center">${btn}<button onclick="reportEvent('${esc(ev.id)}')" class="btn-soft px-3 py-2 text-sm" title="דווח על אירוע"><i class="fa-regular fa-flag"></i></button></div>
-                        </div>`;
-                    }).join('') : '<p class="text-slate-500">אין כרגע אירועים שעומדים בהעדפות שלך.</p>'}
-                </div>
-            </div>`;
-        }
+        function hasClientTimeConflict(ev,regs){return regs.some(r=>{const e=r.events||{};return r.status==='approved'&&r.event_id!==ev.id&&e.event_date===ev.event_date&&e.start_time<ev.close_time&&e.close_time>ev.start_time;});}
+        function matchingCards(events){const regMap=new Map(matchingRegsCache.map(r=>[r.event_id,r.status]));return events.map(ev=>{const existing=regMap.get(ev.id);const count=currentProfile.gender==='male'?Number(ev.men_registered):Number(ev.women_registered);const quota=currentProfile.gender==='male'?Number(ev.quota_men):Number(ev.quota_women);const available=Math.max(quota-count,0);const fullForMe=available<=0;const conflict=!fullForMe&&hasClientTimeConflict(ev,matchingRegsCache);const distance=ev.distance_km==null?'מרחק לא זמין':ev.distance_km+' ק״מ ממך';const reason=[sectorLabel(ev.sector_pref),ev.is_separated?'הפרדה מלאה':'ללא דרישת הפרדה',distance].filter(Boolean).join(' · ');let btn='<button onclick="rsvpEvent(\''+esc(ev.id)+'\')" class="btn-brand px-4 py-2 text-sm">'+(fullForMe?'הצטרף לרשימת המתנה':'הירשם לשמח')+'</button>';if(conflict)btn='<button disabled class="btn-soft px-4 py-2 text-sm">חופף להתנדבות שלך</button>';if(existing==='approved')btn='<button disabled class="btn-brand px-4 py-2 text-sm">נרשמת ✓</button>';if(existing==='waitlist')btn='<button disabled class="bg-amber-100 text-amber-700 px-4 py-2 rounded-lg font-bold text-sm">ברשימת המתנה</button>';return '<div class="border p-4 rounded-xl flex flex-col md:flex-row gap-4 md:justify-between md:items-center bg-slate-50"><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(ev.couple_names)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(relativeDateLabel(ev.event_date))+'</span></div><p class="text-sm text-slate-600 mt-1">📅 '+dayName(ev.event_date)+' · '+formatDate(ev.event_date)+' · ⏰ '+esc(timeRange(ev.start_time,ev.close_time))+' · 📍 '+esc(ev.public_location)+'</p><p class="text-xs text-brand-700 font-semibold mt-2"><i class="fa-solid fa-wand-magic-sparkles ml-1"></i>'+esc(reason)+'</p><p class="text-xs text-slate-500 mt-1">גברים '+ev.men_registered+'/'+ev.quota_men+' · נשים '+ev.women_registered+'/'+ev.quota_women+' · '+(fullForMe?'אין כרגע מקום במכסה שלך — ניתן להמתין':'נותרו '+available+' מקומות במכסה שלך')+'</p></div><div class="flex gap-2 items-center shrink-0">'+btn+'<button onclick="reportEvent(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm" title="דווח על אירוע"><i class="fa-regular fa-flag"></i></button></div></div>';}).join('');}
+        function applyMatchingFilters(){const sort=$('match-sort')?.value||'date';const availableOnly=!!$('match-available')?.checked;let events=[...matchingEventsCache];if(availableOnly&&currentProfile?.gender){events=events.filter(ev=>{const count=currentProfile.gender==='male'?Number(ev.men_registered):Number(ev.women_registered);const quota=currentProfile.gender==='male'?Number(ev.quota_men):Number(ev.quota_women);return count<quota;});}if(sort==='distance')events.sort((a,b)=>(a.distance_km??99999)-(b.distance_km??99999));else if(sort==='availability')events.sort((a,b)=>{const ac=currentProfile.gender==='male'?Number(a.quota_men)-Number(a.men_registered):Number(a.quota_women)-Number(a.women_registered);const bc=currentProfile.gender==='male'?Number(b.quota_men)-Number(b.men_registered):Number(b.quota_women)-Number(b.women_registered);return bc-ac;});else events.sort((a,b)=>String(a.event_date).localeCompare(String(b.event_date))||String(a.start_time).localeCompare(String(b.start_time)));if($('matching-list'))$('matching-list').innerHTML=events.length?matchingCards(events):'<p class="text-slate-500">אין אירועים לפי הסינון שבחרת.</p>';}
+        async function renderMatchingEvents(){const [{data:events,error},regs]=await Promise.all([_supabase.rpc('get_matching_events'),fetchMyRegistrations()]);if(error)return'<div class="glass-card p-6"><h3 class="text-xl font-bold mb-2">אירועים מתאימים</h3><p class="text-slate-600">לא הצלחנו לטעון אירועים כרגע. נסה לרענן.</p><button onclick="loadDashboard()" class="btn-soft px-3 py-2 text-sm mt-3">נסה שוב</button></div>';matchingEventsCache=events||[];matchingRegsCache=regs||[];return '<div id="matching-section" class="glass-card p-6"><div class="flex flex-wrap gap-3 justify-between items-start mb-4"><div><h3 class="text-xl font-bold">אירועים שמתאימים לך</h3><p class="text-sm text-slate-500">ההתאמה מבוססת על מגזר, הפרדה, מרחק והמכסה שלך.</p></div><div class="flex flex-wrap gap-2"><select id="match-sort" onchange="applyMatchingFilters()" class="input-clean bg-white !w-auto text-sm"><option value="date">לפי תאריך</option><option value="distance">הכי קרוב</option><option value="availability">הכי הרבה מקום</option></select><label class="btn-soft px-3 py-2 text-sm flex items-center gap-2"><input id="match-available" type="checkbox" onchange="applyMatchingFilters()"> רק עם מקום פנוי</label><button onclick="loadDashboard()" class="btn-soft px-3 py-2 text-sm"><i class="fa-solid fa-rotate"></i></button></div></div><div id="matching-list" class="space-y-4">'+(matchingEventsCache.length?matchingCards(matchingEventsCache):'<p class="text-slate-500">אין כרגע אירועים שעומדים בהעדפות שלך.</p>')+'</div></div>';}
 
-        async function reportEvent(eventId) {
-            const reason = prompt('מה הסיבה לדיווח על האירוע?');
-            if (!reason) return;
-            const { error } = await _supabase.rpc('report_event', { p_event_id:eventId, p_reason:reason });
-            if (error) alert(readableError(error)); else alert('הדיווח נשלח למנהל המערכת.');
-        }
+        async function reportEvent(eventId){const reason=await askText('דיווח על אירוע','כתוב בקצרה מה הבעיה באירוע.','סיבת הדיווח');if(!reason)return;const {error}=await _supabase.rpc('report_event',{p_event_id:eventId,p_reason:reason});if(error)showToast(readableError(error),'error');else showToast('הדיווח נשלח למנהל המערכת.','success');}
+        async function rsvpEvent(eventId){const ev=matchingEventsCache.find(e=>e.id===eventId);const text=ev?'להירשם לאירוע של '+ev.couple_names+'\n'+formatDate(ev.event_date)+' · '+timeRange(ev.start_time,ev.close_time)+' · '+ev.public_location:'להירשם לאירוע הזה?';const ok=await askConfirm('אישור הרשמה',text,'כן, הירשם');if(!ok)return;const {data,error}=await _supabase.rpc('register_for_event',{p_event_id:eventId});if(error)return showToast(readableError(error),'error');showToast(data==='waitlist'?'האירוע מלא במכסה שלך ונוספת לרשימת ההמתנה.':'נרשמת בהצלחה!','success');await loadDashboard();}
+        async function cancelMyRegistration(eventId){const ok=await askConfirm('ביטול הרשמה','לבטל את ההרשמה לאירוע?','בטל הרשמה');if(!ok)return;const {error}=await _supabase.rpc('cancel_registration',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else{showToast('ההרשמה בוטלה.');await loadDashboard();}}
 
-        async function rsvpEvent(eventId) {
-            const { data, error } = await _supabase.rpc('register_for_event', { p_event_id:eventId });
-            if (error) return alert(readableError(error));
-            alert(data === 'waitlist' ? 'האירוע מלא עבורך כרגע ונוספת לרשימת ההמתנה.' : 'נרשמת בהצלחה!');
-            await loadDashboard();
-        }
+        async function renderHostEvents(){const [{data:events,error},{data:summaries}]=await Promise.all([_supabase.from('events').select('*').eq('host_id',currentProfile.id).order('event_date',{ascending:false}),_supabase.rpc('get_host_event_summary')]);if(error)return'<div class="glass-card p-6"><h3 class="text-xl font-bold">האירועים שלי</h3><p class="text-slate-500 mt-2">לא הצלחנו לטעון את האירועים כרגע.</p></div>';hostEventsCache=new Map((events||[]).map(e=>[e.id,e]));const summaryMap=new Map((summaries||[]).map(s=>[s.event_id,s]));const ids=(events||[]).map(e=>e.id);privateEventCache=new Map();if(ids.length){const {data:privates}=await _supabase.from('event_private_details').select('*').in('event_id',ids);(privates||[]).forEach(x=>privateEventCache.set(x.event_id,x));}return '<div class="glass-card p-6"><div class="flex flex-wrap gap-3 justify-between items-center mb-4"><div><h3 class="text-xl font-bold">האירועים שלי</h3><p class="text-sm text-slate-500">ניהול מכסות, נרשמים ופרטי האירוע.</p></div><button onclick="openAddEvent()" class="btn-dark px-4 py-2 text-sm"><i class="fa-solid fa-plus ml-1"></i> אירוע חדש</button></div><div class="space-y-4">'+((events||[]).length?(events||[]).map(e=>{const s=summaryMap.get(e.id)||{approved_men:0,approved_women:0,waitlist_men:0,waitlist_women:0};const exact=privateEventCache.get(e.id)?.hall_address||'';calendarEventCache.set(e.id,{...e,exact_address:exact});const totalApproved=Number(s.approved_men)+Number(s.approved_women);const totalQuota=Number(e.quota_men)+Number(e.quota_women);const pct=totalQuota?Math.min(100,Math.round(totalApproved/totalQuota*100)):0;return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex flex-wrap gap-2 items-center"><h4 class="font-bold text-lg">'+esc(e.couple_names)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(eventStatusLabel(e))+'</span></div><p class="text-sm text-slate-600">📅 '+relativeDateLabel(e.event_date)+' · '+formatDate(e.event_date)+' · ⏰ '+esc(timeRange(e.start_time,e.close_time))+' · 📍 '+esc(e.public_location)+'</p><p class="text-sm text-slate-500 mt-1">כתובת: '+esc(exact)+'</p><div class="mt-3 max-w-md"><div class="flex justify-between text-xs text-slate-600 mb-1"><span>מאושרים '+totalApproved+'/'+totalQuota+'</span><span>'+pct+'%</span></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="text-xs text-slate-500 mt-1">גברים '+s.approved_men+'/'+e.quota_men+' (המתנה '+s.waitlist_men+') · נשים '+s.approved_women+'/'+e.quota_women+' (המתנה '+s.waitlist_women+')</p></div>'+mapButtons(exact)+'</div><div class="flex flex-wrap gap-2"><button onclick="showRegistrants(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">נרשמים</button><button onclick="downloadCalendar(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-regular fa-calendar-plus"></i></button>'+(e.status!=='cancelled'&&e.status!=='completed'&&e.event_date>=new Date().toISOString().slice(0,10)?'<button onclick="openEditEvent(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">עריכה</button><button onclick="cancelHostEvent(\''+esc(e.id)+'\')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm">ביטול אירוע</button>':'')+'</div></div><div id="registrants-'+esc(e.id)+'" class="mt-3 hidden"></div></div>';}).join(''):'<p class="text-slate-500">עדיין לא פרסמת אירוע.</p>')+'</div></div>';}
 
-        async function cancelMyRegistration(eventId) {
-            if (!confirm('לבטל את ההרשמה לאירוע?')) return;
-            const { error } = await _supabase.rpc('cancel_registration', { p_event_id:eventId });
-            if (error) alert(readableError(error)); else await loadDashboard();
-        }
-
-        async function renderHostEvents() {
-            const { data: events, error } = await _supabase.from('events').select('*').eq('host_id', currentProfile.id).order('event_date', {ascending:false});
-            if (error) return '';
-            hostEventsCache = new Map((events || []).map(e => [e.id,e]));
-            const ids = (events || []).map(e => e.id);
-            privateEventCache = new Map();
-            const regsByEvent = new Map();
-            if (ids.length) {
-                const [{data: privates},{data: regs}] = await Promise.all([
-                    _supabase.from('event_private_details').select('*').in('event_id', ids),
-                    _supabase.from('registrations').select('event_id,status').in('event_id', ids).neq('status','cancelled')
-                ]);
-                (privates || []).forEach(x => privateEventCache.set(x.event_id,x));
-                (regs || []).forEach(r => {
-                    const cur = regsByEvent.get(r.event_id) || {approved:0,waitlist:0};
-                    cur[r.status] = (cur[r.status] || 0) + 1;
-                    regsByEvent.set(r.event_id,cur);
-                });
-            }
-            return `<div class="glass-card p-6">
-                <div class="flex flex-wrap gap-3 justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">האירועים שלי</h3>
-                    <button onclick="openAddEvent()" class="btn-dark px-4 py-2 text-sm"><i class="fa-solid fa-plus ml-1"></i> אירוע חדש</button>
-                </div>
-                <div class="space-y-4">
-                ${events?.length ? events.map(e => {
-                    const c = regsByEvent.get(e.id) || {approved:0,waitlist:0};
-                    const exact = privateEventCache.get(e.id)?.hall_address || '';
-                    return `<div class="border p-4 rounded-xl bg-slate-50">
-                        <div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start">
-                            <div>
-                                <div class="flex flex-wrap gap-2 items-center"><h4 class="font-bold text-lg">${esc(e.couple_names)}</h4><span class="status-pill bg-white border text-slate-600">${esc(eventStatusLabel(e))}</span></div>
-                                <p class="text-sm text-slate-600">📅 ${formatDate(e.event_date)} · ⏰ ${esc(e.start_time?.slice(0,5))} · 📍 ${esc(e.public_location)}</p>
-                                <p class="text-sm text-slate-500">כתובת: ${esc(exact)} · מאושרים: ${c.approved || 0} · המתנה: ${c.waitlist || 0}</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                <button onclick="showRegistrants('${esc(e.id)}')" class="btn-soft px-3 py-2 text-sm">נרשמים</button>
-                                ${e.status!=='cancelled' && e.event_date >= new Date().toISOString().slice(0,10) ? `<button onclick="openEditEvent('${esc(e.id)}')" class="btn-soft px-3 py-2 text-sm">עריכה</button><button onclick="cancelHostEvent('${esc(e.id)}')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm">ביטול אירוע</button>` : ''}
-                            </div>
-                        </div>
-                        <div id="registrants-${esc(e.id)}" class="mt-3 hidden"></div>
-                    </div>`;
-                }).join('') : '<p class="text-slate-500">עדיין לא פרסמת אירוע.</p>'}
-                </div>
-            </div>`;
-        }
-
-        async function showRegistrants(eventId) {
+        async function showRegistrants(eventId) {        async function showRegistrants(eventId) {
             const box = $('registrants-' + eventId);
             if (!box) return;
             if (!box.classList.contains('hidden')) { box.classList.add('hidden'); return; }
             box.classList.remove('hidden');
             box.innerHTML = '<div class="text-sm text-slate-500">טוען נרשמים...</div>';
             const { data, error } = await _supabase.rpc('get_event_registrants', { p_event_id:eventId });
-            if (error) return box.innerHTML = `<div class="text-sm text-red-600">${esc(readableError(error))}</div>`;
-            box.innerHTML = data?.length ? `<div class="border-t pt-3 space-y-2">${data.map(r => `<div class="flex justify-between items-center text-sm"><span class="font-semibold">${esc(r.full_name)} · ${r.gender==='male'?'גבר':r.gender==='female'?'אישה':'לא הוגדר'}</span>${registrationPill(r.status)}</div>`).join('')}</div>` : '<div class="text-sm text-slate-500 border-t pt-3">אין נרשמים עדיין.</div>';
+            if (error) return box.innerHTML='<div class="text-sm text-slate-600">לא הצלחנו לטעון את רשימת הנרשמים.</div>';
+            box.innerHTML=data?.length?'<div class="border-t pt-3 space-y-2">'+data.map(r=>'<div class="flex justify-between items-center text-sm gap-3"><span class="font-semibold">'+esc(r.full_name)+' · '+(r.gender==='male'?'גבר':r.gender==='female'?'אישה':'לא הוגדר')+'<span class="block text-xs text-slate-400 font-normal">נרשם '+new Date(r.registered_at).toLocaleDateString('he-IL')+'</span></span>'+registrationPill(r.status)+'</div>').join('')+'</div>':'<div class="text-sm text-slate-500 border-t pt-3">אין נרשמים עדיין.</div>';
         }
 
         async function openEditEvent(eventId) {
@@ -905,20 +557,18 @@
                     p_lng:coords.lng
                 });
                 if (error) throw error;
-                alert('האירוע עודכן בהצלחה.');
+                showToast('האירוע עודכן בהצלחה.','success');
                 await loadDashboard();
-            } catch(e) { alert(readableError(e)); }
+            } catch(e) { showToast(readableError(e),'error'); }
             finally { setBusy('edit-event-submit', false); }
         }
 
-        async function cancelHostEvent(eventId) {
-            if (!confirm('לבטל את האירוע? כל הנרשמים יקבלו התראה בתוך האתר.')) return;
-            const { error } = await _supabase.rpc('cancel_event', { p_event_id:eventId });
-            if (error) alert(readableError(error)); else await loadDashboard();
-        }
+        async function cancelHostEvent(eventId){const ok=await askConfirm('ביטול אירוע','לבטל את האירוע? כל הנרשמים יקבלו התראה בתוך האתר.','בטל אירוע');if(!ok)return;const {error}=await _supabase.rpc('cancel_event',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else{showToast('האירוע בוטל.');await loadDashboard();}}
 
-        function openProfileSettings() {
+        function openProfileSettings() {        function openProfileSettings() {
             if (!currentProfile) return;
+            $('profile-phone-display').textContent=displayPhone(currentProfile.phone);
+            $('profile-role-display').textContent='סוג חשבון: '+roleLabel(currentProfile.role);
             $('profile-name').value = currentProfile.full_name || '';
             $('profile-gender').value = currentProfile.gender || '';
             $('profile-sector').value = currentProfile.sector || 'all';
@@ -950,53 +600,24 @@
                 });
                 if (error) throw error;
                 await loadProfile();
-                alert('הפרופיל עודכן.');
+                showToast('הפרופיל עודכן.','success');
                 await loadDashboard();
-            } catch(e) { alert(readableError(e)); }
+            } catch(e) { showToast(readableError(e),'error'); }
             finally { setBusy('profile-submit', false); }
         }
 
-        async function renderAdminPanel() {
-            const [{data:users},{data:events},{data:reports}] = await Promise.all([
-                _supabase.from('profiles').select('id,full_name,phone,role,is_blocked,created_at').order('created_at',{ascending:false}).limit(25),
-                _supabase.from('events').select('id,couple_names,event_date,public_location,status').order('event_date',{ascending:false}).limit(25),
-                _supabase.from('event_reports').select('*').order('created_at',{ascending:false}).limit(25)
-            ]);
-            const eventMap = new Map((events||[]).map(e => [e.id,e]));
-            return `<div class="glass-card p-6 border-2 border-slate-300">
-                <h3 class="text-xl font-bold mb-1">פאנל ניהול</h3>
-                <p class="text-sm text-slate-500 mb-5">מוצג רק למשתמשים שהוגדרו בטבלת admins.</p>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div><h4 class="font-bold mb-3">משתמשים</h4><div class="space-y-2 max-h-96 overflow-auto">
-                        ${(users||[]).map(u => `<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">${esc(u.full_name)}</div><div class="text-slate-500" dir="ltr">${esc(u.phone||'')}</div><div class="flex justify-between items-center mt-2"><span>${esc(u.role)}</span><button onclick="adminToggleBlock('${esc(u.id)}', ${!u.is_blocked})" class="${u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-600'} px-2 py-1 rounded font-bold">${u.is_blocked?'פתח חסימה':'חסום'}</button></div></div>`).join('') || '<p class="text-slate-500">אין משתמשים.</p>'}
-                    </div></div>
-                    <div><h4 class="font-bold mb-3">אירועים</h4><div class="space-y-2 max-h-96 overflow-auto">
-                        ${(events||[]).map(e => `<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">${esc(e.couple_names)}</div><div class="text-slate-500">${formatDate(e.event_date)} · ${esc(e.public_location)} · ${esc(eventStatusLabel(e))}</div>${e.status!=='cancelled'?`<button onclick="adminCancelEvent('${esc(e.id)}')" class="mt-2 bg-red-50 text-red-600 px-2 py-1 rounded font-bold">בטל אירוע</button>`:''}</div>`).join('') || '<p class="text-slate-500">אין אירועים.</p>'}
-                    </div></div>
-                    <div><h4 class="font-bold mb-3">דיווחים</h4><div class="space-y-2 max-h-96 overflow-auto">
-                        ${(reports||[]).map(r => { const ev=eventMap.get(r.event_id); return `<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">${esc(ev?.couple_names || 'אירוע')}</div><div class="text-slate-600">${esc(r.reason || 'ללא פירוט')}</div><div class="text-xs text-slate-500 mt-1">סטטוס: ${esc(r.status)}</div>${r.status==='open'?`<div class="flex gap-2 mt-2"><button onclick="adminResolveReport('${esc(r.id)}','resolved')" class="bg-green-50 text-green-700 px-2 py-1 rounded font-bold">טופל</button><button onclick="adminResolveReport('${esc(r.id)}','dismissed')" class="btn-soft px-2 py-1">דחה</button></div>`:''}</div>`; }).join('') || '<p class="text-slate-500">אין דיווחים.</p>'}
-                    </div></div>
-                </div>
-            </div>`;
-        }
+        function renderAdminUserCards(users){return users.map(u=>'<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(u.full_name)+'</div><div class="text-slate-500" dir="ltr">'+esc(displayPhone(u.phone||''))+'</div><div class="flex justify-between items-center mt-2"><span>'+esc(roleLabel(u.role))+'</span><button onclick="adminToggleBlock(\''+esc(u.id)+'\','+(!u.is_blocked)+')" class="'+(u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-600')+' px-2 py-1 rounded font-bold">'+(u.is_blocked?'פתח חסימה':'חסום')+'</button></div></div>').join('')||'<p class="text-slate-500">אין משתמשים.</p>';}
+        function filterAdminUsers(q){q=String(q||'').trim().toLowerCase();const filtered=!q?adminUsersCache:adminUsersCache.filter(u=>String(u.full_name||'').toLowerCase().includes(q)||String(u.phone||'').includes(q));if($('admin-users-list'))$('admin-users-list').innerHTML=renderAdminUserCards(filtered);}
+        async function renderAdminPanel(){const [{data:users},{data:events},{data:reports},{data:stats}]=await Promise.all([_supabase.from('profiles').select('id,full_name,phone,role,is_blocked,created_at').order('created_at',{ascending:false}).limit(100),_supabase.from('events').select('id,couple_names,event_date,public_location,status').order('event_date',{ascending:false}).limit(50),_supabase.from('event_reports').select('*').order('created_at',{ascending:false}).limit(50),_supabase.rpc('admin_dashboard_stats')]);adminUsersCache=users||[];const s=stats?.[0]||{};const eventMap=new Map((events||[]).map(e=>[e.id,e]));return '<div class="glass-card p-6 border-2 border-slate-300"><h3 class="text-xl font-bold mb-1">פאנל ניהול</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-2 my-4"><div class="mini-stat"><div class="text-xs text-slate-500">משתמשים</div><b>'+Number(s.users_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">חסומים</div><b>'+Number(s.blocked_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">אירועים פעילים</div><b>'+Number(s.active_events||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">הרשמות</div><b>'+Number(s.registrations_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">דיווחים פתוחים</div><b>'+Number(s.open_reports||0)+'</b></div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div><h4 class="font-bold mb-3">משתמשים</h4><input oninput="filterAdminUsers(this.value)" class="input-clean mb-3" placeholder="חיפוש לפי שם או טלפון"><div id="admin-users-list" class="space-y-2 max-h-96 overflow-auto">'+renderAdminUserCards(adminUsersCache)+'</div></div><div><h4 class="font-bold mb-3">אירועים</h4><div class="space-y-2 max-h-96 overflow-auto">'+((events||[]).map(e=>'<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(e.couple_names)+'</div><div class="text-slate-500">'+formatDate(e.event_date)+' · '+esc(e.public_location)+' · '+esc(eventStatusLabel(e))+'</div>'+(e.status!=='cancelled'&&e.status!=='completed'?'<button onclick="adminCancelEvent(\''+esc(e.id)+'\')" class="mt-2 bg-red-50 text-red-600 px-2 py-1 rounded font-bold">בטל אירוע</button>':'')+'</div>').join('')||'<p class="text-slate-500">אין אירועים.</p>')+'</div></div><div><h4 class="font-bold mb-3">דיווחים</h4><div class="space-y-2 max-h-96 overflow-auto">'+((reports||[]).map(r=>{const ev=eventMap.get(r.event_id);return '<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(ev?.couple_names||'אירוע')+'</div><div class="text-slate-600">'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-500 mt-1">סטטוס: '+esc(r.status)+'</div>'+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 px-2 py-1 rounded font-bold">טופל</button><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-2 py-1">דחה</button></div>':'')+'</div>';}).join('')||'<p class="text-slate-500">אין דיווחים.</p>')+'</div></div></div></div>';}
 
-        async function adminToggleBlock(profileId, blocked) {
-            if (!confirm(blocked ? 'לחסום את המשתמש?' : 'לפתוח את החסימה?')) return;
-            const { error } = await _supabase.rpc('admin_set_blocked', {p_profile_id:profileId, p_blocked:blocked});
-            if (error) alert(readableError(error)); else await loadDashboard();
-        }
+        async function adminToggleBlock(profileId,blocked){const ok=await askConfirm(blocked?'חסימת משתמש':'פתיחת חסימה',blocked?'לחסום את המשתמש?':'לפתוח את החסימה?');if(!ok)return;const {error}=await _supabase.rpc('admin_set_blocked',{p_profile_id:profileId,p_blocked:blocked});if(error)showToast(readableError(error),'error');else await loadDashboard();}
+        async function adminResolveReport(reportId,status){const {error}=await _supabase.rpc('admin_resolve_report',{p_report_id:reportId,p_status:status});if(error)showToast(readableError(error),'error');else await loadDashboard();}
+        async function adminCancelEvent(eventId){const ok=await askConfirm('ביטול אירוע כמנהל','לבטל את האירוע?','בטל אירוע');if(!ok)return;const {error}=await _supabase.rpc('admin_cancel_event',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else await loadDashboard();}
 
-        async function adminResolveReport(reportId, status) {
-            const { error } = await _supabase.rpc('admin_resolve_report', {p_report_id:reportId, p_status:status});
-            if (error) alert(readableError(error)); else await loadDashboard();
-        }
-
-        async function adminCancelEvent(eventId) {
-            if (!confirm('לבטל את האירוע כמנהל?')) return;
-            const { error } = await _supabase.rpc('admin_cancel_event', {p_event_id:eventId});
-            if (error) alert(readableError(error)); else await loadDashboard();
-        }
-
+        initEventDraftAutosave();
+        updateHeaderActions();
+        $('modal-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();resolveAppModal(true);}});
+        initSession();
         initSession();
     </script>
 </body>

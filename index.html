@@ -327,7 +327,7 @@
         }
 
         function phoneLoginIdentity(phone) {
-            return normalizePhone(phone).replace(/\D/g, '') + '@login.invalid';
+            return 'u' + normalizePhone(phone).replace(/\D/g, '') + '@example.com';
         }
 
         function formatDate(dateStr) {

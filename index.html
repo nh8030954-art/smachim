@@ -86,12 +86,11 @@
         <div id="view-login" class="screen max-w-md mx-auto px-6 py-20">
             <div class="glass-card p-8 text-center">
                 <h2 class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h2>
-                <p class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות אימייל וסיסמה.</p>
+                <p class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות מספר טלפון וסיסמה.</p>
                 <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6">
-                    <input type="email" id="login-email" class="input-clean" placeholder="כתובת אימייל" dir="ltr" required autocomplete="email">
+                    <input type="tel" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="tel">
                     <input type="password" id="login-password" class="input-clean" placeholder="סיסמה" required autocomplete="current-password">
                     <button id="login-submit" type="submit" class="w-full btn-dark py-3">כניסה למערכת</button>
-                    <button type="button" onclick="handleForgotPassword()" class="text-sm font-semibold text-brand-600 hover:underline">שכחתי סיסמה</button>
                 </form>
             </div>
         </div>
@@ -105,10 +104,7 @@
                         <input type="text" id="vol-name" class="input-clean" placeholder="שם מלא" required>
                         <input type="text" id="vol-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="email" id="vol-email" class="input-clean" placeholder="כתובת אימייל" dir="ltr" required>
-                        <input type="password" id="vol-pass" class="input-clean" placeholder="סיסמה (לפחות 8 תווים)" minlength="8" required>
-                    </div>
+                    <input type="password" id="vol-pass" class="input-clean" placeholder="סיסמה (לפחות 8 תווים)" minlength="8" required>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <select id="vol-gender" class="input-clean bg-white" required>
                             <option value="" disabled selected>מין לצורך התאמת המכסה</option>
@@ -153,10 +149,7 @@
                             <input type="text" id="host-name" class="input-clean bg-white" placeholder="שם מלא">
                             <input type="text" id="host-phone" class="input-clean bg-white" placeholder="מספר טלפון" dir="ltr">
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="email" id="host-email" class="input-clean bg-white" placeholder="כתובת אימייל" dir="ltr">
-                            <input type="password" id="host-pass" class="input-clean bg-white" placeholder="סיסמה (לפחות 8 תווים)" minlength="8">
-                        </div>
+                        <input type="password" id="host-pass" class="input-clean bg-white" placeholder="סיסמה (לפחות 8 תווים)" minlength="8">
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <input type="text" id="ev-name" class="input-clean" placeholder="שמות החתן והכלה" required>
@@ -273,17 +266,6 @@
             </div>
         </div>
 
-        <!-- איפוס סיסמה -->
-        <div id="view-reset-password" class="screen max-w-md mx-auto px-6 py-20">
-            <div class="glass-card p-8 text-center">
-                <h2 class="text-2xl font-bold mb-2 text-brand-dark">בחירת סיסמה חדשה</h2>
-                <form onsubmit="event.preventDefault(); updateRecoveredPassword();" class="space-y-4 mt-6">
-                    <input type="password" id="new-password" class="input-clean" minlength="8" placeholder="סיסמה חדשה (לפחות 8 תווים)" required>
-                    <button type="submit" class="w-full btn-dark py-3">עדכן סיסמה</button>
-                </form>
-            </div>
-        </div>
-
         <!-- אזור אישי -->
         <div id="view-dashboard" class="screen max-w-6xl mx-auto px-6 py-10">
             <div class="flex flex-wrap gap-3 justify-between items-center mb-8">
@@ -309,7 +291,6 @@
         let currentIsAdmin = false;
         let hostEventsCache = new Map();
         let privateEventCache = new Map();
-        let passwordRecoveryMode = false;
 
         const $ = (id) => document.getElementById(id);
         const esc = (value) => String(value ?? '')
@@ -337,11 +318,12 @@
         }
 
         function normalizePhone(phone) {
-            return String(phone || '').replace(/[\s\-()]/g, '');
-        }
-
-        function authRedirectUrl() {
-            return window.location.origin + window.location.pathname;
+            const raw = String(phone || '').replace(/[\s\-()]/g, '');
+            if (!raw) return '';
+            if (raw.startsWith('+')) return raw;
+            if (raw.startsWith('972')) return '+' + raw;
+            if (raw.startsWith('0')) return '+972' + raw.slice(1);
+            return raw;
         }
 
         function formatDate(dateStr) {
@@ -384,8 +366,8 @@
                 ['gender_change_with_active_registrations','לא ניתן לשנות מין כל עוד יש לך הרשמות פעילות לאירועים עתידיים.'],
                 ['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],
                 ['event_date_in_past','לא ניתן לבחור תאריך שכבר עבר.'],
-                ['Invalid login credentials','האימייל או הסיסמה שגויים.'],
-                ['User already registered','כבר קיים חשבון עם האימייל הזה. התחבר כדי להמשיך.']
+                ['Invalid login credentials','מספר הטלפון או הסיסמה שגויים.'],
+                ['User already registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.']
             ];
             for (const [key, text] of pairs) if (m.includes(key)) return text;
             return m;
@@ -438,19 +420,13 @@
                 return;
             }
 
-            if (passwordRecoveryMode || window.location.hash.includes('type=recovery')) {
-                navigate('reset-password');
-                return;
-            }
-
             await finalizePendingEvent();
         }
 
         async function initAuth() {
             const { data: { session } } = await _supabase.auth.getSession();
             await handleSession(session);
-            _supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'PASSWORD_RECOVERY') passwordRecoveryMode = true;
+            _supabase.auth.onAuthStateChange((_event, session) => {
                 setTimeout(() => handleSession(session), 0);
             });
         }
@@ -467,7 +443,6 @@
             try {
                 const name = $('vol-name').value.trim();
                 const phone = normalizePhone($('vol-phone').value);
-                const email = $('vol-email').value.trim().toLowerCase();
                 const password = $('vol-pass').value;
                 const gender = $('vol-gender').value;
                 const sector = $('vol-sector').value;
@@ -478,9 +453,8 @@
 
                 const coords = await geocodeAddress(address);
                 const { data, error } = await _supabase.auth.signUp({
-                    email, password,
+                    phone, password,
                     options: {
-                        emailRedirectTo: authRedirectUrl(),
                         data: {
                             full_name:name, phone, gender, sector, address,
                             radius, max_days_per_week:maxDays,
@@ -497,9 +471,9 @@
                     alert('ההרשמה הושלמה בהצלחה!');
                     await loadDashboard();
                 } else {
-                    alert('החשבון נוצר. שלחנו אליך הודעת אימות באימייל. לאחר האישור תוכל להתחבר.');
+                    alert('החשבון נוצר. אם נדרש אימות טלפון בהגדרות המערכת, יש להשלים אותו לפני הכניסה.');
                     navigate('login');
-                    $('login-email').value = email;
+                    $('login-phone').value = phone;
                 }
             } catch (e) {
                 alert(readableError(e));
@@ -511,9 +485,9 @@
         async function handleLogin() {
             setBusy('login-submit', true, 'מתחבר...');
             try {
-                const email = $('login-email').value.trim().toLowerCase();
+                const phone = normalizePhone($('login-phone').value);
                 const password = $('login-password').value;
-                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                const { data, error } = await _supabase.auth.signInWithPassword({ phone, password });
                 if (error) throw error;
                 await handleSession(data.session);
                 await loadDashboard();
@@ -524,24 +498,6 @@
             }
         }
 
-        async function handleForgotPassword() {
-            let email = $('login-email').value.trim();
-            if (!email) email = prompt('הכנס כתובת אימייל לקבלת קישור לאיפוס סיסמה:') || '';
-            if (!email) return;
-            const { error } = await _supabase.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl() });
-            if (error) alert(readableError(error));
-            else alert('נשלח אליך קישור לאיפוס הסיסמה.');
-        }
-
-        async function updateRecoveredPassword() {
-            const password = $('new-password').value;
-            const { error } = await _supabase.auth.updateUser({ password });
-            if (error) return alert(readableError(error));
-            passwordRecoveryMode = false;
-            history.replaceState({}, document.title, authRedirectUrl());
-            alert('הסיסמה עודכנה בהצלחה.');
-            await loadDashboard();
-        }
 
         async function handleLogout() {
             await _supabase.auth.signOut();
@@ -556,7 +512,7 @@
             currentUser = session?.user || null;
             if (currentUser && !currentProfile) await loadProfile();
             const block = $('host-account-block');
-            const fields = ['host-name','host-phone','host-email','host-pass'];
+            const fields = ['host-name','host-phone','host-pass'];
             if (currentUser) {
                 block.classList.add('hidden');
                 fields.forEach(id => $(id).required = false);
@@ -630,22 +586,20 @@
 
                 const name = $('host-name').value.trim();
                 const phone = normalizePhone($('host-phone').value);
-                const email = $('host-email').value.trim().toLowerCase();
                 const password = $('host-pass').value;
                 if (password.length < 8) throw new Error('הסיסמה חייבת לכלול לפחות 8 תווים.');
 
                 localStorage.setItem('pendingHostEvent', JSON.stringify(ev));
                 const { data, error } = await _supabase.auth.signUp({
-                    email, password,
+                    phone, password,
                     options: {
-                        emailRedirectTo: authRedirectUrl(),
                         data: { full_name:name, phone, role:'host', sector:ev.sector_pref, address:ev.public_location }
                     }
                 });
                 if (error) {
-                    if (String(error.message).includes('already registered')) {
-                        $('login-email').value = email;
-                        alert('כבר קיים חשבון עם האימייל הזה. פרטי האירוע נשמרו בדפדפן — התחבר והאירוע יפורסם לאחר הכניסה.');
+                    if (String(error.message).toLowerCase().includes('already registered')) {
+                        $('login-phone').value = phone;
+                        alert('כבר קיים חשבון עם מספר הטלפון הזה. פרטי האירוע נשמרו בדפדפן — התחבר והאירוע יפורסם לאחר הכניסה.');
                         navigate('login');
                         return;
                     }
@@ -658,9 +612,9 @@
                     alert('החשבון והאירוע נוצרו בהצלחה!');
                     await loadDashboard();
                 } else {
-                    alert('החשבון נוצר. אשר את האימייל ולאחר ההתחברות האירוע יפורסם אוטומטית.');
+                    alert('החשבון נוצר. אם נדרש אימות טלפון בהגדרות המערכת, יש להשלים אותו ולאחר מכן להתחבר; האירוע יפורסם אוטומטית.');
                     navigate('login');
-                    $('login-email').value = email;
+                    $('login-phone').value = phone;
                 }
             } catch (e) {
                 alert(readableError(e));
@@ -987,7 +941,7 @@
 
         async function renderAdminPanel() {
             const [{data:users},{data:events},{data:reports}] = await Promise.all([
-                _supabase.from('profiles').select('id,full_name,email,phone,role,is_blocked,created_at').order('created_at',{ascending:false}).limit(25),
+                _supabase.from('profiles').select('id,full_name,phone,role,is_blocked,created_at').order('created_at',{ascending:false}).limit(25),
                 _supabase.from('events').select('id,couple_names,event_date,public_location,status').order('event_date',{ascending:false}).limit(25),
                 _supabase.from('event_reports').select('*').order('created_at',{ascending:false}).limit(25)
             ]);
@@ -997,7 +951,7 @@
                 <p class="text-sm text-slate-500 mb-5">מוצג רק למשתמשים שהוגדרו בטבלת admins.</p>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div><h4 class="font-bold mb-3">משתמשים</h4><div class="space-y-2 max-h-96 overflow-auto">
-                        ${(users||[]).map(u => `<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">${esc(u.full_name)}</div><div class="text-slate-500" dir="ltr">${esc(u.email||'')} · ${esc(u.phone||'')}</div><div class="flex justify-between items-center mt-2"><span>${esc(u.role)}</span><button onclick="adminToggleBlock('${esc(u.id)}', ${!u.is_blocked})" class="${u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-600'} px-2 py-1 rounded font-bold">${u.is_blocked?'פתח חסימה':'חסום'}</button></div></div>`).join('') || '<p class="text-slate-500">אין משתמשים.</p>'}
+                        ${(users||[]).map(u => `<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">${esc(u.full_name)}</div><div class="text-slate-500" dir="ltr">${esc(u.phone||'')}</div><div class="flex justify-between items-center mt-2"><span>${esc(u.role)}</span><button onclick="adminToggleBlock('${esc(u.id)}', ${!u.is_blocked})" class="${u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-600'} px-2 py-1 rounded font-bold">${u.is_blocked?'פתח חסימה':'חסום'}</button></div></div>`).join('') || '<p class="text-slate-500">אין משתמשים.</p>'}
                     </div></div>
                     <div><h4 class="font-bold mb-3">אירועים</h4><div class="space-y-2 max-h-96 overflow-auto">
                         ${(events||[]).map(e => `<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">${esc(e.couple_names)}</div><div class="text-slate-500">${formatDate(e.event_date)} · ${esc(e.public_location)} · ${esc(eventStatusLabel(e))}</div>${e.status!=='cancelled'?`<button onclick="adminCancelEvent('${esc(e.id)}')" class="mt-2 bg-red-50 text-red-600 px-2 py-1 rounded font-bold">בטל אירוע</button>`:''}</div>`).join('') || '<p class="text-slate-500">אין אירועים.</p>'}

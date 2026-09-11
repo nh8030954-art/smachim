@@ -473,7 +473,7 @@
             return eventId;
         }
 
-        async function handleCreateEvent()        async function handleCreateEvent(){setBusy('event-submit',true,'מפרסם אירוע...');try{const ev=collectEventForm('');validateEventPayload(ev);if(sessionToken){const profile=currentProfile||await loadProfile();if(profile){await createEventRpc(ev);await loadProfile();$('event-form').reset();clearEventDraft();showToast('האירוע פורסם בהצלחה!','success');await loadDashboard();return;}applySessionToken('');}
+        async function handleCreateEvent(){setBusy('event-submit',true,'מפרסם אירוע...');try{const ev=collectEventForm('');validateEventPayload(ev);if(sessionToken){const profile=currentProfile||await loadProfile();if(profile){await createEventRpc(ev);await loadProfile();$('event-form').reset();clearEventDraft();showToast('האירוע פורסם בהצלחה!','success');await loadDashboard();return;}applySessionToken('');}
             const name=$('host-name').value.trim();const phone=normalizePhone($('host-phone').value);const password=$('host-pass').value;const confirmPassword=$('host-pass-confirm').value;if(!isValidPhone(phone))throw new Error('invalid_phone');if(password.length<8)throw new Error('invalid_password');if(password!==confirmPassword)throw new Error('הסיסמאות אינן זהות.');
             localStorage.setItem('pendingHostEvent',JSON.stringify(ev));const {data:token,error}=await _supabase.rpc('username_register',{p_phone:phone,p_password:password,p_full_name:name,p_role:'host',p_gender:null,p_sector:ev.sector_pref,p_address:ev.public_location,p_radius:30,p_max_days_per_week:3,p_strict_separation:false,p_lat:null,p_lng:null});
             if(error){if(String(error.message).includes('already_registered')){$('login-phone').value=displayPhone(phone);showToast('כבר קיים חשבון עם המספר הזה. האירוע נשמר כטיוטה — התחבר ואז הוא יפורסם.','warning');navigate('login');return;}throw error;}
@@ -548,7 +548,7 @@
             if(mode==='volunteer') setTimeout(()=>renderMatchingMap(matchingEventsCache),60);
         }
 
-        async function renderNotifications()        async function renderNotifications() {
+        async function renderNotifications() {
             const { data, error } = await _supabase.from('notifications').select('*').order('created_at', {ascending:false}).limit(8);
             if (error || !data?.length) return '';
             const unread = data.filter(n => !n.read_at).length;
@@ -648,7 +648,7 @@
             return '<div id="matching-section" class="glass-card p-6"><div class="flex flex-wrap gap-3 justify-between items-start mb-4"><div><h3 class="text-xl font-bold">אירועים שמתאימים לך</h3><p class="text-sm text-slate-500">כאן מופיעים רק אירועים שמתאימים למין שלך, למכסה הפנויה, למגזר שבחרת, להפרדה ולרדיוס שלך.</p></div><div class="flex gap-2"><select id="match-sort" onchange="applyMatchingFilters()" class="input-clean bg-white !w-auto text-sm"><option value="date">לפי תאריך</option><option value="distance">הכי קרוב</option><option value="availability">הכי הרבה מקום</option></select><button onclick="loadDashboard()" class="btn-soft px-3 py-2 text-sm"><i class="fa-solid fa-rotate"></i></button></div></div><div class="bg-brand-50 border border-brand-100 rounded-xl p-3 text-xs text-brand-900 mb-4"><i class="fa-solid fa-shield-halved ml-1"></i> המפה מציגה אזור משוער של האירוע. כתובת מדויקת נפתחת רק אחרי הרשמה מאושרת.</div><div id="matching-map" class="match-map mb-5"></div><div class="flex gap-4 text-xs text-slate-500 mb-4"><span><i class="fa-solid fa-house text-brand-700 ml-1"></i> הבית שלך</span><span><i class="fa-solid fa-location-dot text-slate-700 ml-1"></i> אירועים מתאימים</span><span>העיגול מציג את הרדיוס שהגדרת</span></div><div id="matching-list" class="space-y-4">'+(matchingEventsCache.length?matchingCards(matchingEventsCache):'<p class="text-slate-500">אין כרגע אירועים שעומדים בכל הקריטריונים שלך. אפשר להרחיב רדיוס או לשנות העדפות.</p>')+'</div></div>';
         }
 
-        async function reportEvent(eventId)        async function reportEvent(eventId){const reason=await askText('דיווח על אירוע','כתוב בקצרה מה הבעיה באירוע.','סיבת הדיווח');if(!reason)return;const {error}=await _supabase.rpc('report_event',{p_event_id:eventId,p_reason:reason});if(error)showToast(readableError(error),'error');else showToast('הדיווח נשלח למנהל המערכת.','success');}
+        async function reportEvent(eventId){const reason=await askText('דיווח על אירוע','כתוב בקצרה מה הבעיה באירוע.','סיבת הדיווח');if(!reason)return;const {error}=await _supabase.rpc('report_event',{p_event_id:eventId,p_reason:reason});if(error)showToast(readableError(error),'error');else showToast('הדיווח נשלח למנהל המערכת.','success');}
         async function rsvpEvent(eventId){const ev=matchingEventsCache.find(e=>e.id===eventId);const text=ev?'להירשם ל־'+ev.event_name+'\nבעל השמחה: '+ev.host_name+'\n'+formatDate(ev.event_date)+' · '+timeRange(ev.start_time,ev.close_time)+' · '+ev.public_location:'להירשם לאירוע הזה?';const ok=await askConfirm('אישור הרשמה',text,'כן, הירשם');if(!ok)return;const {data,error}=await _supabase.rpc('register_for_event',{p_event_id:eventId});if(error)return showToast(readableError(error),'error');showToast('נרשמת בהצלחה! הכתובת המדויקת זמינה עכשיו באזור ההתנדבויות שלך.','success');await loadDashboard();}
         async function cancelMyRegistration(eventId){const ok=await askConfirm('ביטול הרשמה','לבטל את ההרשמה לאירוע?','בטל הרשמה');if(!ok)return;const {error}=await _supabase.rpc('cancel_registration',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else{showToast('ההרשמה בוטלה.');await loadDashboard();}}
 
@@ -722,7 +722,7 @@
             finally { setBusy('edit-event-submit',false); }
         }
 
-        async function cancelHostEvent(eventId)        async function cancelHostEvent(eventId){const ok=await askConfirm('ביטול אירוע','לבטל את האירוע? כל הנרשמים יקבלו התראה בתוך האתר.','בטל אירוע');if(!ok)return;const {error}=await _supabase.rpc('cancel_event',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else{showToast('האירוע בוטל.');await loadDashboard();}}
+        async function cancelHostEvent(eventId){const ok=await askConfirm('ביטול אירוע','לבטל את האירוע? כל הנרשמים יקבלו התראה בתוך האתר.','בטל אירוע');if(!ok)return;const {error}=await _supabase.rpc('cancel_event',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else{showToast('האירוע בוטל.');await loadDashboard();}}
 
         function openProfileSettings() {
             if (!currentProfile) return;

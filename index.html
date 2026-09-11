@@ -407,7 +407,7 @@
         function clearEventDraft(){localStorage.removeItem(EVENT_DRAFT_KEY);if($('draft-indicator'))$('draft-indicator').textContent='';}
         function initEventDraftAutosave(){const form=$('event-form');if(!form)return;form.querySelectorAll('input,select').forEach(el=>{if(['host-pass','host-pass-confirm'].includes(el.id))return;el.addEventListener('input',saveEventDraft);el.addEventListener('change',saveEventDraft);});}
 
-        function collectEventForm(prefix='') {        function collectEventForm(prefix='') {
+        function collectEventForm(prefix='') {
             const id = (name) => $(prefix + name);
             return {
                 couple_names: id('ev-name').value.trim(),
@@ -467,7 +467,7 @@
         function renderProfileCompleteness(){if(!['volunteer','both'].includes(currentProfile.role))return'';const missing=[];if(!currentProfile.gender)missing.push('מין');if(!currentProfile.address)missing.push('כתובת');if(currentProfile.lat==null||currentProfile.lng==null)missing.push('מיקום לחישוב מרחק');if(!missing.length)return'';return '<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-wrap gap-3 justify-between items-center"><div><div class="font-bold text-amber-900">כדאי להשלים את הפרופיל</div><div class="text-sm text-amber-800">חסר: '+esc(missing.join(', '))+'. בלי זה חלק מההתאמות יהיו פחות מדויקות.</div></div><button onclick="openProfileSettings()" class="bg-white border border-amber-200 px-3 py-2 rounded-lg font-bold text-sm text-amber-900">להשלמה</button></div>';}
         async function enableVolunteerMode(){if(!currentProfile.gender||!currentProfile.address){showToast('לפני הפעלת מצב משמח יש להשלים מין וכתובת בהגדרות.','warning');return openProfileSettings();}const {error}=await _supabase.rpc('enable_volunteer_mode');if(error)return showToast(readableError(error),'error');await loadProfile();showToast('מצב משמח הופעל!','success');await loadDashboard();}
 
-        async function renderNotifications() {        async function renderNotifications() {
+        async function renderNotifications() {
             const { data, error } = await _supabase.from('notifications').select('*').order('created_at', {ascending:false}).limit(8);
             if (error || !data?.length) return '';
             const unread = data.filter(n => !n.read_at).length;
@@ -505,7 +505,7 @@
 
         async function renderHostEvents(){const [{data:events,error},{data:summaries}]=await Promise.all([_supabase.from('events').select('*').eq('host_id',currentProfile.id).order('event_date',{ascending:false}),_supabase.rpc('get_host_event_summary')]);if(error)return'<div class="glass-card p-6"><h3 class="text-xl font-bold">האירועים שלי</h3><p class="text-slate-500 mt-2">לא הצלחנו לטעון את האירועים כרגע.</p></div>';hostEventsCache=new Map((events||[]).map(e=>[e.id,e]));const summaryMap=new Map((summaries||[]).map(s=>[s.event_id,s]));const ids=(events||[]).map(e=>e.id);privateEventCache=new Map();if(ids.length){const {data:privates}=await _supabase.from('event_private_details').select('*').in('event_id',ids);(privates||[]).forEach(x=>privateEventCache.set(x.event_id,x));}return '<div class="glass-card p-6"><div class="flex flex-wrap gap-3 justify-between items-center mb-4"><div><h3 class="text-xl font-bold">האירועים שלי</h3><p class="text-sm text-slate-500">ניהול מכסות, נרשמים ופרטי האירוע.</p></div><button onclick="openAddEvent()" class="btn-dark px-4 py-2 text-sm"><i class="fa-solid fa-plus ml-1"></i> אירוע חדש</button></div><div class="space-y-4">'+((events||[]).length?(events||[]).map(e=>{const s=summaryMap.get(e.id)||{approved_men:0,approved_women:0,waitlist_men:0,waitlist_women:0};const exact=privateEventCache.get(e.id)?.hall_address||'';calendarEventCache.set(e.id,{...e,exact_address:exact});const totalApproved=Number(s.approved_men)+Number(s.approved_women);const totalQuota=Number(e.quota_men)+Number(e.quota_women);const pct=totalQuota?Math.min(100,Math.round(totalApproved/totalQuota*100)):0;return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex flex-wrap gap-2 items-center"><h4 class="font-bold text-lg">'+esc(e.couple_names)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(eventStatusLabel(e))+'</span></div><p class="text-sm text-slate-600">📅 '+relativeDateLabel(e.event_date)+' · '+formatDate(e.event_date)+' · ⏰ '+esc(timeRange(e.start_time,e.close_time))+' · 📍 '+esc(e.public_location)+'</p><p class="text-sm text-slate-500 mt-1">כתובת: '+esc(exact)+'</p><div class="mt-3 max-w-md"><div class="flex justify-between text-xs text-slate-600 mb-1"><span>מאושרים '+totalApproved+'/'+totalQuota+'</span><span>'+pct+'%</span></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="text-xs text-slate-500 mt-1">גברים '+s.approved_men+'/'+e.quota_men+' (המתנה '+s.waitlist_men+') · נשים '+s.approved_women+'/'+e.quota_women+' (המתנה '+s.waitlist_women+')</p></div>'+mapButtons(exact)+'</div><div class="flex flex-wrap gap-2"><button onclick="showRegistrants(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">נרשמים</button><button onclick="downloadCalendar(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-regular fa-calendar-plus"></i></button>'+(e.status!=='cancelled'&&e.status!=='completed'&&e.event_date>=new Date().toISOString().slice(0,10)?'<button onclick="openEditEvent(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">עריכה</button><button onclick="cancelHostEvent(\''+esc(e.id)+'\')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm">ביטול אירוע</button>':'')+'</div></div><div id="registrants-'+esc(e.id)+'" class="mt-3 hidden"></div></div>';}).join(''):'<p class="text-slate-500">עדיין לא פרסמת אירוע.</p>')+'</div></div>';}
 
-        async function showRegistrants(eventId) {        async function showRegistrants(eventId) {
+        async function showRegistrants(eventId) {
             const box = $('registrants-' + eventId);
             if (!box) return;
             if (!box.classList.contains('hidden')) { box.classList.add('hidden'); return; }
@@ -565,7 +565,7 @@
 
         async function cancelHostEvent(eventId){const ok=await askConfirm('ביטול אירוע','לבטל את האירוע? כל הנרשמים יקבלו התראה בתוך האתר.','בטל אירוע');if(!ok)return;const {error}=await _supabase.rpc('cancel_event',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else{showToast('האירוע בוטל.');await loadDashboard();}}
 
-        function openProfileSettings() {        function openProfileSettings() {
+        function openProfileSettings() {
             if (!currentProfile) return;
             $('profile-phone-display').textContent=displayPhone(currentProfile.phone);
             $('profile-role-display').textContent='סוג חשבון: '+roleLabel(currentProfile.role);

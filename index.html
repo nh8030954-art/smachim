@@ -682,7 +682,7 @@
             finally { setBusy('vol-submit',false); }
         }
 
-        async function handleLogin()        async function handleLogin(){setBusy('login-submit',true,'מתחבר...');try{const phone=normalizePhone($('login-phone').value);const password=$('login-password').value;if(!isValidPhone(phone))throw new Error('invalid_phone');const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});if(error)throw error;applySessionToken(token);const profile=await loadProfile();if(!profile)throw new Error('session_expired');updateHeaderActions();showToast('ברוך הבא!','success');await loadDashboard();}catch(e){showToast(readableError(e),'error');}finally{setBusy('login-submit',false);}}
+        async function handleLogin(){setBusy('login-submit',true,'מתחבר...');try{const phone=normalizePhone($('login-phone').value);const password=$('login-password').value;if(!isValidPhone(phone))throw new Error('invalid_phone');const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});if(error)throw error;applySessionToken(token);const profile=await loadProfile();if(!profile)throw new Error('session_expired');updateHeaderActions();showToast('ברוך הבא!','success');await loadDashboard();}catch(e){showToast(readableError(e),'error');}finally{setBusy('login-submit',false);}}
 
 
         async function handleLogout(){const token=sessionToken;try{if(token)await _supabase.rpc('username_logout',{p_token:token});}catch(_){}applySessionToken('');currentUser=null;currentProfile=null;currentIsAdmin=false;updateHeaderActions();navigate('home');showToast('התנתקת מהמערכת.');}
@@ -819,7 +819,7 @@
             }catch(e){box.textContent=readableError(e);}
         }
 
-        async function handleCreateEvent()        async function handleCreateEvent(){
+        async function handleCreateEvent(){
             setBusy('event-submit',true,'מפרסם אירוע...');
             try{
                 const ev=collectEventForm(''); validateEventPayload(ev);
@@ -861,7 +861,7 @@
             finally{setBusy('event-submit',false);}
         }
 
-        async function finalizePendingEvent()        async function finalizePendingEvent(){if(!sessionToken||!currentProfile)return;const raw=localStorage.getItem('pendingHostEvent');if(!raw)return;try{const ev=JSON.parse(raw);await createEventRpc(ev);localStorage.removeItem('pendingHostEvent');clearEventDraft();await loadProfile();showToast('האירוע ששמרת פורסם בהצלחה.','success');}catch(e){if(String(e?.message||'').includes('duplicate_event')){localStorage.removeItem('pendingHostEvent');clearEventDraft();}else console.error('Pending event publication failed:',e);}}
+        async function finalizePendingEvent(){if(!sessionToken||!currentProfile)return;const raw=localStorage.getItem('pendingHostEvent');if(!raw)return;try{const ev=JSON.parse(raw);await createEventRpc(ev);localStorage.removeItem('pendingHostEvent');clearEventDraft();await loadProfile();showToast('האירוע ששמרת פורסם בהצלחה.','success');}catch(e){if(String(e?.message||'').includes('duplicate_event')){localStorage.removeItem('pendingHostEvent');clearEventDraft();}else console.error('Pending event publication failed:',e);}}
 
         function resolveDashboardArea() {
             if (!currentProfile) return 'volunteer';
@@ -1307,7 +1307,7 @@
             input.value='';await refreshEventChat(true);
         }
 
-        function renderAdminUserCards(users)        function renderAdminUserCards(users){return users.map(u=>'<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(u.full_name)+'</div><div class="text-slate-500" dir="ltr">'+esc(displayPhone(u.phone||''))+'</div><div class="flex justify-between items-center mt-2"><span>'+esc(roleLabel(u.role))+'</span><button onclick="adminToggleBlock(\''+esc(u.id)+'\','+(!u.is_blocked)+')" class="'+(u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-600')+' px-2 py-1 rounded font-bold">'+(u.is_blocked?'פתח חסימה':'חסום')+'</button></div></div>').join('')||'<p class="text-slate-500">אין משתמשים.</p>';}
+        function renderAdminUserCards(users){return users.map(u=>'<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(u.full_name)+'</div><div class="text-slate-500" dir="ltr">'+esc(displayPhone(u.phone||''))+'</div><div class="flex justify-between items-center mt-2"><span>'+esc(roleLabel(u.role))+'</span><button onclick="adminToggleBlock(\''+esc(u.id)+'\','+(!u.is_blocked)+')" class="'+(u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-600')+' px-2 py-1 rounded font-bold">'+(u.is_blocked?'פתח חסימה':'חסום')+'</button></div></div>').join('')||'<p class="text-slate-500">אין משתמשים.</p>';}
         function filterAdminUsers(q){q=String(q||'').trim().toLowerCase();const filtered=!q?adminUsersCache:adminUsersCache.filter(u=>String(u.full_name||'').toLowerCase().includes(q)||String(u.phone||'').includes(q));if($('admin-users-list'))$('admin-users-list').innerHTML=renderAdminUserCards(filtered);}
         async function renderAdminPanel(){const [{data:users},{data:events},{data:reports},{data:stats}]=await Promise.all([_supabase.from('profiles').select('id,full_name,phone,role,is_blocked,created_at').order('created_at',{ascending:false}).limit(100),_supabase.from('events').select('id,event_name,couple_names,event_date,public_location,status').order('event_date',{ascending:false}).limit(50),_supabase.from('event_reports').select('*').order('created_at',{ascending:false}).limit(50),_supabase.rpc('admin_dashboard_stats')]);adminUsersCache=users||[];const s=stats?.[0]||{};const eventMap=new Map((events||[]).map(e=>[e.id,e]));return '<div class="glass-card p-6 border-2 border-slate-300"><h3 class="text-xl font-bold mb-1">פאנל ניהול</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-2 my-4"><div class="mini-stat"><div class="text-xs text-slate-500">משתמשים</div><b>'+Number(s.users_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">חסומים</div><b>'+Number(s.blocked_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">אירועים פעילים</div><b>'+Number(s.active_events||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">הרשמות</div><b>'+Number(s.registrations_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">דיווחים פתוחים</div><b>'+Number(s.open_reports||0)+'</b></div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div><h4 class="font-bold mb-3">משתמשים</h4><input oninput="filterAdminUsers(this.value)" class="input-clean mb-3" placeholder="חיפוש לפי שם או טלפון"><div id="admin-users-list" class="space-y-2 max-h-96 overflow-auto">'+renderAdminUserCards(adminUsersCache)+'</div></div><div><h4 class="font-bold mb-3">אירועים</h4><div class="space-y-2 max-h-96 overflow-auto">'+((events||[]).map(e=>'<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(e.event_name||e.couple_names)+'</div><div class="text-slate-500">'+formatDate(e.event_date)+' · '+esc(e.public_location)+' · '+esc(eventStatusLabel(e))+'</div>'+(e.status!=='cancelled'&&e.status!=='completed'?'<button onclick="adminCancelEvent(\''+esc(e.id)+'\')" class="mt-2 bg-red-50 text-red-600 px-2 py-1 rounded font-bold">בטל אירוע</button>':'')+'</div>').join('')||'<p class="text-slate-500">אין אירועים.</p>')+'</div></div><div><h4 class="font-bold mb-3">דיווחים</h4><div class="space-y-2 max-h-96 overflow-auto">'+((reports||[]).map(r=>{const ev=eventMap.get(r.event_id);return '<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(ev?.event_name||ev?.couple_names||'אירוע')+'</div><div class="text-slate-600">'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-500 mt-1">סטטוס: '+esc(r.status)+'</div>'+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 px-2 py-1 rounded font-bold">טופל</button><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-2 py-1">דחה</button></div>':'')+'</div>';}).join('')||'<p class="text-slate-500">אין דיווחים.</p>')+'</div></div></div></div>';}
 
@@ -1315,9 +1315,19 @@
         async function adminResolveReport(reportId,status){const {error}=await _supabase.rpc('admin_resolve_report',{p_report_id:reportId,p_status:status});if(error)showToast(readableError(error),'error');else await loadDashboard();}
         async function adminCancelEvent(eventId){const ok=await askConfirm('ביטול אירוע כמנהל','לבטל את האירוע?','בטל אירוע');if(!ok)return;const {error}=await _supabase.rpc('admin_cancel_event',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else await loadDashboard();}
 
+        populateBirthYears();
+        bindAllChoice('vol-sector-pref');
+        bindAllChoice('ev-accepted-sector');
+        bindAllChoice('edit-ev-accepted-sector');
+        bindAllChoice('profile-sector-pref');
+        wireAddressAutocomplete('vol-city','vol-street','vol-city-list','vol-street-list');
+        wireAddressAutocomplete('ev-city','ev-street','ev-city-list','ev-street-list');
+        wireAddressAutocomplete('edit-ev-city','edit-ev-street','edit-ev-city-list','edit-ev-street-list');
+        wireAddressAutocomplete('profile-city','profile-street','profile-city-list','profile-street-list');
         initEventDraftAutosave();
         updateHeaderActions();
         $('modal-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();resolveAppModal(true);}});
+        $('chat-input')?.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();sendChatMessage();}});
         initSession();
     </script>
 </body>

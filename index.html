@@ -158,8 +158,8 @@
                     <div>
                         <span class="field-label">כתובת מגורים</span>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div><input id="vol-city" class="input-clean" list="vol-city-list" placeholder="עיר" autocomplete="address-level2" required><datalist id="vol-city-list"></datalist></div>
-                            <div><input id="vol-street" class="input-clean" list="vol-street-list" placeholder="רחוב" autocomplete="address-line1" required><datalist id="vol-street-list"></datalist></div>
+                            <div><select id="vol-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div>
+                            <div><select id="vol-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div>
                             <input id="vol-house-number" class="input-clean" placeholder="מספר בית" autocomplete="address-line2">
                         </div>
                         <div class="field-help">הצעות העיר והרחוב מגיעות ממאגר הרחובות של רשות האוכלוסין. אם אין הצעה מתאימה, אפשר להקליד ידנית.</div>
@@ -177,8 +177,6 @@
                             <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="2" checked> ג׳</label>
                             <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="3" checked> ד׳</label>
                             <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="4" checked> ה׳</label>
-                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="5" checked> ו׳</label>
-                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="6" checked> שבת</label>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -215,7 +213,7 @@
                         <label><span class="field-label">סוג האירוע</span><select id="ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="sheva_brachot">שבע ברכות</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option><option value="engagement">אירוסין</option><option value="other">אחר</option></select></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label><span class="field-label">תאריך האירוע</span><input type="date" id="ev-date" class="input-clean" required></label>
+                        <label><span class="field-label">תאריך האירוע</span><input type="date" id="ev-date" class="input-clean" required><div class="field-help">לא ניתן לפרסם אירוע ביום שישי או בשבת.</div></label>
                         <label><span class="field-label">שעת התחלה</span><input type="time" id="ev-start" class="input-clean" required></label>
                         <label><span class="field-label">שעת סיום</span><input type="time" id="ev-close" class="input-clean" required></label>
                     </div>
@@ -224,8 +222,8 @@
                         <span class="field-label">האולם</span>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                             <input id="ev-hall-name" class="input-clean" placeholder="שם האולם">
-                            <div><input id="ev-city" class="input-clean" list="ev-city-list" placeholder="עיר" required><datalist id="ev-city-list"></datalist></div>
-                            <div><input id="ev-street" class="input-clean" list="ev-street-list" placeholder="רחוב" required><datalist id="ev-street-list"></datalist></div>
+                            <div><select id="ev-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div>
+                            <div><select id="ev-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div>
                             <input id="ev-house-number" class="input-clean" placeholder="מספר">
                         </div>
                         <div class="field-help">הכתובת המדויקת תוצג למשמח כבר לפני ההרשמה, יחד עם מפה ומרחק.</div>
@@ -275,9 +273,9 @@
                         <label><span class="field-label">שם האירוע</span><input type="text" id="edit-ev-name" class="input-clean" required></label>
                         <label><span class="field-label">סוג האירוע</span><select id="edit-ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="sheva_brachot">שבע ברכות</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option><option value="engagement">אירוסין</option><option value="other">אחר</option></select></label>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">תאריך</span><input type="date" id="edit-ev-date" class="input-clean" required></label><label><span class="field-label">התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">תאריך</span><input type="date" id="edit-ev-date" class="input-clean" required><div class="field-help">לא ניתן לבחור שישי או שבת.</div></label><label><span class="field-label">התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
                     <label><span class="field-label">סגירת הרשמה</span><input type="datetime-local" id="edit-ev-registration-deadline" class="input-clean" required></label>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><input id="edit-ev-hall-name" class="input-clean" placeholder="שם האולם"><div><input id="edit-ev-city" class="input-clean" list="edit-ev-city-list" placeholder="עיר" required><datalist id="edit-ev-city-list"></datalist></div><div><input id="edit-ev-street" class="input-clean" list="edit-ev-street-list" placeholder="רחוב" required><datalist id="edit-ev-street-list"></datalist></div><input id="edit-ev-house-number" class="input-clean" placeholder="מספר"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><input id="edit-ev-hall-name" class="input-clean" placeholder="שם האולם"><div><select id="edit-ev-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div><div><select id="edit-ev-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div><input id="edit-ev-house-number" class="input-clean" placeholder="מספר"></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מגזר האירוע</span><select id="edit-ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label><label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold">הפרדה מלאה</span></label></div>
                     <div><span class="field-label">מגזרי משמחים מתאימים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="all"> כולם</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="secular"> חילוני</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת גברים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת נשים</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
@@ -297,9 +295,9 @@
                     <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">מין</span><select id="profile-gender" class="input-clean bg-white"><option value="male">גבר</option><option value="female">אישה</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
                     <div><span class="field-label">באילו מגזרים אני מוכן לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="all"> כל המגזרים</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="secular"> חילוני</label></div></div>
-                    <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div><input id="profile-city" class="input-clean" list="profile-city-list" placeholder="עיר" required><datalist id="profile-city-list"></datalist></div><div><input id="profile-street" class="input-clean" list="profile-street-list" placeholder="רחוב" required><datalist id="profile-street-list"></datalist></div><input id="profile-house-number" class="input-clean" placeholder="מספר בית"></div></div>
+                    <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div><select id="profile-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div><div><select id="profile-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div><input id="profile-house-number" class="input-clean" placeholder="מספר בית"></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">רדיוס מקסימלי</span><input type="number" id="profile-radius" min="1" max="300" class="input-clean"></label><label><span class="field-label">ימים בשבוע</span><select id="profile-days" class="input-clean bg-white"><option value="1">עד יום אחד</option><option value="2">עד יומיים</option><option value="3">עד 3 ימים</option><option value="4">עד 4 ימים</option><option value="5">עד 5 ימים</option><option value="7">ללא הגבלה</option></select></label><label><span class="field-label">אמצעי הגעה</span><select id="profile-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">לא משנה</option></select></label></div>
-                    <div><span class="field-label">ימים פנויים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="0"> א׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="1"> ב׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="2"> ג׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="3"> ד׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="4"> ה׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="5"> ו׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="6"> שבת</label></div></div>
+                    <div><span class="field-label">ימים פנויים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="0"> א׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="1"> ב׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="2"> ג׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="3"> ד׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="4"> ה׳</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">פנוי החל משעה</span><input type="time" id="profile-available-from" class="input-clean"></label><label><span class="field-label">פנוי עד שעה</span><input type="time" id="profile-available-until" class="input-clean"></label></div>
                     <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="profile-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">הצג לי רק אירועים בהפרדה מלאה</span></label>
                     <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button></div>
@@ -369,10 +367,13 @@
         let modalResolver = null;
         let dashboardArea = localStorage.getItem('smachimDashboardArea') || '';
         let routeMapInstances = new Map();
+        let matchingMapObserver = null;
+        let addressCitiesCache = null;
+        let addressStreetCache = new Map();
+        let addressListsLoading = null;
         let activeChatEventId = null;
         let activeChatEventName = '';
         let chatPollTimer = null;
-        const GOV_STREETS_RESOURCE = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
         const EVENT_DRAFT_KEY = 'smachimEventDraftV4';
 
         const $ = (id) => document.getElementById(id);
@@ -418,6 +419,8 @@
         function displayPhone(phone){const p=String(phone||'');return p.startsWith('+972')?'0'+p.slice(4):p;}
         function isValidPhone(phone){return /^\+972\d{8,9}$/.test(normalizePhone(phone));}
         function dayName(dateStr){if(!dateStr)return'';return new Intl.DateTimeFormat('he-IL',{weekday:'long'}).format(new Date(dateStr+'T12:00:00'));}
+        function isFridayOrSaturday(dateStr){if(!dateStr)return false;const d=new Date(dateStr+'T12:00:00').getDay();return d===5||d===6;}
+        function guardEventDateInput(input){if(!input||!input.value||!isFridayOrSaturday(input.value))return true;input.value='';showToast('לא ניתן לפרסם אירוע ביום שישי או בשבת.','warning');return false;}
         function relativeDateLabel(dateStr){if(!dateStr)return'';const today=new Date();today.setHours(12,0,0,0);const d=new Date(dateStr+'T12:00:00');const days=Math.round((d-today)/86400000);if(days===0)return'היום';if(days===1)return'מחר';if(days>1&&days<=7)return'בעוד '+days+' ימים';if(days<0)return'הסתיים';return dayName(dateStr);}
         function timeRange(start,close){return [start?.slice(0,5),close?.slice(0,5)].filter(Boolean).join('–');}
         function mapButtons(address){if(!address)return'';const q=encodeURIComponent(address);return '<div class="flex flex-wrap gap-2 mt-2"><a target="_blank" rel="noopener" href="https://waze.com/ul?q='+q+'&navigate=yes" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-brands fa-waze ml-1"></i> Waze</a><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+q+'" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-solid fa-map-location-dot ml-1"></i> Google Maps</a></div>';}
@@ -500,46 +503,54 @@
             let t; return (...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),wait);};
         }
 
-        async function govSql(sql) {
-            try {
-                const url='https://data.gov.il/api/3/action/datastore_search_sql?sql='+encodeURIComponent(sql);
-                const res=await fetch(url);
-                if(!res.ok) return [];
-                const json=await res.json();
-                return json?.result?.records||[];
-            } catch(_) { return []; }
+        async function addressLookup(body) {
+            const {data,error}=await _supabase.functions.invoke('israel-addresses',{body});
+            if(error)throw error;
+            if(!data?.items||!Array.isArray(data.items))throw new Error('address_list_unavailable');
+            return data.items;
         }
 
-        function safeSqlText(v) { return String(v||'').replaceAll("'","''").slice(0,80); }
-
-        async function suggestCities(term,listId) {
-            if(String(term||'').trim().length<2) return;
-            const q=safeSqlText(term);
-            const sql='SELECT DISTINCT "שם_ישוב" FROM "'+GOV_STREETS_RESOURCE+'" WHERE "שם_ישוב" ILIKE \'%'+q+'%\' ORDER BY "שם_ישוב" LIMIT 20';
-            const rows=await govSql(sql);
-            const list=$(listId); if(!list) return;
-            list.innerHTML='';
-            [...new Set(rows.map(r=>r['שם_ישוב']).filter(Boolean))].forEach(v=>{const o=document.createElement('option');o.value=v;list.appendChild(o);});
+        async function loadCityList(){
+            if(addressCitiesCache)return addressCitiesCache;
+            if(addressListsLoading)return addressListsLoading;
+            addressListsLoading=(async()=>{try{const x=await addressLookup({type:'cities'});addressCitiesCache=x;return x;}finally{addressListsLoading=null;}})();
+            return addressListsLoading;
         }
 
-        async function suggestStreets(city,term,listId) {
-            if(!String(city||'').trim() || String(term||'').trim().length<1) return;
-            const cty=safeSqlText(city),q=safeSqlText(term);
-            const sql='SELECT DISTINCT "שם_רחוב" FROM "'+GOV_STREETS_RESOURCE+'" WHERE "שם_ישוב"=\''+cty+'\' AND "שם_רחוב" ILIKE \'%'+q+'%\' ORDER BY "שם_רחוב" LIMIT 30';
-            const rows=await govSql(sql);
-            const list=$(listId); if(!list) return;
-            list.innerHTML='';
-            [...new Set(rows.map(r=>r['שם_רחוב']).filter(Boolean))].forEach(v=>{const o=document.createElement('option');o.value=v;list.appendChild(o);});
+        function fillSelect(sel,items,placeholder,selected=''){
+            if(!sel)return;
+            sel.innerHTML='';
+            const first=document.createElement('option');first.value='';first.textContent=placeholder;sel.appendChild(first);
+            items.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;if(v===selected)o.selected=true;sel.appendChild(o);});
         }
 
-        function wireAddressAutocomplete(cityId,streetId,cityListId,streetListId) {
-            const city=$(cityId),street=$(streetId); if(!city||!street) return;
-            city.addEventListener('input',debounce(()=>suggestCities(city.value,cityListId),250));
-            street.addEventListener('input',debounce(()=>suggestStreets(city.value,street.value,streetListId),250));
-            city.addEventListener('change',()=>{ if(street.value) suggestStreets(city.value,street.value,streetListId); });
+        async function ensureCities(selectId,selected=''){
+            const sel=$(selectId);if(!sel)return;
+            sel.disabled=true;fillSelect(sel,[],'טוען רשימת ערים...');
+            try{fillSelect(sel,await loadCityList(),'בחר עיר',selected);sel.disabled=false;}
+            catch(e){fillSelect(sel,[],'רשימת הערים לא נטענה — רענן את הדף');sel.disabled=true;console.error('city list',e);}
         }
 
-        function registrationLabel(v) {
+        async function loadStreets(city,selectId,selected=''){
+            const sel=$(selectId);if(!sel)return;
+            if(!city){fillSelect(sel,[],'בחר קודם עיר');sel.disabled=true;return;}
+            sel.disabled=true;fillSelect(sel,[],'טוען רחובות...');
+            try{
+                let x=addressStreetCache.get(city);
+                if(!x){x=await addressLookup({type:'streets',city});addressStreetCache.set(city,x);}
+                fillSelect(sel,x,'בחר רחוב',selected);sel.disabled=false;
+            }catch(e){fillSelect(sel,[],'רשימת הרחובות לא נטענה');sel.disabled=true;console.error('street list',e);}
+        }
+
+        function wireAddressSelect(cityId,streetId){
+            const city=$(cityId);if(city)city.addEventListener('change',()=>loadStreets(city.value,streetId));
+        }
+
+        async function initializeAddressLists(){
+            await Promise.all([ensureCities('vol-city'),ensureCities('ev-city'),ensureCities('edit-ev-city'),ensureCities('profile-city')]);
+        }
+
+        function registrationLabel(v) {        function registrationLabel(v) {
             return ({approved:'מאושר', waitlist:'רשימת המתנה', cancelled:'בוטל'})[v] || v;
         }
 
@@ -575,6 +586,9 @@
                 ['invalid_registration_deadline','מועד סגירת ההרשמה חייב להיות מעכשיו ועד שעת תחילת האירוע.'],
                 ['invalid_age_range','טווח הגילאים אינו תקין.'],
                 ['invalid_event_type','סוג האירוע אינו תקין.'],
+                ['weekend_event_forbidden','לא ניתן לפרסם אירוע ביום שישי או בשבת.'],
+                ['weekend_availability_forbidden','זמינות למשמחים היא בימים ראשון עד חמישי בלבד.'],
+                ['address_list_unavailable','רשימת הערים והרחובות אינה זמינה כרגע. נסה לרענן את הדף.'],
                 ['invalid_message','ההודעה ריקה או ארוכה מדי.'],
                 ['registration_not_found','לא נמצאה הרשמה פעילה לאירוע.'],
                 ['user_blocked','החשבון חסום כרגע.'],
@@ -694,7 +708,9 @@
             if(currentProfile){block.classList.add('hidden');fields.forEach(id=>$(id).required=false);}
             else {block.classList.remove('hidden');fields.forEach(id=>$(id).required=true);}
             $('ev-date').min=new Date().toISOString().slice(0,10);
+            await ensureCities('ev-city',$('ev-city').value);
             restoreEventDraft();
+            if($('ev-city').value)await loadStreets($('ev-city').value,'ev-street',$('ev-street').value);
             navigate('add-event');
         }
 
@@ -774,6 +790,7 @@
         function validateEventPayload(ev) {
             if(!ev.event_name||ev.event_name.length<2) throw new Error('invalid_event_name');
             if(!ev.event_date||ev.event_date<new Date().toISOString().slice(0,10)) throw new Error('event_date_in_past');
+            if(isFridayOrSaturday(ev.event_date)) throw new Error('weekend_event_forbidden');
             if(!ev.start_time||!ev.close_time||ev.close_time<=ev.start_time) throw new Error('invalid_event_times');
             if(!ev.registration_deadline) throw new Error('invalid_registration_deadline');
             if(!ev.city||!ev.street) throw new Error('invalid_location');
@@ -844,7 +861,7 @@
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
-                    p_strict_separation:false,p_availability_days:[0,1,2,3,4,5,6],
+                    p_strict_separation:false,p_availability_days:[0,1,2,3,4],
                     p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null
                 });
                 if(error){
@@ -1202,7 +1219,10 @@
             $('edit-ev-type').value=e.event_type||'wedding';
             $('edit-ev-date').value=e.event_date||''; $('edit-ev-date').min=new Date().toISOString().slice(0,10);
             $('edit-ev-registration-deadline').value=toDateTimeLocal(e.registration_deadline);
-            $('edit-ev-hall-name').value=e.hall_name||''; $('edit-ev-city').value=e.city||''; $('edit-ev-street').value=e.street||''; $('edit-ev-house-number').value=e.house_number||'';
+            $('edit-ev-hall-name').value=e.hall_name||'';
+            await ensureCities('edit-ev-city',e.city||'');
+            await loadStreets(e.city||'','edit-ev-street',e.street||'');
+            $('edit-ev-house-number').value=e.house_number||'';
             $('edit-ev-start').value=e.start_time?.slice(0,5)||''; $('edit-ev-close').value=e.close_time?.slice(0,5)||'';
             $('edit-ev-sector').value=e.sector_pref||'all'; $('edit-ev-separation').checked=!!e.is_separated;
             $('edit-ev-men').value=e.quota_men??0; $('edit-ev-women').value=e.quota_women??0;
@@ -1238,7 +1258,7 @@
             if(error) showToast(readableError(error),'error'); else {showToast('האירוע בוטל.');await loadDashboard();}
         }
 
-        function openProfileSettings(){
+        async function openProfileSettings(){
             if(!currentProfile) return;
             populateBirthYears();
             $('profile-phone-display').textContent=displayPhone(currentProfile.phone);
@@ -1248,13 +1268,13 @@
             $('profile-birth-year').value=currentProfile.birth_year||'';
             $('profile-sector').value=(currentProfile.sector&&currentProfile.sector!=='all')?currentProfile.sector:'haredi';
             setCheckedValues('profile-sector-pref',currentProfile.volunteer_sector_preferences||['all']);
-            $('profile-city').value=currentProfile.city||'';
-            $('profile-street').value=currentProfile.street||'';
+            await ensureCities('profile-city',currentProfile.city||'');
+            await loadStreets(currentProfile.city||'','profile-street',currentProfile.street||'');
             $('profile-house-number').value=currentProfile.house_number||'';
             $('profile-radius').value=currentProfile.radius||30;
             $('profile-days').value=currentProfile.max_days_per_week||3;
             $('profile-transport').value=currentProfile.transport_mode||'car';
-            setCheckedValues('profile-available-day',currentProfile.availability_days||[0,1,2,3,4,5,6]);
+            setCheckedValues('profile-available-day',currentProfile.availability_days||[0,1,2,3,4]);
             $('profile-available-from').value=currentProfile.availability_from?.slice(0,5)||'';
             $('profile-available-until').value=currentProfile.availability_until?.slice(0,5)||'';
             $('profile-separation').checked=!!currentProfile.strict_separation;
@@ -1342,10 +1362,13 @@
         bindAllChoice('ev-accepted-sector');
         bindAllChoice('edit-ev-accepted-sector');
         bindAllChoice('profile-sector-pref');
-        wireAddressAutocomplete('vol-city','vol-street','vol-city-list','vol-street-list');
-        wireAddressAutocomplete('ev-city','ev-street','ev-city-list','ev-street-list');
-        wireAddressAutocomplete('edit-ev-city','edit-ev-street','edit-ev-city-list','edit-ev-street-list');
-        wireAddressAutocomplete('profile-city','profile-street','profile-city-list','profile-street-list');
+        wireAddressSelect('vol-city','vol-street');
+        wireAddressSelect('ev-city','ev-street');
+        wireAddressSelect('edit-ev-city','edit-ev-street');
+        wireAddressSelect('profile-city','profile-street');
+        $('ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
+        $('edit-ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
+        initializeAddressLists();
         initEventDraftAutosave();
         updateHeaderActions();
         $('modal-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();resolveAppModal(true);}});

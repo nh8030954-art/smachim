@@ -118,8 +118,8 @@
             <div class="glass-card p-8 text-center">
                 <h2 class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h2>
                 <p class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות מספר טלפון וסיסמה.</p>
-                <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6">
-                    <input type="tel" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="tel">
+                <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6" autocomplete="off">
+                    <input type="tel" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="off">
                     <input type="password" id="login-password" class="input-clean" placeholder="סיסמה" required autocomplete="current-password">
                     <button id="login-submit" type="submit" class="w-full btn-dark py-3">כניסה למערכת</button>
                 </form>
@@ -208,8 +208,8 @@
                             <p class="text-xs text-slate-500 mt-1">הטלפון ישמש כשם המשתמש להתחברות לאזור האישי.</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" autocomplete="name" required></label>
-                            <label><span class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
+                            <label><span class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" autocomplete="off" required></label>
+                            <label><span class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="off" required></label>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <label><span class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
@@ -439,6 +439,12 @@
             activeChatEventName='';
             const chat=$('chat-modal');
             if(chat){chat.classList.add('hidden');chat.classList.remove('flex');}
+            if($('chat-messages')) $('chat-messages').innerHTML='';
+            if($('chat-input')) $('chat-input').value='';
+            if($('chat-title')) $('chat-title').textContent='צ׳אט האירוע';
+            if($('dashboard-content')) $('dashboard-content').innerHTML='';
+            if($('modal-message')) $('modal-message').textContent='';
+            if($('modal-input')) $('modal-input').value='';
             clearSensitiveForms();
         }
 

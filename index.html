@@ -503,17 +503,55 @@
             let t; return (...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),wait);};
         }
 
+        const GOV_CITIES_RESOURCE='5c78e9fa-c2e2-4771-93ff-7f400a12f7ba';
+        const GOV_STREETS_RESOURCE='9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
+
+        async function fetchGovAddressRecords(resourceId,{limit=5000,filters=null}={}){
+            const controller=new AbortController();
+            const timeout=setTimeout(()=>controller.abort(),6000);
+            try{
+                const params=new URLSearchParams({resource_id:resourceId,limit:String(limit)});
+                if(filters)params.set('filters',JSON.stringify(filters));
+                const res=await fetch('https://data.gov.il/api/3/action/datastore_search?'+params.toString(),{
+                    signal:controller.signal,
+                    headers:{'Accept':'application/json'}
+                });
+                if(!res.ok)throw new Error('gov_address_http_'+res.status);
+                const json=await res.json();
+                if(!json?.success||!Array.isArray(json?.result?.records))throw new Error('gov_address_bad_response');
+                return json.result.records;
+            }finally{clearTimeout(timeout);}
+        }
+
+        async function localCityList(){
+            const {data,error}=await _supabase.from('address_cities').select('city').order('city',{ascending:true});
+            if(error)throw error;
+            return (data||[]).map(x=>x.city).filter(Boolean);
+        }
+
+        async function localStreetList(city){
+            const {data,error}=await _supabase.from('address_streets').select('street').eq('city',city).order('street',{ascending:true});
+            if(error)throw error;
+            return (data||[]).map(x=>x.street).filter(Boolean);
+        }
+
         async function loadCityList(){
             if(addressCitiesCache)return addressCitiesCache;
             if(addressListsLoading)return addressListsLoading;
             addressListsLoading=(async()=>{
                 try{
-                    const {data,error}=await _supabase.from('address_cities').select('city').order('city',{ascending:true});
-                    if(error)throw error;
-                    const items=(data||[]).map(x=>x.city).filter(Boolean);
-                    if(!items.length)throw new Error('address_list_unavailable');
-                    addressCitiesCache=items;
-                    return items;
+                    try{
+                        const rows=await fetchGovAddressRecords(GOV_CITIES_RESOURCE,{limit:2000});
+                        const official=[...new Set(rows.map(x=>String(x['שם_ישוב']||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he'));
+                        if(official.length>=1200){
+                            addressCitiesCache=official;
+                            return official;
+                        }
+                    }catch(e){console.warn('official city list unavailable, using local copy',e);}
+                    const local=await localCityList();
+                    if(!local.length)throw new Error('address_list_unavailable');
+                    addressCitiesCache=local;
+                    return local;
                 }finally{addressListsLoading=null;}
             })();
             return addressListsLoading;
@@ -554,12 +592,15 @@
             try{
                 let items=addressStreetCache.get(city);
                 if(!items){
-                    const {data,error}=await _supabase.from('address_streets')
-                        .select('street')
-                        .eq('city',city)
-                        .order('street',{ascending:true});
-                    if(error)throw error;
-                    items=(data||[]).map(x=>x.street).filter(Boolean);
+                    try{
+                        const rows=await fetchGovAddressRecords(GOV_STREETS_RESOURCE,{
+                            limit:5000,
+                            filters:{'שם_ישוב':city}
+                        });
+                        const official=[...new Set(rows.map(x=>String(x['שם_רחוב']||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he'));
+                        if(official.length)items=official;
+                    }catch(e){console.warn('official street list unavailable, using local copy',e);}
+                    if(!items||!items.length)items=await localStreetList(city);
                     addressStreetCache.set(city,items);
                 }
                 fillSelect(sel,items,'בחר רחוב',selected);

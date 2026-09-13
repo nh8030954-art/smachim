@@ -63,6 +63,15 @@
             .site-header-actions button { font-size:.72rem !important; }
             .site-header-actions .flex { gap:.45rem !important; }
         }
+        .choice-grid { display:flex; flex-wrap:wrap; gap:.55rem; }
+        .choice-chip { display:inline-flex; align-items:center; gap:.4rem; padding:.55rem .75rem; border:1px solid #e2e8f0; border-radius:.75rem; background:#f8fafc; cursor:pointer; font-size:.85rem; font-weight:700; color:#475569; }
+        .choice-chip:has(input:checked) { border-color:#5eead4; background:#f0fdfa; color:#0f766e; }
+        .route-map { height:310px; border-radius:.8rem; border:1px solid #e2e8f0; overflow:hidden; background:#f1f5f9; }
+        .chat-messages { background:#f8fafc; border:1px solid #e2e8f0; border-radius:.9rem; }
+        .chat-bubble { max-width:82%; border-radius:1rem; padding:.65rem .8rem; }
+        .chat-bubble.mine { background:#ccfbf1; margin-right:auto; }
+        .chat-bubble.other { background:#fff; border:1px solid #e2e8f0; margin-left:auto; }
+        .dashboard-skeleton { min-height:70px; display:flex; align-items:center; color:#64748b; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -118,108 +127,182 @@
         </div>
 
         <!-- הרשמה למשמח -->
-        <div id="view-register-volunteer" class="screen max-w-2xl mx-auto px-6 py-12">
+        <div id="view-register-volunteer" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <h2 class="text-2xl font-bold mb-2 text-brand-dark">הרשמה - משמח חתן וכלה</h2>
-                <p class="text-sm text-slate-500">כמה פרטים כדי שנוכל להציג לך רק אירועים שבאמת מתאימים לך.</p>
-                <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-5 mt-6">
+                <p class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
+                <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" placeholder="ישראל ישראלי" autocomplete="name" required></label>
-                        <label><span class="field-label">מספר טלפון — שם המשתמש שלך</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required><div class="field-help">המספר משמש לכניסה לאתר ולא ניתן לשינוי כרגע.</div></label>
+                        <label><span class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
+                        <label><span class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">סיסמה</span><input type="password" id="vol-pass" class="input-clean" placeholder="לפחות 8 תווים" minlength="8" maxlength="72" autocomplete="new-password" required></label>
-                        <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" placeholder="הקלד שוב את הסיסמה" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                        <label><span class="field-label">סיסמה</span><input type="password" id="vol-pass" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                        <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label><span class="field-label">מין לצורך מכסת האירוע</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="male">גבר</option><option value="female">אישה</option></select></label>
-                        <label><span class="field-label">באיזה מגזר תרצה לשמח?</span><select id="vol-sector" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="all">כל המגזרים</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
+                        <label><span class="field-label">שנת לידה</span><select id="vol-birth-year" class="input-clean bg-white birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
+                        <label><span class="field-label">המגזר שאני משתייך אליו</span><select id="vol-sector" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
                     </div>
-                    <label><span class="field-label">כתובת מגורים</span><input type="text" id="vol-address" class="input-clean" placeholder="רחוב, מספר, עיר" autocomplete="street-address" required><div class="field-help">הכתובת משמשת לחישוב מרחק בלבד ואינה מוצגת לבעלי שמחה.</div></label>
+                    <div>
+                        <span class="field-label">באילו מגזרים אני מוכן לשמח?</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="all" checked> כל המגזרים</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="haredi"> חרדי</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="religious"> דתי לאומי</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="traditional"> מסורתי</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="secular"> חילוני</label>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="field-label">כתובת מגורים</span>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div><input id="vol-city" class="input-clean" list="vol-city-list" placeholder="עיר" autocomplete="address-level2" required><datalist id="vol-city-list"></datalist></div>
+                            <div><input id="vol-street" class="input-clean" list="vol-street-list" placeholder="רחוב" autocomplete="address-line1" required><datalist id="vol-street-list"></datalist></div>
+                            <input id="vol-house-number" class="input-clean" placeholder="מספר בית" autocomplete="address-line2">
+                        </div>
+                        <div class="field-help">הצעות העיר והרחוב מגיעות ממאגר הרחובות של רשות האוכלוסין. אם אין הצעה מתאימה, אפשר להקליד ידנית.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label><span class="field-label">רדיוס מקסימלי מהבית</span><input type="number" id="vol-radius" min="1" max="300" value="10" class="input-clean" required></label>
+                        <label><span class="field-label">מספר ימי התנדבות בשבוע</span><select id="vol-days" class="input-clean bg-white"><option value="1">עד יום אחד</option><option value="2">עד יומיים</option><option value="3" selected>עד 3 ימים</option><option value="4">עד 4 ימים</option><option value="5">עד 5 ימים</option><option value="7">ללא הגבלה</option></select></label>
+                        <label><span class="field-label">אמצעי הגעה מועדף</span><select id="vol-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">לא משנה</option></select></label>
+                    </div>
+                    <div>
+                        <span class="field-label">ימים שבהם אני פנוי</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="0" checked> א׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="1" checked> ב׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="2" checked> ג׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="3" checked> ד׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="4" checked> ה׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="5" checked> ו׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="6" checked> שבת</label>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">רדיוס מקסימלי</span><input type="number" id="vol-radius" min="1" max="300" value="10" class="input-clean" placeholder="ק״מ" required></label>
-                        <label><span class="field-label">כמה ימים בשבוע לכל היותר</span><select id="vol-days" class="input-clean bg-white" required><option value="1">עד יום אחד בשבוע</option><option value="2">עד יומיים בשבוע</option><option value="3" selected>עד 3 ימים בשבוע</option><option value="7">ללא הגבלה</option></select></label>
+                        <label><span class="field-label">פנוי החל משעה</span><input type="time" id="vol-available-from" class="input-clean"><div class="field-help">אפשר להשאיר ריק אם אין הגבלת שעות.</div></label>
+                        <label><span class="field-label">פנוי עד שעה</span><input type="time" id="vol-available-until" class="input-clean"></label>
                     </div>
-                    <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"><input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700 text-sm">קבל אך ורק אירועים בהפרדה מלאה</span></label>
-                    <div class="bg-brand-50 border border-brand-100 rounded-xl p-3 text-sm text-brand-900"><i class="fa-solid fa-circle-info ml-1"></i> אחרי ההרשמה תוכל לשנות את ההעדפות באזור האישי.</div>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"><input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700 text-sm">הצג לי רק אירועים בהפרדה מלאה</span></label>
                     <button id="vol-submit" type="submit" class="w-full btn-brand py-4">השלם הרשמה</button>
                 </form>
             </div>
         </div>
 
                 <!-- פרסום כבעל שמחה -->
-        <div id="view-add-event" class="screen max-w-3xl mx-auto px-6 py-12">
+        <div id="view-add-event" class="screen max-w-4xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <div class="flex flex-wrap justify-between gap-3 items-center border-b pb-4 mb-6">
-                    <div><h2 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h2><p class="text-sm text-slate-500 mt-1">אפשר לחזור לטופס גם אם יצאת — טיוטת האירוע נשמרת אוטומטית.</p></div>
+                    <div><h2 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h2><p class="text-sm text-slate-500 mt-1">טיוטת האירוע נשמרת אוטומטית בדפדפן.</p></div>
                     <span id="draft-indicator" class="text-xs font-bold text-slate-400"></span>
                 </div>
                 <form id="event-form" onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6">
                     <div id="host-account-block" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                        <h3 class="font-bold text-slate-800 text-sm">פרטי החשבון</h3>
+                        <h3 class="font-bold text-slate-800">פרטי בעל השמחה</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" placeholder="שם בעל השמחה"></label>
-                            <label><span class="field-label">מספר טלפון — שם המשתמש שלך</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel"></label>
+                            <label><span class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white"></label>
+                            <label><span class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel"></label>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" placeholder="לפחות 8 תווים" minlength="8" maxlength="72"></label>
-                            <label><span class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" placeholder="הקלד שוב" minlength="8" maxlength="72"></label>
+                            <label><span class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72"></label>
+                            <label><span class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72"></label>
                         </div>
-                        <div class="field-help">אם כבר יש לך חשבון, היכנס דרך האזור האישי ואז פרסם את האירוע.</div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">שם האירוע</span><input type="text" id="ev-name" class="input-clean" placeholder="לדוגמה: חתונת משפחת כהן" required></label>
+                        <label><span class="field-label">סוג האירוע</span><select id="ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="sheva_brachot">שבע ברכות</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option><option value="engagement">אירוסין</option><option value="other">אחר</option></select></label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label><span class="field-label">תאריך האירוע</span><input type="date" id="ev-date" class="input-clean" required></label>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">עיר / אזור שיוצגו לפני הרשמה</span><input type="text" id="ev-public-location" class="input-clean" placeholder="ירושלים" required></label>
-                        <label><span class="field-label">כתובת האולם המלאה — פרטית</span><input type="text" id="ev-address" class="input-clean" placeholder="רחוב, מספר, אולם" required><div class="field-help">תוצג רק למי שנרשם ואושר.</div></label>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">שעת התחלה</span><input type="time" id="ev-start" class="input-clean" required></label>
                         <label><span class="field-label">שעת סיום</span><input type="time" id="ev-close" class="input-clean" required></label>
                     </div>
-                    <label><span class="field-label">מגזר האירוע / למי האירוע מתאים</span><select id="ev-sector" class="input-clean bg-white" required><option value="all" class="font-bold text-brand-600">כל המגזרים (לא משנה לי)</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
-                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span></label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <label><span class="field-label">מכסת משמחים — גברים</span><input type="number" id="ev-men" class="input-clean" value="5" min="0" max="500" required></label>
-                        <label><span class="field-label">מכסת משמחות — נשים</span><input type="number" id="ev-women" class="input-clean" value="5" min="0" max="500" required></label>
+                    <label><span class="field-label">עד מתי אפשר להירשם?</span><input type="datetime-local" id="ev-registration-deadline" class="input-clean" required><div class="field-help">אחרי המועד הזה האירוע יפסיק להופיע למשמחים חדשים.</div></label>
+                    <div>
+                        <span class="field-label">האולם</span>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <input id="ev-hall-name" class="input-clean" placeholder="שם האולם">
+                            <div><input id="ev-city" class="input-clean" list="ev-city-list" placeholder="עיר" required><datalist id="ev-city-list"></datalist></div>
+                            <div><input id="ev-street" class="input-clean" list="ev-street-list" placeholder="רחוב" required><datalist id="ev-street-list"></datalist></div>
+                            <input id="ev-house-number" class="input-clean" placeholder="מספר">
+                        </div>
+                        <div class="field-help">הכתובת המדויקת תוצג למשמח כבר לפני ההרשמה, יחד עם מפה ומרחק.</div>
                     </div>
-                    <div class="field-help">מכסה 0 פירושה שהאירוע אינו מחפש משמחים מאותו מין. כשהמכסה של המשמח מלאה — האירוע לא יוצג לו יותר.</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">מגזר האירוע</span><select id="ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי / לא משנה</option></select></label>
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span></label>
+                    </div>
+                    <div>
+                        <span class="field-label">מאילו מגזרים בעל השמחה מעוניין לקבל משמחים?</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="all" checked> כולם</label>
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="haredi"> חרדי</label>
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="religious"> דתי לאומי</label>
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="traditional"> מסורתי</label>
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="secular"> חילוני</label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">מכסת משמחים — גברים</span><input type="number" id="ev-men" class="input-clean" value="0" min="0" max="500" required></label>
+                        <label><span class="field-label">מכסת משמחות — נשים</span><input type="number" id="ev-women" class="input-clean" value="0" min="0" max="500" required></label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">גיל מינימלי</span><input type="number" id="ev-age-min" class="input-clean" min="0" max="120" placeholder="לא משנה"></label>
+                        <label><span class="field-label">גיל מקסימלי</span><input type="number" id="ev-age-max" class="input-clean" min="0" max="120" placeholder="לא משנה"></label>
+                    </div>
+                    <label><span class="field-label">הערה למשמחים</span><textarea id="ev-note" class="input-clean min-h-24" maxlength="600" placeholder="לדוגמה: מחפשים בעיקר ריקודים, יש הסעה מירושלים, נא להגיע עד 20:00..."></textarea></label>
+                    <div class="bg-slate-50 border rounded-xl p-4">
+                        <div class="flex flex-wrap gap-3 justify-between items-center">
+                            <div><div class="font-bold">בדיקת התאמות לפני הפרסום</div><div class="text-xs text-slate-500">אפשר לראות כמה משמחים קיימים כרגע שעומדים בקריטריונים.</div></div>
+                            <button type="button" onclick="previewEventMatches()" class="btn-soft px-4 py-2">בדוק התאמות</button>
+                        </div>
+                        <div id="event-preview-count" class="text-sm mt-3"></div>
+                    </div>
                     <button id="event-submit" type="submit" class="w-full btn-dark py-4">פרסם אירוע</button>
                 </form>
             </div>
         </div>
 
                 <!-- עריכת אירוע -->
-        <div id="view-edit-event" class="screen max-w-3xl mx-auto px-6 py-12">
+        <div id="view-edit-event" class="screen max-w-4xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">עריכת אירוע</h2>
                 <form id="edit-event-form" onsubmit="event.preventDefault(); saveEditEvent();" class="space-y-6">
                     <input type="hidden" id="edit-event-id">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><label><span class="field-label">שם האירוע</span><input type="text" id="edit-ev-name" class="input-clean" required></label><label><span class="field-label">תאריך האירוע</span><input type="date" id="edit-ev-date" class="input-clean" required></label></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">עיר / אזור שיוצגו</span><input type="text" id="edit-ev-public-location" class="input-clean" required></label><label><span class="field-label">כתובת האולם המלאה — פרטית</span><input type="text" id="edit-ev-address" class="input-clean" required></label></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">שעת התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">שעת סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
-                    <label><span class="field-label">מגזר האירוע / למי האירוע מתאים</span><select id="edit-ev-sector" class="input-clean bg-white" required><option value="all">כל המגזרים</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
-                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span></label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><label><span class="field-label">מכסת גברים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת נשים</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
-                    <div class="grid grid-cols-2 gap-3"><button type="button" onclick="navigate('dashboard')" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">שם האירוע</span><input type="text" id="edit-ev-name" class="input-clean" required></label>
+                        <label><span class="field-label">סוג האירוע</span><select id="edit-ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="sheva_brachot">שבע ברכות</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option><option value="engagement">אירוסין</option><option value="other">אחר</option></select></label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">תאריך</span><input type="date" id="edit-ev-date" class="input-clean" required></label><label><span class="field-label">התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
+                    <label><span class="field-label">סגירת הרשמה</span><input type="datetime-local" id="edit-ev-registration-deadline" class="input-clean" required></label>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><input id="edit-ev-hall-name" class="input-clean" placeholder="שם האולם"><div><input id="edit-ev-city" class="input-clean" list="edit-ev-city-list" placeholder="עיר" required><datalist id="edit-ev-city-list"></datalist></div><div><input id="edit-ev-street" class="input-clean" list="edit-ev-street-list" placeholder="רחוב" required><datalist id="edit-ev-street-list"></datalist></div><input id="edit-ev-house-number" class="input-clean" placeholder="מספר"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מגזר האירוע</span><select id="edit-ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label><label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold">הפרדה מלאה</span></label></div>
+                    <div><span class="field-label">מגזרי משמחים מתאימים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="all"> כולם</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="secular"> חילוני</label></div></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת גברים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת נשים</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">גיל מינימלי</span><input type="number" id="edit-ev-age-min" class="input-clean" min="0" max="120"></label><label><span class="field-label">גיל מקסימלי</span><input type="number" id="edit-ev-age-max" class="input-clean" min="0" max="120"></label></div>
+                    <label><span class="field-label">הערה למשמחים</span><textarea id="edit-ev-note" class="input-clean min-h-24" maxlength="600"></textarea></label>
+                    <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
                 </form>
             </div>
         </div>
 
                 <!-- הגדרות פרופיל -->
-        <div id="view-profile-settings" class="screen max-w-2xl mx-auto px-6 py-12">
+        <div id="view-profile-settings" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
-                <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הגדרות פרופיל</h2>
-                <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש שלך</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div class="field-help">מספר הטלפון משמש לכניסה ואינו ניתן לשינוי כרגע.</div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div></div>
-                <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-5">
+                <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הגדרות משמח</h2>
+                <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div></div>
+                <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-6">
                     <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מין לצורך מכסות</span><select id="profile-gender" class="input-clean bg-white"><option value="">לא הוגדר</option><option value="male">גבר</option><option value="female">אישה</option></select></label><label><span class="field-label">באיזה מגזר תרצה לשמח?</span><select id="profile-sector" class="input-clean bg-white" required><option value="all">כל המגזרים</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
-                    <label><span class="field-label">כתובת מגורים</span><input type="text" id="profile-address" class="input-clean" placeholder="רחוב, מספר, עיר"><div class="field-help">משמשת רק לחישוב מרחק מאירועים.</div></label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">רדיוס מקסימלי בק״מ</span><input type="number" id="profile-radius" min="1" max="300" class="input-clean"></label><label><span class="field-label">מספר ימי התנדבות בשבוע</span><select id="profile-days" class="input-clean bg-white"><option value="1">עד יום אחד בשבוע</option><option value="2">עד יומיים בשבוע</option><option value="3">עד 3 ימים בשבוע</option><option value="7">ללא הגבלה</option></select></label></div>
-                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="profile-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">קבל אך ורק אירועים בהפרדה מלאה</span></label>
-                    <div class="grid grid-cols-2 gap-3"><button type="button" onclick="navigate('dashboard')" class="btn-soft py-3">ביטול</button><button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">מין</span><select id="profile-gender" class="input-clean bg-white"><option value="male">גבר</option><option value="female">אישה</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
+                    <div><span class="field-label">באילו מגזרים אני מוכן לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="all"> כל המגזרים</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="secular"> חילוני</label></div></div>
+                    <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div><input id="profile-city" class="input-clean" list="profile-city-list" placeholder="עיר" required><datalist id="profile-city-list"></datalist></div><div><input id="profile-street" class="input-clean" list="profile-street-list" placeholder="רחוב" required><datalist id="profile-street-list"></datalist></div><input id="profile-house-number" class="input-clean" placeholder="מספר בית"></div></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">רדיוס מקסימלי</span><input type="number" id="profile-radius" min="1" max="300" class="input-clean"></label><label><span class="field-label">ימים בשבוע</span><select id="profile-days" class="input-clean bg-white"><option value="1">עד יום אחד</option><option value="2">עד יומיים</option><option value="3">עד 3 ימים</option><option value="4">עד 4 ימים</option><option value="5">עד 5 ימים</option><option value="7">ללא הגבלה</option></select></label><label><span class="field-label">אמצעי הגעה</span><select id="profile-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">לא משנה</option></select></label></div>
+                    <div><span class="field-label">ימים פנויים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="0"> א׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="1"> ב׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="2"> ג׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="3"> ד׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="4"> ה׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="5"> ו׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="6"> שבת</label></div></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">פנוי החל משעה</span><input type="time" id="profile-available-from" class="input-clean"></label><label><span class="field-label">פנוי עד שעה</span><input type="time" id="profile-available-until" class="input-clean"></label></div>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="profile-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">הצג לי רק אירועים בהפרדה מלאה</span></label>
+                    <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button></div>
                 </form>
             </div>
         </div>
@@ -236,6 +319,19 @@
             <div id="dashboard-content" class="space-y-8"></div>
         </div>
         <div id="toast-container" class="fixed top-20 left-4 z-[90] flex flex-col gap-2"></div>
+        <div id="chat-modal" class="hidden fixed inset-0 z-[105] modal-shell p-4 items-center justify-center">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl h-[78vh] p-5 flex flex-col">
+                <div class="flex items-center justify-between gap-3 border-b pb-3">
+                    <div><h3 id="chat-title" class="text-xl font-bold text-brand-dark">צ׳אט האירוע</h3><p class="text-xs text-slate-500">בעל השמחה והמשמחים הרשומים בלבד</p></div>
+                    <button type="button" onclick="closeEventChat()" class="btn-soft px-3 py-2"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div id="chat-messages" class="chat-messages flex-1 overflow-y-auto p-3 my-4 space-y-2"></div>
+                <form onsubmit="event.preventDefault(); sendChatMessage();" class="flex gap-2">
+                    <textarea id="chat-input" maxlength="1000" class="input-clean min-h-12 max-h-28" placeholder="כתוב הודעה..."></textarea>
+                    <button id="chat-send" type="submit" class="btn-brand px-5">שלח</button>
+                </form>
+            </div>
+        </div>
         <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><input id="modal-input" class="input-clean mt-4 hidden" type="text"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
     </main>
 

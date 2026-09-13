@@ -158,11 +158,16 @@
                     <div>
                         <span class="field-label">כתובת מגורים</span>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div><select id="vol-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div>
-                            <div><select id="vol-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div>
+                            <div id="vol-city-select-wrap"><select id="vol-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div>
+                            <div id="vol-street-select-wrap"><select id="vol-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div>
                             <input id="vol-house-number" class="input-clean" placeholder="מספר בית" autocomplete="address-line2">
                         </div>
-                        <div class="field-help">הצעות העיר והרחוב מגיעות ממאגר הרחובות של רשות האוכלוסין. אם אין הצעה מתאימה, אפשר להקליד ידנית.</div>
+                        <div id="vol-address-manual-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            <input id="vol-city-manual" class="input-clean" placeholder="עיר — הקלדה ידנית">
+                            <input id="vol-street-manual" class="input-clean" placeholder="רחוב — הקלדה ידנית">
+                        </div>
+                        <button type="button" onclick="toggleManualAddress('vol')" class="mt-2 text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="vol-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button>
+                        <div class="field-help">הרשימה כוללת את היישובים והרחובות השמורים אצלנו מהמאגר הרשמי. אם משהו לא מופיע, אפשר לעבור להקלדה ידנית.</div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label><span class="field-label">רדיוס מקסימלי מהבית</span><input type="number" id="vol-radius" min="1" max="300" value="10" class="input-clean" required></label>
@@ -222,10 +227,15 @@
                         <span class="field-label">האולם</span>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                             <input id="ev-hall-name" class="input-clean" placeholder="שם האולם">
-                            <div><select id="ev-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div>
-                            <div><select id="ev-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div>
+                            <div id="ev-city-select-wrap"><select id="ev-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div>
+                            <div id="ev-street-select-wrap"><select id="ev-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div>
                             <input id="ev-house-number" class="input-clean" placeholder="מספר">
                         </div>
+                        <div id="ev-address-manual-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            <input id="ev-city-manual" class="input-clean" placeholder="עיר — הקלדה ידנית">
+                            <input id="ev-street-manual" class="input-clean" placeholder="רחוב — הקלדה ידנית">
+                        </div>
+                        <button type="button" onclick="toggleManualAddress('ev')" class="mt-2 text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="ev-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button>
                         <div class="field-help">הכתובת המדויקת תוצג למשמח כבר לפני ההרשמה, יחד עם מפה ומרחק.</div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -275,7 +285,9 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">תאריך</span><input type="date" id="edit-ev-date" class="input-clean" required><div class="field-help">לא ניתן לבחור שישי או שבת.</div></label><label><span class="field-label">התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
                     <label><span class="field-label">סגירת הרשמה</span><input type="datetime-local" id="edit-ev-registration-deadline" class="input-clean" required></label>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><input id="edit-ev-hall-name" class="input-clean" placeholder="שם האולם"><div><select id="edit-ev-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div><div><select id="edit-ev-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div><input id="edit-ev-house-number" class="input-clean" placeholder="מספר"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><input id="edit-ev-hall-name" class="input-clean" placeholder="שם האולם"><div id="edit-ev-city-select-wrap"><select id="edit-ev-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div><div id="edit-ev-street-select-wrap"><select id="edit-ev-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div><input id="edit-ev-house-number" class="input-clean" placeholder="מספר"></div>
+                    <div id="edit-ev-address-manual-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3"><input id="edit-ev-city-manual" class="input-clean" placeholder="עיר — הקלדה ידנית"><input id="edit-ev-street-manual" class="input-clean" placeholder="רחוב — הקלדה ידנית"></div>
+                    <button type="button" onclick="toggleManualAddress('edit-ev')" class="text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="edit-ev-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מגזר האירוע</span><select id="edit-ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label><label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold">הפרדה מלאה</span></label></div>
                     <div><span class="field-label">מגזרי משמחים מתאימים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="all"> כולם</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="secular"> חילוני</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת גברים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת נשים</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
@@ -295,7 +307,7 @@
                     <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">מין</span><select id="profile-gender" class="input-clean bg-white"><option value="male">גבר</option><option value="female">אישה</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
                     <div><span class="field-label">באילו מגזרים אני מוכן לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="all"> כל המגזרים</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="secular"> חילוני</label></div></div>
-                    <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div><select id="profile-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div><div><select id="profile-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div><input id="profile-house-number" class="input-clean" placeholder="מספר בית"></div></div>
+                    <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div id="profile-city-select-wrap"><select id="profile-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div><div id="profile-street-select-wrap"><select id="profile-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div><input id="profile-house-number" class="input-clean" placeholder="מספר בית"></div><div id="profile-address-manual-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3"><input id="profile-city-manual" class="input-clean" placeholder="עיר — הקלדה ידנית"><input id="profile-street-manual" class="input-clean" placeholder="רחוב — הקלדה ידנית"></div><button type="button" onclick="toggleManualAddress('profile')" class="mt-2 text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="profile-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button></div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">רדיוס מקסימלי</span><input type="number" id="profile-radius" min="1" max="300" class="input-clean"></label><label><span class="field-label">ימים בשבוע</span><select id="profile-days" class="input-clean bg-white"><option value="1">עד יום אחד</option><option value="2">עד יומיים</option><option value="3">עד 3 ימים</option><option value="4">עד 4 ימים</option><option value="5">עד 5 ימים</option><option value="7">ללא הגבלה</option></select></label><label><span class="field-label">אמצעי הגעה</span><select id="profile-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">לא משנה</option></select></label></div>
                     <div><span class="field-label">ימים פנויים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="0"> א׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="1"> ב׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="2"> ג׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="3"> ד׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="4"> ה׳</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">פנוי החל משעה</span><input type="time" id="profile-available-from" class="input-clean"></label><label><span class="field-label">פנוי עד שעה</span><input type="time" id="profile-available-until" class="input-clean"></label></div>
@@ -523,16 +535,36 @@
             }finally{clearTimeout(timeout);}
         }
 
+        async function fetchAllLookupRows(table,column,filterColumn=null,filterValue=null){
+            const pageSize=1000;
+            const out=[];
+            for(let from=0;;from+=pageSize){
+                let q=_supabase.from(table).select(column).order(column,{ascending:true}).range(from,from+pageSize-1);
+                if(filterColumn)q=q.eq(filterColumn,filterValue);
+                const {data,error}=await q;
+                if(error)throw error;
+                const rows=data||[];
+                out.push(...rows);
+                if(rows.length<pageSize)break;
+            }
+            return out;
+        }
+
         async function localCityList(){
-            const {data,error}=await _supabase.from('address_cities').select('city').order('city',{ascending:true});
-            if(error)throw error;
-            return (data||[]).map(x=>x.city).filter(Boolean);
+            const rows=await fetchAllLookupRows('address_cities','city');
+            return [...new Set(rows.map(x=>String(x.city||'').trim()).filter(Boolean))];
         }
 
         async function localStreetList(city){
-            const {data,error}=await _supabase.from('address_streets').select('street').eq('city',city).order('street',{ascending:true});
+            const rows=await fetchAllLookupRows('address_streets','street','city',city);
+            return [...new Set(rows.map(x=>String(x.street||'').trim()).filter(Boolean))];
+        }
+
+        async function edgeAddressLookup(body){
+            const {data,error}=await _supabase.functions.invoke('israel-addresses',{body});
             if(error)throw error;
-            return (data||[]).map(x=>x.street).filter(Boolean);
+            if(!Array.isArray(data?.items))throw new Error('address_list_unavailable');
+            return data.items;
         }
 
         async function loadCityList(){
@@ -540,21 +572,79 @@
             if(addressListsLoading)return addressListsLoading;
             addressListsLoading=(async()=>{
                 try{
-                    try{
-                        const rows=await fetchGovAddressRecords(GOV_CITIES_RESOURCE,{limit:2000});
-                        const official=[...new Set(rows.map(x=>String(x['שם_ישוב']||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he'));
-                        if(official.length>=1200){
-                            addressCitiesCache=official;
-                            return official;
-                        }
-                    }catch(e){console.warn('official city list unavailable, using local copy',e);}
-                    const local=await localCityList();
-                    if(!local.length)throw new Error('address_list_unavailable');
-                    addressCitiesCache=local;
-                    return local;
+                    let items=await localCityList();
+                    if(items.length<1000){
+                        try{items=await edgeAddressLookup({type:'cities'});}catch(e){console.warn('address edge fallback failed',e);}
+                    }
+                    if(!items.length)throw new Error('address_list_unavailable');
+                    addressCitiesCache=[...new Set(items)].sort((a,b)=>a.localeCompare(b,'he'));
+                    return addressCitiesCache;
                 }finally{addressListsLoading=null;}
             })();
             return addressListsLoading;
+        }
+
+        async function loadStreetList(city){
+            if(addressStreetCache.has(city))return addressStreetCache.get(city);
+            let items=await localStreetList(city);
+            if(!items.length){
+                try{items=await edgeAddressLookup({type:'streets',city});}catch(e){console.warn('address edge street fallback failed',e);}
+            }
+            items=[...new Set(items)].sort((a,b)=>a.localeCompare(b,'he'));
+            addressStreetCache.set(city,items);
+            return items;
+        }
+
+        function manualAddressEnabled(prefix){
+            const wrap=$(prefix+'-address-manual-fields');
+            return !!wrap&&!wrap.classList.contains('hidden');
+        }
+
+        async function toggleManualAddress(prefix,force=null){
+            const wrap=$(prefix+'-address-manual-fields');
+            const cityWrap=$(prefix+'-city-select-wrap');
+            const streetWrap=$(prefix+'-street-select-wrap');
+            const citySel=$(prefix+'-city');
+            const streetSel=$(prefix+'-street');
+            const cityManual=$(prefix+'-city-manual');
+            const streetManual=$(prefix+'-street-manual');
+            const label=$(prefix+'-address-manual-label');
+            if(!wrap||!citySel||!streetSel)return;
+
+            const on=force===null?!manualAddressEnabled(prefix):!!force;
+            if(on){
+                if(cityManual&&!cityManual.value)cityManual.value=citySel.value||'';
+                if(streetManual&&!streetManual.value)streetManual.value=streetSel.value||'';
+                wrap.classList.remove('hidden');
+                cityWrap?.classList.add('hidden');
+                streetWrap?.classList.add('hidden');
+                citySel.required=false;streetSel.required=false;
+                citySel.disabled=true;streetSel.disabled=true;
+                if(cityManual)cityManual.required=true;
+                if(streetManual)streetManual.required=true;
+                if(label)label.textContent='חזור לבחירה מהרשימה';
+            }else{
+                wrap.classList.add('hidden');
+                cityWrap?.classList.remove('hidden');
+                streetWrap?.classList.remove('hidden');
+                citySel.required=true;citySel.disabled=false;
+                streetSel.required=true;streetSel.disabled=!citySel.value;
+                if(cityManual)cityManual.required=false;
+                if(streetManual)streetManual.required=false;
+                if(label)label.textContent='לא מצאתי עיר או רחוב — הקלדה ידנית';
+            }
+        }
+
+        function getAddressParts(prefix){
+            const manual=manualAddressEnabled(prefix);
+            const cityEl=manual?$(prefix+'-city-manual'):$(prefix+'-city');
+            const streetEl=manual?$(prefix+'-street-manual'):$(prefix+'-street');
+            return {
+                city:String(cityEl?.value||'').trim(),
+                street:String(streetEl?.value||'').trim(),
+                number:String($(prefix+'-house-number')?.value||'').trim(),
+                manual
+            };
         }
 
         function fillSelect(sel,items,placeholder,selected=''){
@@ -588,25 +678,13 @@
         async function loadStreets(city,selectId,selected=''){
             const sel=$(selectId);if(!sel)return;
             if(!city){fillSelect(sel,[],'בחר קודם עיר');sel.disabled=true;return;}
-            sel.disabled=true;fillSelect(sel,[],'טוען רחובות...');
+            sel.disabled=true;fillSelect(sel,[],'טוען את כל הרחובות...');
             try{
-                let items=addressStreetCache.get(city);
-                if(!items){
-                    try{
-                        const rows=await fetchGovAddressRecords(GOV_STREETS_RESOURCE,{
-                            limit:5000,
-                            filters:{'שם_ישוב':city}
-                        });
-                        const official=[...new Set(rows.map(x=>String(x['שם_רחוב']||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he'));
-                        if(official.length)items=official;
-                    }catch(e){console.warn('official street list unavailable, using local copy',e);}
-                    if(!items||!items.length)items=await localStreetList(city);
-                    addressStreetCache.set(city,items);
-                }
-                fillSelect(sel,items,'בחר רחוב',selected);
+                const items=await loadStreetList(city);
+                fillSelect(sel,items,items.length?'בחר רחוב':'לא נמצאו רחובות — אפשר להקליד ידנית',selected);
                 sel.disabled=false;
             }catch(e){
-                fillSelect(sel,[],'רשימת הרחובות לא נטענה');
+                fillSelect(sel,[],'רשימת הרחובות לא נטענה — אפשר להקליד ידנית');
                 sel.disabled=true;
                 console.error('street list',e);
             }
@@ -739,7 +817,7 @@
                 const birthYear=Number($('vol-birth-year').value);
                 const sector=$('vol-sector').value;
                 const prefs=checkedValues('vol-sector-pref');
-                const city=$('vol-city').value.trim(),street=$('vol-street').value.trim(),number=$('vol-house-number').value.trim();
+                const {city,street,number}=getAddressParts('vol');
                 const radius=Number($('vol-radius').value);
                 const maxDays=Number($('vol-days').value);
                 const days=checkedNumbers('vol-available-day');
@@ -791,11 +869,12 @@
 
         function saveEventDraft(){
             const form=$('event-form'); if(!form) return;
+            const addr=getAddressParts('ev');
             const draft={
                 event_name:$('ev-name')?.value||'',event_type:$('ev-type')?.value||'wedding',
                 event_date:$('ev-date')?.value||'',registration_deadline:$('ev-registration-deadline')?.value||'',
-                hall_name:$('ev-hall-name')?.value||'',city:$('ev-city')?.value||'',street:$('ev-street')?.value||'',
-                house_number:$('ev-house-number')?.value||'',start_time:$('ev-start')?.value||'',close_time:$('ev-close')?.value||'',
+                hall_name:$('ev-hall-name')?.value||'',city:addr.city,street:addr.street,address_manual:addr.manual,
+                house_number:addr.number,start_time:$('ev-start')?.value||'',close_time:$('ev-close')?.value||'',
                 sector_pref:$('ev-sector')?.value||'all',accepted_sectors:checkedValues('ev-accepted-sector'),
                 is_separated:!!$('ev-separation')?.checked,quota_men:$('ev-men')?.value||'0',quota_women:$('ev-women')?.value||'0',
                 age_min:$('ev-age-min')?.value||'',age_max:$('ev-age-max')?.value||'',note:$('ev-note')?.value||''
@@ -811,8 +890,16 @@
                 const map={event_name:'ev-name',event_type:'ev-type',event_date:'ev-date',registration_deadline:'ev-registration-deadline',
                     hall_name:'ev-hall-name',city:'ev-city',street:'ev-street',house_number:'ev-house-number',start_time:'ev-start',
                     close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women',age_min:'ev-age-min',age_max:'ev-age-max',note:'ev-note'};
-                Object.entries(map).forEach(([k,id])=>{if(k!=='street'&&d[k]!==undefined&&$(id))$(id).value=d[k];});
-                if(d.city)await loadStreets(d.city,'ev-street',d.street||'');
+                Object.entries(map).forEach(([k,id])=>{if(!['city','street'].includes(k)&&d[k]!==undefined&&$(id))$(id).value=d[k];});
+                if(d.address_manual){
+                    await toggleManualAddress('ev',true);
+                    $('ev-city-manual').value=d.city||'';
+                    $('ev-street-manual').value=d.street||'';
+                }else{
+                    await toggleManualAddress('ev',false);
+                    if(d.city)$('ev-city').value=d.city;
+                    if(d.city)await loadStreets(d.city,'ev-street',d.street||'');
+                }
                 if($('ev-separation')) $('ev-separation').checked=!!d.is_separated;
                 setCheckedValues('ev-accepted-sector',d.accepted_sectors||['all']);
                 if($('draft-indicator')) $('draft-indicator').textContent='שוחזרה טיוטה';
@@ -841,15 +928,16 @@
             const id=(name)=>$(prefix+name);
             const n=(name)=>{const v=id(name).value;return v===''?null:Number(v);};
             const acceptedName=prefix?'edit-ev-accepted-sector':'ev-accepted-sector';
+            const addr=getAddressParts(prefix?'edit-ev':'ev');
             return {
                 event_name:id('ev-name').value.trim(),
                 event_type:id('ev-type').value,
                 event_date:id('ev-date').value,
                 registration_deadline:id('ev-registration-deadline').value,
                 hall_name:id('ev-hall-name').value.trim(),
-                city:id('ev-city').value.trim(),
-                street:id('ev-street').value.trim(),
-                house_number:id('ev-house-number').value.trim(),
+                city:addr.city,
+                street:addr.street,
+                house_number:addr.number,
                 start_time:id('ev-start').value,
                 close_time:id('ev-close').value,
                 sector_pref:id('ev-sector').value,
@@ -1302,6 +1390,7 @@
             $('edit-ev-date').value=e.event_date||''; $('edit-ev-date').min=new Date().toISOString().slice(0,10);
             $('edit-ev-registration-deadline').value=toDateTimeLocal(e.registration_deadline);
             $('edit-ev-hall-name').value=e.hall_name||'';
+            await toggleManualAddress('edit-ev',false);
             await ensureCities('edit-ev-city',e.city||'');
             await loadStreets(e.city||'','edit-ev-street',e.street||'');
             $('edit-ev-house-number').value=e.house_number||'';
@@ -1350,6 +1439,7 @@
             $('profile-birth-year').value=currentProfile.birth_year||'';
             $('profile-sector').value=(currentProfile.sector&&currentProfile.sector!=='all')?currentProfile.sector:'haredi';
             setCheckedValues('profile-sector-pref',currentProfile.volunteer_sector_preferences||['all']);
+            await toggleManualAddress('profile',false);
             await ensureCities('profile-city',currentProfile.city||'');
             await loadStreets(currentProfile.city||'','profile-street',currentProfile.street||'');
             $('profile-house-number').value=currentProfile.house_number||'';
@@ -1366,7 +1456,7 @@
         async function saveProfileSettings(){
             setBusy('profile-submit',true,'שומר...');
             try{
-                const city=$('profile-city').value.trim(),street=$('profile-street').value.trim(),number=$('profile-house-number').value.trim();
+                const {city,street,number}=getAddressParts('profile');
                 const coords=await geocodeAddress(fullAddress(city,street,number));
                 if(coords.lat==null) throw new Error('address_not_found');
                 const days=checkedNumbers('profile-available-day');

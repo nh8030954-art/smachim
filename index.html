@@ -503,17 +503,19 @@
             let t; return (...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),wait);};
         }
 
-        async function addressLookup(body) {
-            const {data,error}=await _supabase.functions.invoke('israel-addresses',{body});
-            if(error)throw error;
-            if(!data?.items||!Array.isArray(data.items))throw new Error('address_list_unavailable');
-            return data.items;
-        }
-
         async function loadCityList(){
             if(addressCitiesCache)return addressCitiesCache;
             if(addressListsLoading)return addressListsLoading;
-            addressListsLoading=(async()=>{try{const x=await addressLookup({type:'cities'});addressCitiesCache=x;return x;}finally{addressListsLoading=null;}})();
+            addressListsLoading=(async()=>{
+                try{
+                    const {data,error}=await _supabase.from('address_cities').select('city').order('city',{ascending:true});
+                    if(error)throw error;
+                    const items=(data||[]).map(x=>x.city).filter(Boolean);
+                    if(!items.length)throw new Error('address_list_unavailable');
+                    addressCitiesCache=items;
+                    return items;
+                }finally{addressListsLoading=null;}
+            })();
             return addressListsLoading;
         }
 
@@ -521,15 +523,28 @@
             if(!sel)return;
             sel.innerHTML='';
             const first=document.createElement('option');first.value='';first.textContent=placeholder;sel.appendChild(first);
-            if(selected&&!items.includes(selected)){const legacy=document.createElement('option');legacy.value=selected;legacy.textContent=selected+' (ערך קיים)';legacy.selected=true;sel.appendChild(legacy);}
-            items.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;if(v===selected)o.selected=true;sel.appendChild(o);});
+            if(selected&&!items.includes(selected)){
+                const legacy=document.createElement('option');
+                legacy.value=selected;legacy.textContent=selected+' (ערך קיים)';legacy.selected=true;sel.appendChild(legacy);
+            }
+            items.forEach(v=>{
+                const o=document.createElement('option');o.value=v;o.textContent=v;
+                if(v===selected)o.selected=true;
+                sel.appendChild(o);
+            });
         }
 
         async function ensureCities(selectId,selected=''){
             const sel=$(selectId);if(!sel)return;
             sel.disabled=true;fillSelect(sel,[],'טוען רשימת ערים...');
-            try{fillSelect(sel,await loadCityList(),'בחר עיר',selected);sel.disabled=false;}
-            catch(e){fillSelect(sel,[],'רשימת הערים לא נטענה — רענן את הדף');sel.disabled=true;console.error('city list',e);}
+            try{
+                fillSelect(sel,await loadCityList(),'בחר עיר',selected);
+                sel.disabled=false;
+            }catch(e){
+                fillSelect(sel,[],'רשימת הערים לא נטענה — רענן את הדף');
+                sel.disabled=true;
+                console.error('city list',e);
+            }
         }
 
         async function loadStreets(city,selectId,selected=''){
@@ -537,10 +552,23 @@
             if(!city){fillSelect(sel,[],'בחר קודם עיר');sel.disabled=true;return;}
             sel.disabled=true;fillSelect(sel,[],'טוען רחובות...');
             try{
-                let x=addressStreetCache.get(city);
-                if(!x){x=await addressLookup({type:'streets',city});addressStreetCache.set(city,x);}
-                fillSelect(sel,x,'בחר רחוב',selected);sel.disabled=false;
-            }catch(e){fillSelect(sel,[],'רשימת הרחובות לא נטענה');sel.disabled=true;console.error('street list',e);}
+                let items=addressStreetCache.get(city);
+                if(!items){
+                    const {data,error}=await _supabase.from('address_streets')
+                        .select('street')
+                        .eq('city',city)
+                        .order('street',{ascending:true});
+                    if(error)throw error;
+                    items=(data||[]).map(x=>x.street).filter(Boolean);
+                    addressStreetCache.set(city,items);
+                }
+                fillSelect(sel,items,'בחר רחוב',selected);
+                sel.disabled=false;
+            }catch(e){
+                fillSelect(sel,[],'רשימת הרחובות לא נטענה');
+                sel.disabled=true;
+                console.error('street list',e);
+            }
         }
 
         function wireAddressSelect(cityId,streetId){
@@ -548,7 +576,12 @@
         }
 
         async function initializeAddressLists(){
-            await Promise.all([ensureCities('vol-city'),ensureCities('ev-city'),ensureCities('edit-ev-city'),ensureCities('profile-city')]);
+            await Promise.all([
+                ensureCities('vol-city'),
+                ensureCities('ev-city'),
+                ensureCities('edit-ev-city'),
+                ensureCities('profile-city')
+            ]);
         }
 
         function registrationLabel(v) {

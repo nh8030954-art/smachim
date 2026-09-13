@@ -993,7 +993,7 @@
             if(mode==='volunteer'){
                 setDashHtml('dash-criteria',renderVolunteerCriteriaSummary());
                 tasks.push(renderMyRegistrations().then(x=>setDashHtml('dash-main-a',x)));
-                tasks.push(renderMatchingEvents().then(x=>setDashHtml('dash-main-b',x)));
+                tasks.push(renderMatchingEvents().then(x=>{setDashHtml('dash-main-b',x);setTimeout(initializeInlineMatchingMaps,0);}));
                 if(currentProfile.role==='volunteer'){
                     setDashHtml('dash-cta','<div class="glass-card p-6 flex flex-wrap gap-3 items-center justify-between"><div><h3 class="font-bold text-lg">יש לך גם אירוע?</h3><p class="text-sm text-slate-500">אותו חשבון יכול לשמש גם כבעל שמחה.</p></div><button onclick="openAddEvent()" class="btn-dark px-4 py-2">פרסם אירוע</button></div>');
                 }
@@ -1094,51 +1094,55 @@
             return '<div class="glass-card p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">ההתנדבויות שלי</h3><span class="text-xs text-slate-500">'+upcoming.length+' קרובות</span></div><div class="space-y-4">'+(upcoming.length?cards(upcoming):'<p class="text-slate-500">אין כרגע התנדבויות קרובות.</p>')+'</div>'+(history.length?'<details class="mt-5 border-t pt-4"><summary class="cursor-pointer font-bold text-sm text-slate-600">היסטוריה ('+history.length+')</summary><div class="space-y-3 mt-3">'+cards(history,true)+'</div></details>':'')+'</div>';
         }
 
-        async function loadEventRoute(eventId){
+        async function renderInlineEventMap(eventId){
             const ev=matchingEventsCache.find(x=>x.id===eventId);
-            const panel=$('route-panel-'+eventId);
-            if(!ev||!panel) return;
-            const wasHidden=panel.classList.contains('hidden');
-            panel.classList.toggle('hidden');
-            if(!wasHidden) return;
+            const mapEl=$('route-map-'+eventId),stats=$('route-stats-'+eventId);
+            if(!ev||!mapEl||routeMapInstances.has(eventId))return;
             if(typeof L==='undefined'||ev.exact_lat==null||ev.exact_lng==null||currentProfile.lat==null||currentProfile.lng==null){
-                panel.innerHTML='<div class="text-sm text-slate-500">המפה אינה זמינה כרגע.</div>'; return;
+                if(stats)stats.textContent='המפה אינה זמינה כרגע.';return;
             }
-
-            const mapId='route-map-'+eventId;
-            panel.innerHTML='<div id="'+mapId+'" class="route-map"></div><div id="route-stats-'+eventId+'" class="text-sm text-slate-600 mt-3">מחשב מסלול...</div>'+externalNavButtons(ev);
-            if(routeMapInstances.has(eventId)){try{routeMapInstances.get(eventId).remove();}catch(_){}routeMapInstances.delete(eventId);}
-            const map=L.map(mapId,{scrollWheelZoom:false});
+            const map=L.map(mapEl,{scrollWheelZoom:false,zoomControl:true});
             routeMapInstances.set(eventId,map);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
-            const home=[Number(currentProfile.lat),Number(currentProfile.lng)], hall=[Number(ev.exact_lat),Number(ev.exact_lng)];
+            const home=[Number(currentProfile.lat),Number(currentProfile.lng)],hall=[Number(ev.exact_lat),Number(ev.exact_lng)];
             L.marker(home).addTo(map).bindPopup('הבית שלי');
             L.marker(hall).addTo(map).bindPopup((ev.hall_name||'האולם')+'<br>'+esc(ev.hall_address||''));
-            const bounds=L.latLngBounds([home,hall]);map.fitBounds(bounds,{padding:[35,35]});
-
+            map.fitBounds(L.latLngBounds([home,hall]),{padding:[28,28]});
+            setTimeout(()=>map.invalidateSize(),80);
             try{
                 const url='https://router.project-osrm.org/route/v1/driving/'+home[1]+','+home[0]+';'+hall[1]+','+hall[0]+'?overview=full&geometries=geojson';
-                const res=await fetch(url); const json=await res.json(); const route=json?.routes?.[0];
-                if(route){
-                    L.geoJSON(route.geometry,{weight:5,opacity:.75}).addTo(map);
-                    map.fitBounds(L.geoJSON(route.geometry).getBounds(),{padding:[30,30]});
-                    const road=(route.distance/1000).toFixed(1),mins=Math.round(route.duration/60);
-                    $('route-stats-'+eventId).innerHTML='<b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>מרחק נסיעה בכביש:</b> '+road+' ק״מ · <b>זמן נסיעה משוער:</b> '+mins+' דקות'+(currentProfile.transport_mode==='transit'?'<div class="text-xs mt-1">המסלול המצויר הוא מסלול רכב. למסלול תחבורה ציבורית פתח Google Maps או Moovit.</div>':'');
-                } else throw new Error('route');
+                const res=await fetch(url),json=await res.json(),route=json?.routes?.[0];
+                if(!route)throw new Error('route');
+                const layer=L.geoJSON(route.geometry,{weight:5,opacity:.75}).addTo(map);
+                map.fitBounds(layer.getBounds(),{padding:[26,26]});
+                if(stats)stats.innerHTML='<b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>מרחק בכביש:</b> '+(route.distance/1000).toFixed(1)+' ק״מ · <b>זמן נסיעה משוער:</b> '+Math.round(route.duration/60)+' דקות';
             }catch(_){
                 L.polyline([home,hall],{dashArray:'6,8'}).addTo(map);
-                $('route-stats-'+eventId).innerHTML='<b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · לא הצלחנו לחשב כרגע מרחק נסיעה בכביש.';
+                if(stats)stats.innerHTML='<b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מסלול כביש לא זמין כרגע.';
             }
         }
 
-        function matchingCards(events){
+        function initializeInlineMatchingMaps(){
+            if(matchingMapObserver){matchingMapObserver.disconnect();matchingMapObserver=null;}
+            const nodes=[...document.querySelectorAll('[data-event-map]')];
+            if(!('IntersectionObserver' in window)){nodes.forEach(el=>renderInlineEventMap(el.dataset.eventMap));return;}
+            matchingMapObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{
+                if(entry.isIntersecting){
+                    renderInlineEventMap(entry.target.dataset.eventMap);
+                    matchingMapObserver.unobserve(entry.target);
+                }
+            }),{rootMargin:'500px 0px'});
+            nodes.forEach(el=>matchingMapObserver.observe(el));
+        }
+
+        function matchingCards(events){        function matchingCards(events){
             return events.map(ev=>{
                 const count=currentProfile.gender==='male'?Number(ev.men_registered):Number(ev.women_registered);
                 const quota=currentProfile.gender==='male'?Number(ev.quota_men):Number(ev.quota_women);
                 const available=Math.max(quota-count,0);
                 const ageRange=ev.age_min==null&&ev.age_max==null?'ללא הגבלת גיל':(ev.age_min??'—')+'–'+(ev.age_max??'—');
                 const exact=(ev.hall_name?ev.hall_name+' · ':'')+(ev.hall_address||fullAddress(ev.city,ev.street,ev.house_number));
-                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(ev.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(relativeDateLabel(ev.event_date))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(ev.event_type))+'</span></div><p class="text-sm text-slate-500 mt-1">בעל השמחה: <b>'+esc(ev.host_name)+'</b></p><p class="text-sm text-slate-600 mt-1">📅 '+dayName(ev.event_date)+' · '+formatDate(ev.event_date)+' · ⏰ '+esc(timeRange(ev.start_time,ev.close_time))+'</p><p class="text-sm font-bold text-brand-700 mt-1">📍 '+esc(exact)+'</p><p class="text-xs text-slate-600 mt-2"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>הרשמה עד:</b> '+esc(formatDateTime(ev.registration_deadline))+'</p><p class="text-xs text-brand-700 font-semibold mt-1"><i class="fa-solid fa-circle-check ml-1"></i>התאמה מלאה: מגזר אירוע '+esc(sectorLabel(ev.sector_pref))+' · מגזרי משמחים '+esc(sectorListLabel(ev.accepted_volunteer_sectors))+' · '+(ev.is_separated?'הפרדה מלאה':'ללא הפרדה')+' · גיל '+esc(ageRange)+'</p><p class="text-xs text-slate-500 mt-1">נותרו '+available+' מקומות במכסה שלך · גברים '+ev.men_registered+'/'+ev.quota_men+' · נשים '+ev.women_registered+'/'+ev.quota_women+'</p>'+(ev.volunteer_note?'<div class="mt-2 bg-white border rounded-lg p-2 text-sm"><b>הערת בעל השמחה:</b> '+esc(ev.volunteer_note)+'</div>':'')+'</div><div class="flex flex-wrap gap-2 shrink-0"><button onclick="loadEventRoute(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-solid fa-route ml-1"></i> מפה ומסלול</button><button onclick="rsvpEvent(\''+esc(ev.id)+'\')" class="btn-brand px-4 py-2 text-sm">הירשם לשמח</button><button onclick="reportEvent(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-regular fa-flag"></i></button></div></div><div id="route-panel-'+esc(ev.id)+'" class="hidden mt-4 border-t pt-4"></div></div>';
+                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(ev.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(relativeDateLabel(ev.event_date))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(ev.event_type))+'</span></div><p class="text-sm text-slate-500 mt-1">בעל השמחה: <b>'+esc(ev.host_name)+'</b></p><p class="text-sm text-slate-600 mt-1">📅 '+dayName(ev.event_date)+' · '+formatDate(ev.event_date)+' · ⏰ '+esc(timeRange(ev.start_time,ev.close_time))+'</p><p class="text-sm font-bold text-brand-700 mt-1">📍 '+esc(exact)+'</p><p class="text-xs text-slate-600 mt-2"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>הרשמה עד:</b> '+esc(formatDateTime(ev.registration_deadline))+'</p><p class="text-xs text-brand-700 font-semibold mt-1"><i class="fa-solid fa-circle-check ml-1"></i>התאמה מלאה: מגזר אירוע '+esc(sectorLabel(ev.sector_pref))+' · מגזרי משמחים '+esc(sectorListLabel(ev.accepted_volunteer_sectors))+' · '+(ev.is_separated?'הפרדה מלאה':'ללא הפרדה')+' · גיל '+esc(ageRange)+'</p><p class="text-xs text-slate-500 mt-1">נותרו '+available+' מקומות במכסה שלך · גברים '+ev.men_registered+'/'+ev.quota_men+' · נשים '+ev.women_registered+'/'+ev.quota_women+'</p>'+(ev.volunteer_note?'<div class="mt-2 bg-white border rounded-lg p-2 text-sm"><b>הערת בעל השמחה:</b> '+esc(ev.volunteer_note)+'</div>':'')+'</div><div class="flex flex-wrap gap-2 shrink-0"><button onclick="rsvpEvent(\''+esc(ev.id)+'\')" class="btn-brand px-4 py-2 text-sm">הירשם לשמח</button><button onclick="reportEvent(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-regular fa-flag"></i></button></div></div><div class="mt-4 border-t pt-4"><div id="route-map-'+esc(ev.id)+'" data-event-map="'+esc(ev.id)+'" class="route-map"></div><div id="route-stats-'+esc(ev.id)+'" class="text-sm text-slate-600 mt-3"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מחשב מסלול...</div>'+externalNavButtons(ev)+'</div></div>';
             }).join('');
         }
 
@@ -1153,6 +1157,8 @@
             });
             else events.sort((a,b)=>String(a.event_date).localeCompare(String(b.event_date))||String(a.start_time).localeCompare(String(b.start_time)));
             if($('matching-list')) $('matching-list').innerHTML=events.length?matchingCards(events):'<p class="text-slate-500">אין כרגע אירועים שעומדים בכל הקריטריונים שלך.</p>';
+            routeMapInstances.forEach(m=>{try{m.remove();}catch(_){}});routeMapInstances.clear();
+            setTimeout(initializeInlineMatchingMaps,0);
         }
 
         async function renderMatchingEvents(){

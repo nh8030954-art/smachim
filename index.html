@@ -368,9 +368,12 @@
         let calendarEventCache = new Map();
         let modalResolver = null;
         let dashboardArea = localStorage.getItem('smachimDashboardArea') || '';
-        let matchingMapInstance = null;
-        let matchingMapMarkers = new Map();
-        const EVENT_DRAFT_KEY = 'smachimEventDraftV3';
+        let routeMapInstances = new Map();
+        let activeChatEventId = null;
+        let activeChatEventName = '';
+        let chatPollTimer = null;
+        const GOV_STREETS_RESOURCE = '9ad3862c-8391-4b2f-84a4-2d4c68625f4b';
+        const EVENT_DRAFT_KEY = 'smachimEventDraftV4';
 
         const $ = (id) => document.getElementById(id);
         const esc = (value) => String(value ?? '')
@@ -442,6 +445,100 @@
             return ({haredi:'חרדי', religious:'דתי לאומי', traditional:'מסורתי', secular:'חילוני', all:'כל המגזרים'})[v] || v || '';
         }
 
+        function eventTypeLabel(v) {
+            return ({wedding:'חתונה',sheva_brachot:'שבע ברכות',bar_mitzvah:'בר מצווה',bat_mitzvah:'בת מצווה',engagement:'אירוסין',other:'אחר'})[v] || 'אירוע';
+        }
+
+        function checkedValues(name) {
+            return [...document.querySelectorAll('input[name="'+name+'"]:checked')].map(x=>x.value);
+        }
+
+        function checkedNumbers(name) {
+            return checkedValues(name).map(Number).filter(Number.isFinite);
+        }
+
+        function setCheckedValues(name, values=[]) {
+            const set=new Set((values||[]).map(String));
+            document.querySelectorAll('input[name="'+name+'"]').forEach(x=>x.checked=set.has(String(x.value)));
+        }
+
+        function bindAllChoice(name) {
+            document.querySelectorAll('input[name="'+name+'"]').forEach(input=>{
+                input.addEventListener('change',()=>{
+                    const all=document.querySelector('input[name="'+name+'"][value="all"]');
+                    if(input.value==='all' && input.checked) {
+                        document.querySelectorAll('input[name="'+name+'"]').forEach(x=>{ if(x.value!=='all') x.checked=false; });
+                    } else if(input.value!=='all' && input.checked && all) {
+                        all.checked=false;
+                    }
+                    if(!checkedValues(name).length && all) all.checked=true;
+                });
+            });
+        }
+
+        function populateBirthYears() {
+            const now=new Date().getFullYear();
+            document.querySelectorAll('.birth-year-select').forEach(sel=>{
+                if(sel.options.length>2) return;
+                for(let y=now;y>=1930;y--){
+                    const o=document.createElement('option');o.value=String(y);o.textContent=String(y);sel.appendChild(o);
+                }
+            });
+        }
+
+        function fullAddress(city,street,number='') {
+            return [street,number,city].map(x=>String(x||'').trim()).filter(Boolean).join(' ');
+        }
+
+        function toDateTimeLocal(value) {
+            if(!value) return '';
+            const s=String(value).replace(' ','T');
+            return s.slice(0,16);
+        }
+
+        function debounce(fn,wait=300) {
+            let t; return (...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),wait);};
+        }
+
+        async function govSql(sql) {
+            try {
+                const url='https://data.gov.il/api/3/action/datastore_search_sql?sql='+encodeURIComponent(sql);
+                const res=await fetch(url);
+                if(!res.ok) return [];
+                const json=await res.json();
+                return json?.result?.records||[];
+            } catch(_) { return []; }
+        }
+
+        function safeSqlText(v) { return String(v||'').replaceAll("'","''").slice(0,80); }
+
+        async function suggestCities(term,listId) {
+            if(String(term||'').trim().length<2) return;
+            const q=safeSqlText(term);
+            const sql='SELECT DISTINCT "שם_ישוב" FROM "'+GOV_STREETS_RESOURCE+'" WHERE "שם_ישוב" ILIKE \'%'+q+'%\' ORDER BY "שם_ישוב" LIMIT 20';
+            const rows=await govSql(sql);
+            const list=$(listId); if(!list) return;
+            list.innerHTML='';
+            [...new Set(rows.map(r=>r['שם_ישוב']).filter(Boolean))].forEach(v=>{const o=document.createElement('option');o.value=v;list.appendChild(o);});
+        }
+
+        async function suggestStreets(city,term,listId) {
+            if(!String(city||'').trim() || String(term||'').trim().length<1) return;
+            const cty=safeSqlText(city),q=safeSqlText(term);
+            const sql='SELECT DISTINCT "שם_רחוב" FROM "'+GOV_STREETS_RESOURCE+'" WHERE "שם_ישוב"=\''+cty+'\' AND "שם_רחוב" ILIKE \'%'+q+'%\' ORDER BY "שם_רחוב" LIMIT 30';
+            const rows=await govSql(sql);
+            const list=$(listId); if(!list) return;
+            list.innerHTML='';
+            [...new Set(rows.map(r=>r['שם_רחוב']).filter(Boolean))].forEach(v=>{const o=document.createElement('option');o.value=v;list.appendChild(o);});
+        }
+
+        function wireAddressAutocomplete(cityId,streetId,cityListId,streetListId) {
+            const city=$(cityId),street=$(streetId); if(!city||!street) return;
+            city.addEventListener('input',debounce(()=>suggestCities(city.value,cityListId),250));
+            street.addEventListener('input',debounce(()=>suggestStreets(city.value,street.value,streetListId),250));
+            city.addEventListener('change',()=>{ if(street.value) suggestStreets(city.value,street.value,streetListId); });
+        }
+
         function registrationLabel(v) {
             return ({approved:'מאושר', waitlist:'רשימת המתנה', cancelled:'בוטל'})[v] || v;
         }
@@ -461,8 +558,47 @@
 
         function readableError(error) {
             const m=String(error?.message||error||'שגיאה לא ידועה');
-            const pairs=[['session_expired','ההתחברות פגה. התחבר מחדש.'],['profile_missing','לא הצלחנו לטעון את הפרופיל. נסה להתחבר מחדש.'],['weekly_limit_reached','הגעת למספר ימי ההתנדבות המקסימלי שהגדרת לשבוע זה.'],['time_conflict','כבר יש לך התנדבות אחרת שחופפת בשעות לאירוע הזה.'],['gender_required','יש להגדיר מין בפרופיל כדי להתאים למכסת האירוע.'],['address_required','יש להגדיר כתובת מגורים לפני הפעלת מצב משמח.'],['user_blocked','החשבון חסום כרגע.'],['event_unavailable','האירוע אינו זמין להרשמה.'],['event_not_found','האירוע כבר לא קיים.'],['cannot_register_own_event','לא ניתן להירשם כמשמח לאירוע שפרסמת.'],['quota_below_existing_registrations','אי אפשר להקטין מכסה מתחת למספר הנרשמים שכבר אושרו.'],['invalid_event_times','שעת הסיום חייבת להיות מאוחרת משעת ההתחלה.'],['duplicate_event','נראה שכבר פרסמת את האירוע הזה.'],['invalid_event_name','יש להזין שם לאירוע.'],['invalid_location','יש להשלים עיר/אזור וכתובת אולם.'],['gender_change_with_active_registrations','לא ניתן לשנות מין כל עוד יש הרשמות פעילות לאירועים עתידיים.'],['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],['event_date_in_past','לא ניתן לבחור תאריך שכבר עבר.'],['invalid_login','מספר הטלפון או הסיסמה שגויים.'],['already_registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.'],['invalid_phone','מספר הטלפון אינו תקין.'],['invalid_password','הסיסמה חייבת לכלול לפחות 8 תווים.'],['invalid_name','יש להזין שם מלא.'],['not_allowed','אין הרשאה לבצע את הפעולה הזאת.'],['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],['criteria_mismatch','האירוע כבר לא עומד בהעדפות או בקריטריונים שלך.'],['outside_radius','האירוע נמצא מחוץ לרדיוס שהגדרת.'],['location_required','יש להגדיר כתובת מגורים כדי לקבל התאמות לפי מרחק.'],['event_location_missing','לא ניתן לחשב כרגע את מיקום האירוע.'],['event_full_for_gender','המכסה המתאימה לך התמלאה ממש עכשיו.']];
-            for(const [key,text] of pairs)if(m.includes(key))return text;
+            const pairs=[
+                ['session_expired','ההתחברות פגה. התחבר מחדש.'],
+                ['profile_missing','לא הצלחנו לטעון את הפרופיל. נסה להתחבר מחדש.'],
+                ['weekly_limit_reached','הגעת למספר ימי ההתנדבות המקסימלי שהגדרת לשבוע זה.'],
+                ['time_conflict','כבר יש לך התנדבות אחרת שחופפת בשעות לאירוע הזה.'],
+                ['gender_required','יש להגדיר מין בפרופיל.'],
+                ['birth_year_required','יש להגדיר שנת לידה.'],
+                ['invalid_birth_year','שנת הלידה אינה תקינה.'],
+                ['address_required','יש להשלים עיר ורחוב בפרופיל.'],
+                ['address_not_found','לא הצלחנו לזהות את הכתובת. נסה לבחור עיר ורחוב מההצעות.'],
+                ['invalid_address','יש להשלים עיר ורחוב.'],
+                ['invalid_availability','טווח שעות הזמינות אינו תקין.'],
+                ['invalid_transport_mode','אמצעי ההגעה אינו תקין.'],
+                ['invalid_registration_deadline','מועד סגירת ההרשמה חייב להיות מעכשיו ועד שעת תחילת האירוע.'],
+                ['invalid_age_range','טווח הגילאים אינו תקין.'],
+                ['invalid_event_type','סוג האירוע אינו תקין.'],
+                ['invalid_message','ההודעה ריקה או ארוכה מדי.'],
+                ['registration_not_found','לא נמצאה הרשמה פעילה לאירוע.'],
+                ['user_blocked','החשבון חסום כרגע.'],
+                ['event_unavailable','האירוע אינו זמין להרשמה.'],
+                ['event_not_found','האירוע כבר לא קיים.'],
+                ['cannot_register_own_event','לא ניתן להירשם כמשמח לאירוע שפרסמת.'],
+                ['quota_below_existing_registrations','אי אפשר להקטין מכסה מתחת למספר הנרשמים שכבר אושרו.'],
+                ['invalid_event_times','שעת הסיום חייבת להיות מאוחרת משעת ההתחלה.'],
+                ['duplicate_event','נראה שכבר פרסמת את האירוע הזה.'],
+                ['invalid_event_name','יש להזין שם לאירוע.'],
+                ['invalid_location','יש להשלים עיר, רחוב וכתובת אולם.'],
+                ['event_location_missing','לא הצלחנו לזהות את כתובת האולם במפה.'],
+                ['gender_change_with_active_registrations','לא ניתן לשנות מין כל עוד יש הרשמות פעילות לאירועים עתידיים.'],
+                ['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],
+                ['event_date_in_past','לא ניתן לבחור תאריך שכבר עבר.'],
+                ['invalid_login','מספר הטלפון או הסיסמה שגויים.'],
+                ['already_registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.'],
+                ['invalid_phone','מספר הטלפון אינו תקין.'],
+                ['invalid_password','הסיסמה חייבת לכלול לפחות 8 תווים.'],
+                ['invalid_name','יש להזין שם מלא.'],
+                ['not_allowed','אין הרשאה לבצע את הפעולה הזאת.'],
+                ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
+                ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.']
+            ];
+            for(const [key,text] of pairs) if(m.includes(key)) return text;
             if(m.includes('אינן זהות')) return 'הסיסמאות אינן זהות.';
             return 'אירעה שגיאה. נסה שוב בעוד רגע.';
         }
@@ -503,89 +639,228 @@
 
         async function handleRegisterVolunteer(){
             setBusy('vol-submit',true,'יוצר חשבון...');
-            try{const name=$('vol-name').value.trim();const phone=normalizePhone($('vol-phone').value);const password=$('vol-pass').value;const confirmPassword=$('vol-pass-confirm').value;const gender=$('vol-gender').value;const sector=$('vol-sector').value;const address=$('vol-address').value.trim();const radius=Number($('vol-radius').value);const maxDays=Number($('vol-days').value);const separation=$('vol-separation').checked;
-                if(!isValidPhone(phone))throw new Error('invalid_phone');if(password.length<8)throw new Error('invalid_password');if(password!==confirmPassword)throw new Error('הסיסמאות אינן זהות.');
-                const coords=await geocodeAddress(address);if(coords.lat==null)showToast('לא הצלחנו לזהות את הכתובת במפה. אפשר להמשיך, אך המרחק לאירועים עלול לא להופיע עד שתעדכן כתובת.','warning');
-                const {data:token,error}=await _supabase.rpc('username_register',{p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',p_gender:gender,p_sector:sector,p_address:address,p_radius:radius,p_max_days_per_week:maxDays,p_strict_separation:separation,p_lat:coords.lat,p_lng:coords.lng});
-                if(error)throw error;applySessionToken(token);await loadProfile();updateHeaderActions();$('volunteer-form').reset();showToast('ההרשמה הושלמה בהצלחה!','success');await loadDashboard();
-            }catch(e){showToast(readableError(e),'error');}finally{setBusy('vol-submit',false);}
+            try {
+                const name=$('vol-name').value.trim();
+                const phone=normalizePhone($('vol-phone').value);
+                const password=$('vol-pass').value;
+                const confirmPassword=$('vol-pass-confirm').value;
+                const gender=$('vol-gender').value;
+                const birthYear=Number($('vol-birth-year').value);
+                const sector=$('vol-sector').value;
+                const prefs=checkedValues('vol-sector-pref');
+                const city=$('vol-city').value.trim(),street=$('vol-street').value.trim(),number=$('vol-house-number').value.trim();
+                const radius=Number($('vol-radius').value);
+                const maxDays=Number($('vol-days').value);
+                const days=checkedNumbers('vol-available-day');
+                const availableFrom=$('vol-available-from').value||null;
+                const availableUntil=$('vol-available-until').value||null;
+                const transport=$('vol-transport').value;
+                const separation=$('vol-separation').checked;
+
+                if(!isValidPhone(phone)) throw new Error('invalid_phone');
+                if(password.length<8) throw new Error('invalid_password');
+                if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
+                if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
+                const address=fullAddress(city,street,number);
+                const coords=await geocodeAddress(address);
+                if(coords.lat==null) throw new Error('address_not_found');
+
+                const {data:token,error}=await _supabase.rpc('username_register_v2',{
+                    p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
+                    p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
+                    p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
+                    p_radius:radius,p_max_days_per_week:maxDays,p_strict_separation:separation,
+                    p_availability_days:days,p_availability_from:availableFrom,p_availability_until:availableUntil,
+                    p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng
+                });
+                if(error) throw error;
+                applySessionToken(token); await loadProfile(); updateHeaderActions();
+                showToast('ההרשמה הושלמה בהצלחה!','success');
+                await loadDashboard();
+            } catch(e) { showToast(String(e?.message||'').includes('לפחות יום')?String(e.message):readableError(e),'error'); }
+            finally { setBusy('vol-submit',false); }
         }
 
-        async function handleLogin(){setBusy('login-submit',true,'מתחבר...');try{const phone=normalizePhone($('login-phone').value);const password=$('login-password').value;if(!isValidPhone(phone))throw new Error('invalid_phone');const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});if(error)throw error;applySessionToken(token);const profile=await loadProfile();if(!profile)throw new Error('session_expired');updateHeaderActions();showToast('ברוך הבא!','success');await loadDashboard();}catch(e){showToast(readableError(e),'error');}finally{setBusy('login-submit',false);}}
+        async function handleLogin()        async function handleLogin(){setBusy('login-submit',true,'מתחבר...');try{const phone=normalizePhone($('login-phone').value);const password=$('login-password').value;if(!isValidPhone(phone))throw new Error('invalid_phone');const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});if(error)throw error;applySessionToken(token);const profile=await loadProfile();if(!profile)throw new Error('session_expired');updateHeaderActions();showToast('ברוך הבא!','success');await loadDashboard();}catch(e){showToast(readableError(e),'error');}finally{setBusy('login-submit',false);}}
 
 
         async function handleLogout(){const token=sessionToken;try{if(token)await _supabase.rpc('username_logout',{p_token:token});}catch(_){}applySessionToken('');currentUser=null;currentProfile=null;currentIsAdmin=false;updateHeaderActions();navigate('home');showToast('התנתקת מהמערכת.');}
 
-        async function openAddEvent(){if(sessionToken&&!currentProfile)await loadProfile();const block=$('host-account-block');const fields=['host-name','host-phone','host-pass','host-pass-confirm'];if(currentProfile){block.classList.add('hidden');fields.forEach(id=>$(id).required=false);}else{block.classList.remove('hidden');fields.forEach(id=>$(id).required=true);}$('ev-date').min=new Date().toISOString().slice(0,10);restoreEventDraft();navigate('add-event');}
-        function saveEventDraft(){const form=$('event-form');if(!form)return;const draft={couple_names:$('ev-name')?.value||'',event_date:$('ev-date')?.value||'',public_location:$('ev-public-location')?.value||'',hall_address:$('ev-address')?.value||'',start_time:$('ev-start')?.value||'',close_time:$('ev-close')?.value||'',sector_pref:$('ev-sector')?.value||'all',is_separated:!!$('ev-separation')?.checked,quota_men:$('ev-men')?.value||'',quota_women:$('ev-women')?.value||''};if(Object.values(draft).some(v=>v&&v!==false&&v!=='all')){localStorage.setItem(EVENT_DRAFT_KEY,JSON.stringify(draft));if($('draft-indicator'))$('draft-indicator').textContent='הטיוטה נשמרה';}}
-        function restoreEventDraft(){const raw=localStorage.getItem(EVENT_DRAFT_KEY);if(!raw)return;try{const d=JSON.parse(raw);const map={couple_names:'ev-name',event_date:'ev-date',public_location:'ev-public-location',hall_address:'ev-address',start_time:'ev-start',close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women'};Object.entries(map).forEach(([k,id])=>{if(d[k]!==undefined&&$(id))$(id).value=d[k];});if($('ev-separation'))$('ev-separation').checked=!!d.is_separated;if($('draft-indicator'))$('draft-indicator').textContent='שוחזרה טיוטה';}catch(_){}}
+        async function openAddEvent(){
+            if(sessionToken&&!currentProfile) await loadProfile();
+            const block=$('host-account-block');
+            const fields=['host-name','host-phone','host-pass','host-pass-confirm'];
+            if(currentProfile){block.classList.add('hidden');fields.forEach(id=>$(id).required=false);}
+            else {block.classList.remove('hidden');fields.forEach(id=>$(id).required=true);}
+            $('ev-date').min=new Date().toISOString().slice(0,10);
+            restoreEventDraft();
+            navigate('add-event');
+        }
+
+        function saveEventDraft(){
+            const form=$('event-form'); if(!form) return;
+            const draft={
+                event_name:$('ev-name')?.value||'',event_type:$('ev-type')?.value||'wedding',
+                event_date:$('ev-date')?.value||'',registration_deadline:$('ev-registration-deadline')?.value||'',
+                hall_name:$('ev-hall-name')?.value||'',city:$('ev-city')?.value||'',street:$('ev-street')?.value||'',
+                house_number:$('ev-house-number')?.value||'',start_time:$('ev-start')?.value||'',close_time:$('ev-close')?.value||'',
+                sector_pref:$('ev-sector')?.value||'all',accepted_sectors:checkedValues('ev-accepted-sector'),
+                is_separated:!!$('ev-separation')?.checked,quota_men:$('ev-men')?.value||'0',quota_women:$('ev-women')?.value||'0',
+                age_min:$('ev-age-min')?.value||'',age_max:$('ev-age-max')?.value||'',note:$('ev-note')?.value||''
+            };
+            localStorage.setItem(EVENT_DRAFT_KEY,JSON.stringify(draft));
+            if($('draft-indicator')) $('draft-indicator').textContent='הטיוטה נשמרה';
+        }
+
+        function restoreEventDraft(){
+            const raw=localStorage.getItem(EVENT_DRAFT_KEY); if(!raw) return;
+            try {
+                const d=JSON.parse(raw);
+                const map={event_name:'ev-name',event_type:'ev-type',event_date:'ev-date',registration_deadline:'ev-registration-deadline',
+                    hall_name:'ev-hall-name',city:'ev-city',street:'ev-street',house_number:'ev-house-number',start_time:'ev-start',
+                    close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women',age_min:'ev-age-min',age_max:'ev-age-max',note:'ev-note'};
+                Object.entries(map).forEach(([k,id])=>{if(d[k]!==undefined&&$(id))$(id).value=d[k];});
+                if($('ev-separation')) $('ev-separation').checked=!!d.is_separated;
+                setCheckedValues('ev-accepted-sector',d.accepted_sectors||['all']);
+                if($('draft-indicator')) $('draft-indicator').textContent='שוחזרה טיוטה';
+            } catch(_) {}
+        }
+
         function clearEventDraft(){localStorage.removeItem(EVENT_DRAFT_KEY);if($('draft-indicator'))$('draft-indicator').textContent='';}
-        function initEventDraftAutosave(){const form=$('event-form');if(!form)return;form.querySelectorAll('input,select').forEach(el=>{if(['host-pass','host-pass-confirm'].includes(el.id))return;el.addEventListener('input',saveEventDraft);el.addEventListener('change',saveEventDraft);});}
+
+        function initEventDraftAutosave(){
+            const form=$('event-form'); if(!form) return;
+            form.querySelectorAll('input,select,textarea').forEach(el=>{
+                if(['host-pass','host-pass-confirm'].includes(el.id)) return;
+                el.addEventListener('input',saveEventDraft); el.addEventListener('change',saveEventDraft);
+            });
+            const suggest=()=>{
+                if($('ev-registration-deadline').value||!$('ev-date').value||!$('ev-start').value) return;
+                const d=new Date($('ev-date').value+'T'+$('ev-start').value+':00');
+                d.setHours(d.getHours()-2);
+                const pad=n=>String(n).padStart(2,'0');
+                $('ev-registration-deadline').value=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+            };
+            $('ev-date')?.addEventListener('change',suggest); $('ev-start')?.addEventListener('change',suggest);
+        }
 
         function collectEventForm(prefix='') {
-            const id = (name) => $(prefix + name);
+            const id=(name)=>$(prefix+name);
+            const n=(name)=>{const v=id(name).value;return v===''?null:Number(v);};
+            const acceptedName=prefix?'edit-ev-accepted-sector':'ev-accepted-sector';
             return {
-                couple_names: id('ev-name').value.trim(),
-                event_date: id('ev-date').value,
-                public_location: id('ev-public-location').value.trim(),
-                hall_address: id('ev-address').value.trim(),
-                start_time: id('ev-start').value,
-                close_time: id('ev-close').value,
-                sector_pref: id('ev-sector').value,
-                is_separated: id('ev-separation').checked,
-                quota_men: Number(id('ev-men').value),
-                quota_women: Number(id('ev-women').value)
+                event_name:id('ev-name').value.trim(),
+                event_type:id('ev-type').value,
+                event_date:id('ev-date').value,
+                registration_deadline:id('ev-registration-deadline').value,
+                hall_name:id('ev-hall-name').value.trim(),
+                city:id('ev-city').value.trim(),
+                street:id('ev-street').value.trim(),
+                house_number:id('ev-house-number').value.trim(),
+                start_time:id('ev-start').value,
+                close_time:id('ev-close').value,
+                sector_pref:id('ev-sector').value,
+                accepted_sectors:checkedValues(acceptedName),
+                is_separated:id('ev-separation').checked,
+                quota_men:Number(id('ev-men').value||0),
+                quota_women:Number(id('ev-women').value||0),
+                age_min:n('ev-age-min'),
+                age_max:n('ev-age-max'),
+                note:id('ev-note').value.trim()
             };
         }
 
         function validateEventPayload(ev) {
-            if (ev.event_date < new Date().toISOString().slice(0,10)) throw new Error('event_date_in_past');
-            if (ev.close_time <= ev.start_time) throw new Error('invalid_event_times');
-            if (ev.quota_men < 0 || ev.quota_women < 0) throw new Error('invalid_quota');
-            if (!ev.couple_names || ev.couple_names.length < 2) throw new Error('invalid_event_name');
-            if (!ev.public_location || !ev.hall_address) throw new Error('invalid_location');
+            if(!ev.event_name||ev.event_name.length<2) throw new Error('invalid_event_name');
+            if(!ev.event_date||ev.event_date<new Date().toISOString().slice(0,10)) throw new Error('event_date_in_past');
+            if(!ev.start_time||!ev.close_time||ev.close_time<=ev.start_time) throw new Error('invalid_event_times');
+            if(!ev.registration_deadline) throw new Error('invalid_registration_deadline');
+            if(!ev.city||!ev.street) throw new Error('invalid_location');
+            if(ev.quota_men<0||ev.quota_women<0) throw new Error('invalid_quota');
+            if(ev.age_min!=null&&ev.age_max!=null&&ev.age_min>ev.age_max) throw new Error('invalid_age_range');
         }
 
         async function createEventRpc(ev) {
             validateEventPayload(ev);
-            const [exactCoords, publicCoords] = await Promise.all([
-                geocodeAddress(ev.hall_address),
-                geocodeAddress(ev.public_location)
-            ]);
-            const { data:eventId, error } = await _supabase.rpc('create_event', {
-                p_couple_names: ev.couple_names,
-                p_event_date: ev.event_date,
-                p_public_location: ev.public_location,
-                p_hall_address: ev.hall_address,
-                p_start_time: ev.start_time,
-                p_close_time: ev.close_time,
-                p_sector_pref: ev.sector_pref,
-                p_is_separated: ev.is_separated,
-                p_quota_men: ev.quota_men,
-                p_quota_women: ev.quota_women,
-                p_lat: exactCoords.lat,
-                p_lng: exactCoords.lng
+            const address=fullAddress(ev.city,ev.street,ev.house_number);
+            const coords=await geocodeAddress(address);
+            if(coords.lat==null) throw new Error('event_location_missing');
+
+            const {data:eventId,error}=await _supabase.rpc('create_event_v2',{
+                p_event_name:ev.event_name,p_event_type:ev.event_type,p_event_date:ev.event_date,
+                p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
+                p_city:ev.city,p_street:ev.street,p_house_number:ev.house_number,
+                p_start_time:ev.start_time,p_close_time:ev.close_time,p_sector_pref:ev.sector_pref,
+                p_accepted_volunteer_sectors:ev.accepted_sectors,p_is_separated:ev.is_separated,
+                p_quota_men:ev.quota_men,p_quota_women:ev.quota_women,p_age_min:ev.age_min,p_age_max:ev.age_max,
+                p_volunteer_note:ev.note||null,p_lat:coords.lat,p_lng:coords.lng
             });
-            if (error) throw error;
-            if (eventId && publicCoords.lat != null && publicCoords.lng != null) {
-                const { error:mapError } = await _supabase.rpc('set_event_public_coordinates', {
-                    p_event_id:eventId,
-                    p_public_lat:publicCoords.lat,
-                    p_public_lng:publicCoords.lng
-                });
-                if (mapError) console.warn('public map coordinates not saved', mapError);
-            }
+            if(error) throw error;
             return eventId;
         }
 
-        async function handleCreateEvent(){setBusy('event-submit',true,'מפרסם אירוע...');try{const ev=collectEventForm('');validateEventPayload(ev);if(sessionToken){const profile=currentProfile||await loadProfile();if(profile){await createEventRpc(ev);await loadProfile();$('event-form').reset();clearEventDraft();showToast('האירוע פורסם בהצלחה!','success');await loadDashboard();return;}applySessionToken('');}
-            const name=$('host-name').value.trim();const phone=normalizePhone($('host-phone').value);const password=$('host-pass').value;const confirmPassword=$('host-pass-confirm').value;if(!isValidPhone(phone))throw new Error('invalid_phone');if(password.length<8)throw new Error('invalid_password');if(password!==confirmPassword)throw new Error('הסיסמאות אינן זהות.');
-            localStorage.setItem('pendingHostEvent',JSON.stringify(ev));const {data:token,error}=await _supabase.rpc('username_register',{p_phone:phone,p_password:password,p_full_name:name,p_role:'host',p_gender:null,p_sector:ev.sector_pref,p_address:ev.public_location,p_radius:30,p_max_days_per_week:3,p_strict_separation:false,p_lat:null,p_lng:null});
-            if(error){if(String(error.message).includes('already_registered')){$('login-phone').value=displayPhone(phone);showToast('כבר קיים חשבון עם המספר הזה. האירוע נשמר כטיוטה — התחבר ואז הוא יפורסם.','warning');navigate('login');return;}throw error;}
-            applySessionToken(token);await loadProfile();updateHeaderActions();await finalizePendingEvent();$('event-form').reset();clearEventDraft();showToast('החשבון והאירוע נוצרו בהצלחה!','success');await loadDashboard();
-        }catch(e){showToast(readableError(e),'error');}finally{setBusy('event-submit',false);}}
+        async function previewEventMatches(){
+            const box=$('event-preview-count'); if(!box) return;
+            try{
+                const ev=collectEventForm(''); validateEventPayload(ev);
+                box.textContent='בודק התאמות...';
+                const coords=await geocodeAddress(fullAddress(ev.city,ev.street,ev.house_number));
+                if(coords.lat==null) throw new Error('event_location_missing');
+                const {data,error}=await _supabase.rpc('preview_event_match_count_v2',{
+                    p_event_date:ev.event_date,p_start_time:ev.start_time,p_close_time:ev.close_time,
+                    p_sector_pref:ev.sector_pref,p_accepted_volunteer_sectors:ev.accepted_sectors,
+                    p_is_separated:ev.is_separated,p_age_min:ev.age_min,p_age_max:ev.age_max,
+                    p_lat:coords.lat,p_lng:coords.lng
+                });
+                if(error) throw error;
+                const x=data?.[0]||{men_count:0,women_count:0,total_count:0};
+                box.innerHTML='<b>'+Number(x.total_count||0)+'</b> משמחים מתאימים כרגע · גברים '+Number(x.men_count||0)+' · נשים '+Number(x.women_count||0);
+            }catch(e){box.textContent=readableError(e);}
+        }
 
-        async function finalizePendingEvent(){if(!sessionToken||!currentProfile)return;const raw=localStorage.getItem('pendingHostEvent');if(!raw)return;try{const ev=JSON.parse(raw);await createEventRpc(ev);localStorage.removeItem('pendingHostEvent');clearEventDraft();await loadProfile();showToast('האירוע ששמרת פורסם בהצלחה.','success');}catch(e){if(String(e?.message||'').includes('duplicate_event')){localStorage.removeItem('pendingHostEvent');clearEventDraft();}else console.error('Pending event publication failed:',e);}}
+        async function handleCreateEvent()        async function handleCreateEvent(){
+            setBusy('event-submit',true,'מפרסם אירוע...');
+            try{
+                const ev=collectEventForm(''); validateEventPayload(ev);
+                if(sessionToken){
+                    const profile=currentProfile||await loadProfile();
+                    if(profile){
+                        await createEventRpc(ev); await loadProfile(); $('event-form').reset(); clearEventDraft();
+                        setCheckedValues('ev-accepted-sector',['all']);
+                        showToast('האירוע פורסם בהצלחה!','success'); await loadDashboard(); return;
+                    }
+                    applySessionToken('');
+                }
+
+                const name=$('host-name').value.trim(),phone=normalizePhone($('host-phone').value);
+                const password=$('host-pass').value,confirmPassword=$('host-pass-confirm').value;
+                if(!isValidPhone(phone)) throw new Error('invalid_phone');
+                if(password.length<8) throw new Error('invalid_password');
+                if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
+
+                localStorage.setItem('pendingHostEvent',JSON.stringify(ev));
+                const {data:token,error}=await _supabase.rpc('username_register_v2',{
+                    p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
+                    p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_birth_year:null,
+                    p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
+                    p_strict_separation:false,p_availability_days:[0,1,2,3,4,5,6],
+                    p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null
+                });
+                if(error){
+                    if(String(error.message).includes('already_registered')){
+                        $('login-phone').value=displayPhone(phone);
+                        showToast('כבר קיים חשבון עם המספר הזה. האירוע נשמר כטיוטה — התחבר ואז הוא יפורסם.','warning');
+                        navigate('login'); return;
+                    }
+                    throw error;
+                }
+                applySessionToken(token); await loadProfile(); updateHeaderActions(); await finalizePendingEvent();
+                $('event-form').reset(); clearEventDraft(); showToast('החשבון והאירוע נוצרו בהצלחה!','success'); await loadDashboard();
+            }catch(e){showToast(readableError(e),'error');}
+            finally{setBusy('event-submit',false);}
+        }
+
+        async function finalizePendingEvent()        async function finalizePendingEvent(){if(!sessionToken||!currentProfile)return;const raw=localStorage.getItem('pendingHostEvent');if(!raw)return;try{const ev=JSON.parse(raw);await createEventRpc(ev);localStorage.removeItem('pendingHostEvent');clearEventDraft();await loadProfile();showToast('האירוע ששמרת פורסם בהצלחה.','success');}catch(e){if(String(e?.message||'').includes('duplicate_event')){localStorage.removeItem('pendingHostEvent');clearEventDraft();}else console.error('Pending event publication failed:',e);}}
 
         function resolveDashboardArea() {
             if (!currentProfile) return 'volunteer';

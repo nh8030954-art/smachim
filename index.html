@@ -551,7 +551,7 @@
             await Promise.all([ensureCities('vol-city'),ensureCities('ev-city'),ensureCities('edit-ev-city'),ensureCities('profile-city')]);
         }
 
-        function registrationLabel(v) {        function registrationLabel(v) {
+        function registrationLabel(v) {
             return ({approved:'מאושר', waitlist:'רשימת המתנה', cancelled:'בוטל'})[v] || v;
         }
 
@@ -1137,7 +1137,7 @@
             nodes.forEach(el=>matchingMapObserver.observe(el));
         }
 
-        function matchingCards(events){        function matchingCards(events){
+        function matchingCards(events){
             return events.map(ev=>{
                 const count=currentProfile.gender==='male'?Number(ev.men_registered):Number(ev.women_registered);
                 const quota=currentProfile.gender==='male'?Number(ev.quota_men):Number(ev.quota_women);

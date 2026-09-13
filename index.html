@@ -1014,21 +1014,38 @@
             return data||[];
         }
 
+        function eventCacheKey(ev){ return ev.event_id||ev.id; }
+
+        function rememberEventForLinks(ev){
+            const id=eventCacheKey(ev);
+            if(id) calendarEventCache.set(id,{...ev,id,event_id:id,exact_address:ev.hall_address||ev.exact_address||''});
+            return id;
+        }
+
         function externalNavButtons(ev){
             if(ev.exact_lat==null||ev.exact_lng==null) return '';
+            const eventId=rememberEventForLinks(ev);
             const origin=currentProfile.lat+','+currentProfile.lng;
             const dest=ev.exact_lat+','+ev.exact_lng;
             const travel=currentProfile.transport_mode==='transit'?'transit':'driving';
             const google='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(origin)+'&destination='+encodeURIComponent(dest)+'&travelmode='+travel;
             const waze='https://waze.com/ul?ll='+encodeURIComponent(dest)+'&navigate=yes&utm_source=smachim';
-            const address=ev.hall_address||fullAddress(ev.city,ev.street,ev.house_number);
-            return '<div class="flex flex-wrap gap-2 mt-2"><a target="_blank" rel="noopener" href="'+google+'" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-brands fa-google ml-1"></i> Google Maps</a><a target="_blank" rel="noopener" href="'+waze+'" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-brands fa-waze ml-1"></i> Waze</a><button type="button" onclick="openMoovit(\''+esc(address).replaceAll('&#039;','\\&#039;')+'\')" class="btn-soft px-3 py-1.5 text-xs">Moovit</button></div>';
+            return '<div class="flex flex-wrap gap-2 mt-2"><a target="_blank" rel="noopener" href="'+google+'" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-brands fa-google ml-1"></i> Google Maps</a><a target="_blank" rel="noopener" href="'+waze+'" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-brands fa-waze ml-1"></i> Waze</a><button type="button" onclick="openMoovitEvent(\''+esc(eventId)+'\')" class="btn-soft px-3 py-1.5 text-xs">Moovit</button></div>';
         }
 
-        async function openMoovit(address){
+        async function openMoovitEvent(eventId){
+            const ev=calendarEventCache.get(eventId)||matchingEventsCache.find(x=>x.id===eventId)||hostEventsCache.get(eventId);
+            const address=ev?.hall_address||ev?.exact_address||fullAddress(ev?.city,ev?.street,ev?.house_number);
             try{await navigator.clipboard.writeText(address||'');}catch(_){}
             showToast('כתובת האולם הועתקה. הדבק אותה ב-Moovit.');
             window.open('https://moovitapp.com/','_blank','noopener');
+        }
+
+        function resolveEventName(eventId){
+            return matchingEventsCache.find(x=>x.id===eventId)?.event_name
+                || hostEventsCache.get(eventId)?.event_name
+                || calendarEventCache.get(eventId)?.event_name
+                || 'אירוע';
         }
 
         async function confirmAttendance(eventId){
@@ -1049,7 +1066,7 @@
             const cards=(list,historyMode=false)=>list.map(r=>{
                 calendarEventCache.set(r.event_id,{...r,exact_address:r.hall_address||'',couple_names:r.event_name});
                 const confirmed=!!r.attendance_confirmed_at;
-                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-wrap gap-4 justify-between items-start"><div><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(r.event_name)+'</h4><span class="status-pill bg-green-50 text-green-700">רשום</span>'+(confirmed?'<span class="status-pill bg-brand-50 text-brand-700">הגעה אושרה ✓</span>':'')+'</div><p class="text-xs font-bold text-slate-500 mt-1">'+esc(eventTypeLabel(r.event_type))+'</p><p class="text-sm text-slate-600 mt-1">📅 '+esc(relativeDateLabel(r.event_date))+' · '+formatDate(r.event_date)+' · ⏰ '+esc(timeRange(r.start_time,r.close_time))+'</p><p class="text-sm font-semibold text-brand-700 mt-1">📍 '+esc((r.hall_name?r.hall_name+' · ':'')+(r.hall_address||fullAddress(r.city,r.street,r.house_number)))+'</p>'+externalNavButtons(r)+'</div><div class="flex flex-wrap gap-2"><button onclick="openEventChat(\''+esc(r.event_id)+'\',\''+esc(r.event_name).replaceAll('&#039;','\\&#039;')+'\')" class="btn-brand px-3 py-1.5 text-xs"><i class="fa-regular fa-comments ml-1"></i> צ׳אט</button><button onclick="downloadCalendar(\''+esc(r.event_id)+'\')" class="btn-soft px-3 py-1.5 text-xs">יומן</button>'+(!confirmed&&!historyMode?'<button onclick="confirmAttendance(\''+esc(r.event_id)+'\')" class="btn-soft px-3 py-1.5 text-xs">אשר הגעה</button>':'')+(!historyMode&&r.event_status!=='cancelled'?'<button onclick="cancelMyRegistration(\''+esc(r.event_id)+'\')" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-bold text-xs">בטל הרשמה</button>':'')+'</div></div></div>';
+                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-wrap gap-4 justify-between items-start"><div><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(r.event_name)+'</h4><span class="status-pill bg-green-50 text-green-700">רשום</span>'+(confirmed?'<span class="status-pill bg-brand-50 text-brand-700">הגעה אושרה ✓</span>':'')+'</div><p class="text-xs font-bold text-slate-500 mt-1">'+esc(eventTypeLabel(r.event_type))+'</p><p class="text-sm text-slate-600 mt-1">📅 '+esc(relativeDateLabel(r.event_date))+' · '+formatDate(r.event_date)+' · ⏰ '+esc(timeRange(r.start_time,r.close_time))+'</p><p class="text-sm font-semibold text-brand-700 mt-1">📍 '+esc((r.hall_name?r.hall_name+' · ':'')+(r.hall_address||fullAddress(r.city,r.street,r.house_number)))+'</p>'+externalNavButtons(r)+'</div><div class="flex flex-wrap gap-2"><button onclick="openEventChat(\''+esc(r.event_id)+'\')" class="btn-brand px-3 py-1.5 text-xs"><i class="fa-regular fa-comments ml-1"></i> צ׳אט</button><button onclick="downloadCalendar(\''+esc(r.event_id)+'\')" class="btn-soft px-3 py-1.5 text-xs">יומן</button>'+(!confirmed&&!historyMode?'<button onclick="confirmAttendance(\''+esc(r.event_id)+'\')" class="btn-soft px-3 py-1.5 text-xs">אשר הגעה</button>':'')+(!historyMode&&r.event_status!=='cancelled'?'<button onclick="cancelMyRegistration(\''+esc(r.event_id)+'\')" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-bold text-xs">בטל הרשמה</button>':'')+'</div></div></div>';
             }).join('');
 
             return '<div class="glass-card p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">ההתנדבויות שלי</h3><span class="text-xs text-slate-500">'+upcoming.length+' קרובות</span></div><div class="space-y-4">'+(upcoming.length?cards(upcoming):'<p class="text-slate-500">אין כרגע התנדבויות קרובות.</p>')+'</div>'+(history.length?'<details class="mt-5 border-t pt-4"><summary class="cursor-pointer font-bold text-sm text-slate-600">היסטוריה ('+history.length+')</summary><div class="space-y-3 mt-3">'+cards(history,true)+'</div></details>':'')+'</div>';
@@ -1157,7 +1174,7 @@
                 const total=Number(e.approved_men)+Number(e.approved_women),quota=Number(e.quota_men)+Number(e.quota_women);
                 const pct=quota?Math.min(100,Math.round(total/quota*100)):0;
                 const age=e.age_min==null&&e.age_max==null?'לא משנה':(e.age_min??'—')+'–'+(e.age_max??'—');
-                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div><div class="flex flex-wrap gap-2 items-center"><h4 class="font-bold text-lg">'+esc(e.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(eventStatusLabel(e))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(e.event_type))+'</span></div><p class="text-sm text-slate-600 mt-1">📅 '+formatDate(e.event_date)+' · '+esc(timeRange(e.start_time,e.close_time))+' · הרשמה עד '+esc(formatDateTime(e.registration_deadline))+'</p><p class="text-sm font-semibold text-brand-700 mt-1">📍 '+esc((e.hall_name?e.hall_name+' · ':'')+e.hall_address)+'</p><p class="text-xs text-slate-600 mt-2">מגזר אירוע: '+esc(sectorLabel(e.sector_pref))+' · משמחים: '+esc(sectorListLabel(e.accepted_volunteer_sectors))+' · גיל: '+esc(age)+' · '+(e.is_separated?'הפרדה מלאה':'ללא הפרדה')+'</p><div class="mt-3 max-w-md"><div class="flex justify-between text-xs text-slate-600 mb-1"><span>נרשמו '+total+'/'+quota+'</span><span>'+pct+'%</span></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="text-xs text-slate-500 mt-1">גברים '+e.approved_men+'/'+e.quota_men+' (אישרו הגעה '+e.confirmed_men+') · נשים '+e.approved_women+'/'+e.quota_women+' (אישרו '+e.confirmed_women+')</p></div></div><div class="flex flex-wrap gap-2"><button onclick="showRegistrants(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">נרשמים</button><button onclick="openEventChat(\''+esc(e.id)+'\',\''+esc(e.event_name).replaceAll('&#039;','\\&#039;')+'\')" class="btn-brand px-3 py-2 text-sm"><i class="fa-regular fa-comments ml-1"></i> צ׳אט</button><button onclick="downloadCalendar(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">יומן</button>'+(e.event_status!=='cancelled'&&e.event_date>=new Date().toISOString().slice(0,10)?'<button onclick="openEditEvent(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">עריכה</button><button onclick="cancelHostEvent(\''+esc(e.id)+'\')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm">ביטול</button>':'')+'</div></div><div id="registrants-'+esc(e.id)+'" class="mt-3 hidden"></div></div>';
+                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div><div class="flex flex-wrap gap-2 items-center"><h4 class="font-bold text-lg">'+esc(e.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(eventStatusLabel(e))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(e.event_type))+'</span></div><p class="text-sm text-slate-600 mt-1">📅 '+formatDate(e.event_date)+' · '+esc(timeRange(e.start_time,e.close_time))+' · הרשמה עד '+esc(formatDateTime(e.registration_deadline))+'</p><p class="text-sm font-semibold text-brand-700 mt-1">📍 '+esc((e.hall_name?e.hall_name+' · ':'')+e.hall_address)+'</p><p class="text-xs text-slate-600 mt-2">מגזר אירוע: '+esc(sectorLabel(e.sector_pref))+' · משמחים: '+esc(sectorListLabel(e.accepted_volunteer_sectors))+' · גיל: '+esc(age)+' · '+(e.is_separated?'הפרדה מלאה':'ללא הפרדה')+'</p><div class="mt-3 max-w-md"><div class="flex justify-between text-xs text-slate-600 mb-1"><span>נרשמו '+total+'/'+quota+'</span><span>'+pct+'%</span></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="text-xs text-slate-500 mt-1">גברים '+e.approved_men+'/'+e.quota_men+' (אישרו הגעה '+e.confirmed_men+') · נשים '+e.approved_women+'/'+e.quota_women+' (אישרו '+e.confirmed_women+')</p></div></div><div class="flex flex-wrap gap-2"><button onclick="showRegistrants(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">נרשמים</button><button onclick="openEventChat(\''+esc(e.id)+'\')" class="btn-brand px-3 py-2 text-sm"><i class="fa-regular fa-comments ml-1"></i> צ׳אט</button><button onclick="downloadCalendar(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">יומן</button>'+(e.event_status!=='cancelled'&&e.event_date>=new Date().toISOString().slice(0,10)?'<button onclick="openEditEvent(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">עריכה</button><button onclick="cancelHostEvent(\''+esc(e.id)+'\')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm">ביטול</button>':'')+'</div></div><div id="registrants-'+esc(e.id)+'" class="mt-3 hidden"></div></div>';
             }).join(''):'<p class="text-slate-500">עדיין לא פרסמת אירוע.</p>')+'</div></div>';
         }
 
@@ -1267,8 +1284,8 @@
             finally{setBusy('profile-submit',false);}
         }
 
-        async function openEventChat(eventId,eventName){
-            activeChatEventId=eventId;activeChatEventName=eventName||'אירוע';
+        async function openEventChat(eventId,eventName=''){
+            activeChatEventId=eventId;activeChatEventName=eventName||resolveEventName(eventId);
             $('chat-title').textContent='צ׳אט · '+activeChatEventName;
             const modal=$('chat-modal');modal.classList.remove('hidden');modal.classList.add('flex');
             await refreshEventChat(true);

@@ -131,7 +131,7 @@
             <div class="glass-card p-8">
                 <h2 class="text-2xl font-bold mb-2 text-brand-dark">הרשמה - משמח חתן וכלה</h2>
                 <p class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
-                <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6">
+                <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="off">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
                         <label><span class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
@@ -201,7 +201,7 @@
                     <div><h2 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h2><p class="text-sm text-slate-500 mt-1">טיוטת האירוע נשמרת אוטומטית בדפדפן.</p></div>
                     <span id="draft-indicator" class="text-xs font-bold text-slate-400"></span>
                 </div>
-                <form id="event-form" onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6">
+                <form id="event-form" onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6" autocomplete="off">
                     <div id="host-account-block" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
                         <div>
                             <h3 class="font-bold text-slate-800">פתיחת חשבון בעל שמחה</h3>
@@ -389,7 +389,67 @@
         let activeChatEventId = null;
         let activeChatEventName = '';
         let chatPollTimer = null;
-        const EVENT_DRAFT_KEY = 'smachimEventDraftV4';
+        const EVENT_DRAFT_PREFIX = 'smachimEventDraftV5:';
+        const LEGACY_PERSONAL_STORAGE_KEYS = ['smachimEventDraftV4','pendingHostEvent'];
+
+        function eventDraftKey() {
+            return sessionToken && currentProfile?.id ? EVENT_DRAFT_PREFIX + currentProfile.id : '';
+        }
+
+        function clearAllPersonalBrowserStorage() {
+            try {
+                [...Object.keys(localStorage)].forEach(key => {
+                    if (key.startsWith(EVENT_DRAFT_PREFIX) || key.startsWith('smachimEventDraft')) localStorage.removeItem(key);
+                });
+                LEGACY_PERSONAL_STORAGE_KEYS.forEach(key=>localStorage.removeItem(key));
+                localStorage.removeItem('smachimDashboardArea');
+            } catch(_) {}
+        }
+
+        function clearSensitiveForms() {
+            ['login-form','volunteer-form','event-form','edit-event-form','profile-form'].forEach(id=>{
+                try { $(id)?.reset(); } catch(_) {}
+            });
+            ['profile-phone-display','profile-role-display','user-greeting'].forEach(id=>{
+                const el=$(id); if(el) el.textContent='';
+            });
+            try { toggleManualAddress('vol',false); } catch(_) {}
+            try { toggleManualAddress('ev',false); } catch(_) {}
+            try { toggleManualAddress('edit-ev',false); } catch(_) {}
+            try { toggleManualAddress('profile',false); } catch(_) {}
+            if($('draft-indicator')) $('draft-indicator').textContent='';
+        }
+
+        function clearRuntimeUserData() {
+            currentUser=null;
+            currentProfile=null;
+            currentIsAdmin=false;
+            dashboardArea='';
+            hostEventsCache.clear();
+            privateEventCache.clear();
+            matchingEventsCache=[];
+            matchingRegsCache=[];
+            adminUsersCache=[];
+            calendarEventCache.clear();
+            routeMapInstances.forEach(m=>{try{m.remove();}catch(_){}});
+            routeMapInstances.clear();
+            if(matchingMapObserver){try{matchingMapObserver.disconnect();}catch(_){}matchingMapObserver=null;}
+            if(chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null;}
+            activeChatEventId=null;
+            activeChatEventName='';
+            const chat=$('chat-modal');
+            if(chat){chat.classList.add('hidden');chat.classList.remove('flex');}
+            clearSensitiveForms();
+        }
+
+        function clearGuestFormWhenLeaving(nextView) {
+            if(sessionToken) return;
+            const active=document.querySelector('.screen.active');
+            if(!active) return;
+            const current=active.id.replace('view-','');
+            if(current===nextView) return;
+            if(['login','register-volunteer','add-event'].includes(current)) clearSensitiveForms();
+        }
 
         const $ = (id) => document.getElementById(id);
         const esc = (value) => String(value ?? '')
@@ -397,6 +457,7 @@
             .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 
         function navigate(view) {
+            clearGuestFormWhenLeaving(view);
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             const target = $('view-' + view);
             if (target) target.classList.add('active');
@@ -806,7 +867,21 @@
             return null;
         }
 
-        async function initSession(){if(!sessionToken){updateHeaderActions();return;}const profile=await loadProfile();if(!profile){applySessionToken('');updateHeaderActions();return;}const {data:adminFlag}=await _supabase.rpc('is_admin');currentIsAdmin=!!adminFlag;updateHeaderActions();await finalizePendingEvent();}
+        async function initSession(){
+            LEGACY_PERSONAL_STORAGE_KEYS.forEach(key=>{try{localStorage.removeItem(key);}catch(_){}});
+            if(!sessionToken){clearRuntimeUserData();updateHeaderActions();return;}
+            const profile=await loadProfile();
+            if(!profile){
+                applySessionToken('');
+                clearAllPersonalBrowserStorage();
+                clearRuntimeUserData();
+                updateHeaderActions();
+                return;
+            }
+            const {data:adminFlag}=await _supabase.rpc('is_admin');
+            currentIsAdmin=!!adminFlag;
+            updateHeaderActions();
+        }
         async function openPersonalArea(){if(!sessionToken)return navigate('login');const profile=await loadProfile();if(!profile){applySessionToken('');updateHeaderActions();showToast('ההתחברות פגה. יש להתחבר מחדש.','warning');return navigate('login');}await loadDashboard();}
 
         async function handleRegisterVolunteer(){
@@ -847,23 +922,57 @@
                 });
                 if(error) throw error;
                 applySessionToken(token); await loadProfile(); updateHeaderActions();
+                $('volunteer-form')?.reset();
                 showToast('ההרשמה הושלמה בהצלחה!','success');
                 await loadDashboard();
             } catch(e) { showToast(String(e?.message||'').includes('לפחות יום')?String(e.message):readableError(e),'error'); }
             finally { setBusy('vol-submit',false); }
         }
 
-        async function handleLogin(){setBusy('login-submit',true,'מתחבר...');try{const phone=normalizePhone($('login-phone').value);const password=$('login-password').value;if(!isValidPhone(phone))throw new Error('invalid_phone');const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});if(error)throw error;applySessionToken(token);const profile=await loadProfile();if(!profile)throw new Error('session_expired');updateHeaderActions();showToast('ברוך הבא!','success');await loadDashboard();}catch(e){showToast(readableError(e),'error');}finally{setBusy('login-submit',false);}}
+        async function handleLogin(){
+            setBusy('login-submit',true,'מתחבר...');
+            try{
+                const phone=normalizePhone($('login-phone').value);
+                const password=$('login-password').value;
+                if(!isValidPhone(phone))throw new Error('invalid_phone');
+                const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});
+                if(error)throw error;
+                applySessionToken(token);
+                const profile=await loadProfile();
+                if(!profile)throw new Error('session_expired');
+                $('login-form')?.reset();
+                updateHeaderActions();
+                showToast('ברוך הבא!','success');
+                await loadDashboard();
+            }catch(e){
+                if($('login-password'))$('login-password').value='';
+                showToast(readableError(e),'error');
+            }finally{setBusy('login-submit',false);}
+        }
 
 
-        async function handleLogout(){const token=sessionToken;try{if(token)await _supabase.rpc('username_logout',{p_token:token});}catch(_){}applySessionToken('');currentUser=null;currentProfile=null;currentIsAdmin=false;updateHeaderActions();navigate('home');showToast('התנתקת מהמערכת.');}
+        async function handleLogout(){
+            const token=sessionToken;
+            try{if(token)await _supabase.rpc('username_logout',{p_token:token});}catch(_){}
+            applySessionToken('');
+            clearAllPersonalBrowserStorage();
+            clearRuntimeUserData();
+            updateHeaderActions();
+            navigate('home');
+            showToast('התנתקת מהמערכת. כל הנתונים האישיים המקומיים נוקו מהדפדפן.');
+        }
 
         async function openAddEvent(){
             if(sessionToken&&!currentProfile) await loadProfile();
             const block=$('host-account-block');
             const fields=['host-name','host-phone','host-pass','host-pass-confirm'];
-            if(currentProfile){block.classList.add('hidden');fields.forEach(id=>$(id).required=false);}
-            else {block.classList.remove('hidden');fields.forEach(id=>$(id).required=true);}
+            if(currentProfile){
+                block.classList.add('hidden');
+                fields.forEach(id=>{const el=$(id);if(el){el.required=false;el.value='';}});
+            } else {
+                block.classList.remove('hidden');
+                fields.forEach(id=>{const el=$(id);if(el)el.required=true;});
+            }
             $('ev-date').min=new Date().toISOString().slice(0,10);
             await ensureCities('ev-city',$('ev-city').value);
             await restoreEventDraft();
@@ -871,7 +980,9 @@
         }
 
         function saveEventDraft(){
-            const form=$('event-form'); if(!form) return;
+            const form=$('event-form');
+            const key=eventDraftKey();
+            if(!form || !key) return;
             const addr=getAddressParts('ev');
             const draft={
                 event_name:$('ev-name')?.value||'',event_type:$('ev-type')?.value||'wedding',
@@ -882,12 +993,14 @@
                 is_separated:!!$('ev-separation')?.checked,quota_men:$('ev-men')?.value||'0',quota_women:$('ev-women')?.value||'0',
                 age_min:$('ev-age-min')?.value||'',age_max:$('ev-age-max')?.value||'',note:$('ev-note')?.value||''
             };
-            localStorage.setItem(EVENT_DRAFT_KEY,JSON.stringify(draft));
+            localStorage.setItem(key,JSON.stringify(draft));
             if($('draft-indicator')) $('draft-indicator').textContent='הטיוטה נשמרה';
         }
 
         async function restoreEventDraft(){
-            const raw=localStorage.getItem(EVENT_DRAFT_KEY); if(!raw) return;
+            const key=eventDraftKey();
+            if(!key) return;
+            const raw=localStorage.getItem(key); if(!raw) return;
             try {
                 const d=JSON.parse(raw);
                 const map={event_name:'ev-name',event_type:'ev-type',event_date:'ev-date',registration_deadline:'ev-registration-deadline',
@@ -909,7 +1022,12 @@
             } catch(_) {}
         }
 
-        function clearEventDraft(){localStorage.removeItem(EVENT_DRAFT_KEY);if($('draft-indicator'))$('draft-indicator').textContent='';}
+        function clearEventDraft(){
+            const key=eventDraftKey();
+            if(key) localStorage.removeItem(key);
+            LEGACY_PERSONAL_STORAGE_KEYS.forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
+            if($('draft-indicator'))$('draft-indicator').textContent='';
+        }
 
         function initEventDraftAutosave(){
             const form=$('event-form'); if(!form) return;
@@ -1023,7 +1141,6 @@
                 if(password.length<8) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
 
-                localStorage.setItem('pendingHostEvent',JSON.stringify(ev));
                 const {data:token,error}=await _supabase.rpc('username_register_v2',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_birth_year:null,
@@ -1033,19 +1150,28 @@
                 });
                 if(error){
                     if(String(error.message).includes('already_registered')){
-                        $('login-phone').value=displayPhone(phone);
-                        showToast('כבר קיים חשבון עם המספר הזה. האירוע נשמר כטיוטה — התחבר ואז הוא יפורסם.','warning');
-                        navigate('login'); return;
+                        clearSensitiveForms();
+                        showToast('כבר קיים חשבון עם המספר הזה. מטעמי פרטיות לא שמרנו את פרטי האירוע. התחבר ואז פרסם אותו מתוך החשבון.','warning');
+                        navigate('login');
+                        return;
                     }
                     throw error;
                 }
-                applySessionToken(token); await loadProfile(); updateHeaderActions(); await finalizePendingEvent();
-                $('event-form').reset(); clearEventDraft(); showToast('החשבון והאירוע נוצרו בהצלחה!','success'); await loadDashboard();
+                applySessionToken(token);
+                await loadProfile();
+                updateHeaderActions();
+                await createEventRpc(ev);
+                $('event-form').reset();
+                clearEventDraft();
+                showToast('החשבון והאירוע נוצרו בהצלחה!','success');
+                await loadDashboard();
             }catch(e){showToast(readableError(e),'error');}
             finally{setBusy('event-submit',false);}
         }
 
-        async function finalizePendingEvent(){if(!sessionToken||!currentProfile)return;const raw=localStorage.getItem('pendingHostEvent');if(!raw)return;try{const ev=JSON.parse(raw);await createEventRpc(ev);localStorage.removeItem('pendingHostEvent');clearEventDraft();await loadProfile();showToast('האירוע ששמרת פורסם בהצלחה.','success');}catch(e){if(String(e?.message||'').includes('duplicate_event')){localStorage.removeItem('pendingHostEvent');clearEventDraft();}else console.error('Pending event publication failed:',e);}}
+        async function finalizePendingEvent(){
+            try{localStorage.removeItem('pendingHostEvent');}catch(_){}
+        }
 
         function resolveDashboardArea() {
             if (!currentProfile) return 'volunteer';

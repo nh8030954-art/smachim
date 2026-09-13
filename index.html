@@ -203,14 +203,17 @@
                 </div>
                 <form id="event-form" onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6">
                     <div id="host-account-block" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                        <h3 class="font-bold text-slate-800">פרטי בעל השמחה</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white"></label>
-                            <label><span class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel"></label>
+                        <div>
+                            <h3 class="font-bold text-slate-800">פתיחת חשבון בעל שמחה</h3>
+                            <p class="text-xs text-slate-500 mt-1">הטלפון ישמש כשם המשתמש להתחברות לאזור האישי.</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72"></label>
-                            <label><span class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72"></label>
+                            <label><span class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" autocomplete="name" required></label>
+                            <label><span class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label><span class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                            <label><span class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

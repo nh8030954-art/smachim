@@ -1035,10 +1035,15 @@
 
         async function openMoovitEvent(eventId){
             const ev=calendarEventCache.get(eventId)||matchingEventsCache.find(x=>x.id===eventId)||hostEventsCache.get(eventId);
-            const address=ev?.hall_address||ev?.exact_address||fullAddress(ev?.city,ev?.street,ev?.house_number);
-            try{await navigator.clipboard.writeText(address||'');}catch(_){}
-            showToast('כתובת האולם הועתקה. הדבק אותה ב-Moovit.');
-            window.open('https://moovitapp.com/','_blank','noopener');
+            if(!ev) return;
+            const address=(ev.hall_name?ev.hall_name+' · ':'')+(ev.hall_address||ev.exact_address||fullAddress(ev.city,ev.street,ev.house_number));
+            if(ev.exact_lat!=null&&ev.exact_lng!=null){
+                const url='https://moovit.com/?to='+encodeURIComponent(address)+'&tll='+encodeURIComponent(ev.exact_lat+'_'+ev.exact_lng)+'&lang=he';
+                window.open(url,'_blank','noopener');
+            }else{
+                try{await navigator.clipboard.writeText(address||'');}catch(_){}
+                window.open('https://moovit.com/','_blank','noopener');
+            }
         }
 
         function resolveEventName(eventId){

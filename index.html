@@ -521,6 +521,7 @@
             if(!sel)return;
             sel.innerHTML='';
             const first=document.createElement('option');first.value='';first.textContent=placeholder;sel.appendChild(first);
+            if(selected&&!items.includes(selected)){const legacy=document.createElement('option');legacy.value=selected;legacy.textContent=selected+' (ערך קיים)';legacy.selected=true;sel.appendChild(legacy);}
             items.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;if(v===selected)o.selected=true;sel.appendChild(o);});
         }
 
@@ -605,6 +606,7 @@
                 ['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],
                 ['event_date_in_past','לא ניתן לבחור תאריך שכבר עבר.'],
                 ['invalid_login','מספר הטלפון או הסיסמה שגויים.'],
+                ['too_many_login_attempts','יותר מדי ניסיונות התחברות. נסה שוב בעוד כ־15 דקות.'],
                 ['already_registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.'],
                 ['invalid_phone','מספר הטלפון אינו תקין.'],
                 ['invalid_password','הסיסמה חייבת לכלול לפחות 8 תווים.'],
@@ -709,8 +711,7 @@
             else {block.classList.remove('hidden');fields.forEach(id=>$(id).required=true);}
             $('ev-date').min=new Date().toISOString().slice(0,10);
             await ensureCities('ev-city',$('ev-city').value);
-            restoreEventDraft();
-            if($('ev-city').value)await loadStreets($('ev-city').value,'ev-street',$('ev-street').value);
+            await restoreEventDraft();
             navigate('add-event');
         }
 
@@ -729,14 +730,15 @@
             if($('draft-indicator')) $('draft-indicator').textContent='הטיוטה נשמרה';
         }
 
-        function restoreEventDraft(){
+        async function restoreEventDraft(){
             const raw=localStorage.getItem(EVENT_DRAFT_KEY); if(!raw) return;
             try {
                 const d=JSON.parse(raw);
                 const map={event_name:'ev-name',event_type:'ev-type',event_date:'ev-date',registration_deadline:'ev-registration-deadline',
                     hall_name:'ev-hall-name',city:'ev-city',street:'ev-street',house_number:'ev-house-number',start_time:'ev-start',
                     close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women',age_min:'ev-age-min',age_max:'ev-age-max',note:'ev-note'};
-                Object.entries(map).forEach(([k,id])=>{if(d[k]!==undefined&&$(id))$(id).value=d[k];});
+                Object.entries(map).forEach(([k,id])=>{if(k!=='street'&&d[k]!==undefined&&$(id))$(id).value=d[k];});
+                if(d.city)await loadStreets(d.city,'ev-street',d.street||'');
                 if($('ev-separation')) $('ev-separation').checked=!!d.is_separated;
                 setCheckedValues('ev-accepted-sector',d.accepted_sectors||['all']);
                 if($('draft-indicator')) $('draft-indicator').textContent='שוחזרה טיוטה';
@@ -1020,8 +1022,8 @@
         }
 
         async function markNotificationsRead(){
-            const {error}=await _supabase.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',currentProfile.id).is('read_at',null);
-            if(error) return showToast(readableError(error),'error');
+            const {error}=await _supabase.rpc('mark_my_notifications_read');
+            if(error)return showToast(readableError(error),'error');
             setDashHtml('dash-notifications',await renderNotifications());
         }
 
@@ -1106,7 +1108,7 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
             const home=[Number(currentProfile.lat),Number(currentProfile.lng)],hall=[Number(ev.exact_lat),Number(ev.exact_lng)];
             L.marker(home).addTo(map).bindPopup('הבית שלי');
-            L.marker(hall).addTo(map).bindPopup((ev.hall_name||'האולם')+'<br>'+esc(ev.hall_address||''));
+            L.marker(hall).addTo(map).bindPopup(esc(ev.hall_name||'האולם')+'<br>'+esc(ev.hall_address||''));
             map.fitBounds(L.latLngBounds([home,hall]),{padding:[28,28]});
             setTimeout(()=>map.invalidateSize(),80);
             try{

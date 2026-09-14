@@ -603,7 +603,6 @@
                 LEGACY_PERSONAL_STORAGE_KEYS.forEach(key=>localStorage.removeItem(key));
                 localStorage.removeItem('smachimDashboardArea');
                 sessionStorage.removeItem('smachimAdminMode');
-                sessionStorage.removeItem('smachimAdminMode');
                 sessionStorage.removeItem('smachimAdminSession');
             } catch(_) {}
         }
@@ -1396,6 +1395,7 @@
                 ['not_allowed','אין הרשאה לבצע את הפעולה הזאת.'],
                 ['invalid_admin_login','שם המשתמש או סיסמת המנהל שגויים.'],
                 ['admin_login_locked','הכניסה למנהל ננעלה זמנית לאחר מספר ניסיונות שגויים. נסה שוב בעוד כ־15 דקות.'],
+                ['admin_login_rate_limited','בוצעו יותר מדי ניסיונות כניסה לניהול מהמכשיר הזה. נסה שוב מאוחר יותר.'],
                 ['invalid_admin_password','סיסמת המנהל הנוכחית שגויה.'],
                 ['invalid_admin_new_password','סיסמת מנהל חדשה חייבת לכלול לפחות 12 תווים.'],
                 ['admin_password_unchanged','יש לבחור סיסמת מנהל חדשה ושונה מהסיסמה הנוכחית.'],
@@ -1631,11 +1631,13 @@
                 }
 
                 const username=identifier.toLowerCase();
-                const {data,error}=await _supabase.rpc('admin_username_login',{
-                    p_username:username,
-                    p_password:password
+                const adminRes=await fetch(SUPABASE_URL+'/functions/v1/admin-auth',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY},
+                    body:JSON.stringify({username,password})
                 });
-                if(error)throw error;
+                const data=await adminRes.json().catch(()=>({}));
+                if(!adminRes.ok)throw new Error(data?.error||'invalid_admin_login');
 
                 const token=data?.token;
                 if(!token)throw new Error('invalid_admin_login');
@@ -1661,7 +1663,8 @@
                     applyAdminSessionToken('');
                     adminMode=false;
                     currentIsAdmin=false;
-                    showToast('פרטי ההתחברות שגויים.','error');
+                    const msg=String(e?.message||'');
+                    showToast(['admin_login_rate_limited','admin_login_locked'].includes(msg)?readableError(e):'פרטי ההתחברות שגויים.','error');
                 }else{
                     showToast(readableError(e),'error');
                 }

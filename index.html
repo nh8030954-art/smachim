@@ -120,25 +120,11 @@
                 <h2 class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h2>
                 <p class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות מספר טלפון וסיסמה.</p>
                 <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6" autocomplete="off">
-                    <input type="tel" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="off">
+                    <input type="text" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="username">
                     <input type="password" id="login-password" class="input-clean" placeholder="סיסמה" required autocomplete="current-password">
                     <button id="login-submit" type="submit" class="w-full btn-dark py-3">כניסה למערכת</button>
                 </form>
                 <button type="button" onclick="navigate('reset-password')" class="mt-4 text-sm font-bold text-brand-700 hover:underline">שכחתי סיסמה</button>
-            </div>
-        </div>
-
-        <!-- כניסת מנהל -->
-        <div id="view-admin-login" class="screen max-w-md mx-auto px-6 py-20">
-            <div class="glass-card p-8">
-                <h2 class="text-2xl font-bold text-brand-dark">כניסת מנהל</h2>
-                <p class="text-sm text-slate-500 mt-2">כניסה נפרדת לניהול האתר באמצעות שם משתמש וסיסמה. אין שימוש במספר טלפון.</p>
-                <form id="admin-login-form" onsubmit="event.preventDefault(); handleAdminLogin();" class="space-y-4 mt-6" autocomplete="off">
-                    <input type="text" id="admin-username" class="input-clean" placeholder="שם משתמש" autocomplete="username" required>
-                    <input type="password" id="admin-password" class="input-clean" placeholder="סיסמה" autocomplete="current-password" required>
-                    <button id="admin-login-submit" type="submit" class="w-full btn-dark py-3">כניסה לניהול</button>
-                </form>
-                <button type="button" onclick="navigate('home')" class="mt-4 text-sm font-bold text-slate-500 hover:text-brand-700">חזרה לדף הבית</button>
             </div>
         </div>
 
@@ -433,7 +419,6 @@
         <div class="max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
             <button type="button" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
             <button type="button" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
-            <button type="button" onclick="openAdminLogin()" class="hover:text-brand-700">כניסת מנהל</button>
         </div>
     </footer>
 
@@ -498,7 +483,7 @@
         }
 
         function clearSensitiveForms() {
-            ['login-form','admin-login-form','admin-password-form','reset-password-form','volunteer-form','event-form','edit-event-form','profile-form'].forEach(id=>{
+            ['login-form','admin-password-form','reset-password-form','volunteer-form','event-form','edit-event-form','profile-form'].forEach(id=>{
                 try { $(id)?.reset(); } catch(_) {}
             });
             ['profile-phone-display','profile-role-display','user-greeting'].forEach(id=>{
@@ -547,7 +532,7 @@
             if(!active) return;
             const current=active.id.replace('view-','');
             if(current===nextView) return;
-            if(['login','admin-login','reset-password','register-volunteer','add-event'].includes(current)) clearSensitiveForms();
+            if(['login','reset-password','register-volunteer','add-event'].includes(current)) clearSensitiveForms();
         }
 
         const $ = (id) => document.getElementById(id);
@@ -1231,45 +1216,6 @@
         }
 
 
-        async function openAdminLogin(){
-            if(sessionToken&&adminMode){
-                const profile=currentProfile||await loadProfile();
-                const {data}=await _supabase.rpc('is_admin');
-                currentIsAdmin=!!data;
-                if(profile&&currentIsAdmin) return loadAdminArea();
-            }
-            navigate('admin-login');
-        }
-
-        async function handleAdminLogin(){
-            setBusy('admin-login-submit',true,'מתחבר...');
-            try{
-                const username=$('admin-username').value.trim().toLowerCase();
-                const password=$('admin-password').value;
-                const {data,error}=await _supabase.rpc('admin_username_login',{p_username:username,p_password:password});
-                if(error) throw error;
-                const token=data?.token;
-                if(!token) throw new Error('invalid_admin_login');
-                applySessionToken(token);
-                adminMode=true;
-                localStorage.setItem('smachimAdminMode','1');
-                const profile=await loadProfile();
-                const {data:adminFlag,error:adminErr}=await _supabase.rpc('is_admin');
-                if(adminErr||!profile||!adminFlag) throw new Error('not_allowed');
-                currentIsAdmin=true;
-                $('admin-login-form')?.reset();
-                updateHeaderActions();
-                await loadAdminArea();
-                if(data?.must_change_password) showToast('יש להחליף את הסיסמה הזמנית לפני שימוש בפאנל.','warning');
-            }catch(e){
-                applySessionToken('');
-                adminMode=false;
-                localStorage.removeItem('smachimAdminMode');
-                if($('admin-password')) $('admin-password').value='';
-                showToast(readableError(e),'error');
-            }finally{setBusy('admin-login-submit',false);}
-        }
-
         function renderAdminPasswordCard(mustChange=false){
             return '<div class="glass-card p-6 '+(mustChange?'border-2 border-amber-300':'')+'"><h3 class="text-xl font-bold">'+(mustChange?'נדרשת החלפת סיסמה':'שינוי סיסמת מנהל')+'</h3>'+(mustChange?'<p class="text-sm text-amber-700 mt-1">החשבון נוצר עם סיסמה זמנית. יש להחליף אותה לפני כניסה לפאנל הניהול.</p>':'')+'<form id="admin-password-form" onsubmit="event.preventDefault(); handleAdminPasswordChange();" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4"><input type="password" id="admin-current-password" class="input-clean" placeholder="סיסמה נוכחית" required autocomplete="current-password"><input type="password" id="admin-new-password" class="input-clean" placeholder="סיסמה חדשה — לפחות 12 תווים" minlength="12" maxlength="72" required autocomplete="new-password"><input type="password" id="admin-new-password-confirm" class="input-clean" placeholder="אימות סיסמה חדשה" minlength="12" maxlength="72" required autocomplete="new-password"><button id="admin-password-submit" type="submit" class="btn-dark py-3 md:col-span-3">שמור סיסמה חדשה</button></form></div>';
         }
@@ -1292,7 +1238,7 @@
         }
 
         async function loadAdminArea(){
-            if(!sessionToken||!adminMode) return openAdminLogin();
+            if(!sessionToken||!adminMode) return navigate('login');
             const profile=currentProfile||await loadProfile();
             const {data:adminFlag,error:adminErr}=await _supabase.rpc('is_admin');
             currentIsAdmin=!!adminFlag&&!adminErr;
@@ -1302,7 +1248,7 @@
                 localStorage.removeItem('smachimAdminMode');
                 updateHeaderActions();
                 showToast('אין הרשאת מנהל.','error');
-                return navigate('admin-login');
+                return navigate('login');
             }
             const {data:status,error:statusErr}=await _supabase.rpc('admin_account_status');
             if(statusErr) return showToast(readableError(statusErr),'error');
@@ -1320,25 +1266,71 @@
 
         async function handleLogin(){
             setBusy('login-submit',true,'מתחבר...');
+            const identifier=$('login-phone').value.trim();
+            const password=$('login-password').value;
+            const phone=normalizePhone(identifier);
+            const isPhone=isValidPhone(phone);
+
             try{
-                const phone=normalizePhone($('login-phone').value);
-                const password=$('login-password').value;
-                if(!isValidPhone(phone))throw new Error('invalid_phone');
-                const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});
+                if(isPhone){
+                    const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});
+                    if(error)throw error;
+
+                    applySessionToken(token);
+                    adminMode=false;
+                    currentIsAdmin=false;
+                    localStorage.removeItem('smachimAdminMode');
+
+                    const profile=await loadProfile();
+                    if(!profile)throw new Error('session_expired');
+
+                    $('login-form')?.reset();
+                    updateHeaderActions();
+                    showToast('ברוך הבא!','success');
+                    await loadDashboard();
+                    return;
+                }
+
+                const username=identifier.toLowerCase();
+                const {data,error}=await _supabase.rpc('admin_username_login',{
+                    p_username:username,
+                    p_password:password
+                });
                 if(error)throw error;
+
+                const token=data?.token;
+                if(!token)throw new Error('invalid_admin_login');
+
                 applySessionToken(token);
-                adminMode=false;
-                localStorage.removeItem('smachimAdminMode');
+                adminMode=true;
+                localStorage.setItem('smachimAdminMode','1');
+
                 const profile=await loadProfile();
-                if(!profile)throw new Error('session_expired');
+                const {data:adminFlag,error:adminErr}=await _supabase.rpc('is_admin');
+                if(adminErr||!profile||!adminFlag)throw new Error('not_allowed');
+
+                currentIsAdmin=true;
                 $('login-form')?.reset();
                 updateHeaderActions();
-                showToast('ברוך הבא!','success');
-                await loadDashboard();
+                await loadAdminArea();
+
+                if(data?.must_change_password){
+                    showToast('יש להחליף את הסיסמה הזמנית לפני שימוש בפאנל.','warning');
+                }
             }catch(e){
+                if(!isPhone){
+                    applySessionToken('');
+                    adminMode=false;
+                    currentIsAdmin=false;
+                    localStorage.removeItem('smachimAdminMode');
+                    showToast('פרטי ההתחברות שגויים.','error');
+                }else{
+                    showToast(readableError(e),'error');
+                }
                 if($('login-password'))$('login-password').value='';
-                showToast(readableError(e),'error');
-            }finally{setBusy('login-submit',false);}
+            }finally{
+                setBusy('login-submit',false);
+            }
         }
 
 

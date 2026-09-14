@@ -1094,6 +1094,9 @@
                 ['sms_not_retryable','אפשר לשלוח מחדש רק הודעת SMS שנכשלה.'],
                 ['report_missing','הדיווח לא נמצא.'],
                 ['event_missing','האירוע לא נמצא.'],
+                ['registration_temporarily_disabled','ההרשמה לאתר סגורה זמנית.'],
+                ['minor_registration_temporarily_disabled','הרשמת בני 12–17 סגורה זמנית.'],
+                ['event_creation_temporarily_disabled','פרסום אירועים חדשים סגור זמנית.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
                 ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
@@ -1208,7 +1211,7 @@
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v5',{
+                const {data:token,error}=await _supabase.rpc('username_register_v6',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
                     p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
@@ -1477,7 +1480,7 @@
             validateEventPayload(ev);
             const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
 
-            const {data:eventId,error}=await _supabase.rpc('create_event_v3',{
+            const {data:eventId,error}=await _supabase.rpc('create_event_v4',{
                 p_event_name:ev.event_name,p_event_type:ev.event_type,p_event_date:ev.event_date,
                 p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
                 p_city:ev.city,p_street:ev.street,p_house_number:ev.house_number,
@@ -1531,7 +1534,7 @@
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v5',{
+                const {data:token,error}=await _supabase.rpc('username_register_v6',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_volunteer_event_type_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
@@ -2091,7 +2094,8 @@
                 ['events','אירועים','fa-calendar-days'],
                 ['sms','SMS','fa-message'],
                 ['reports','דיווחים','fa-triangle-exclamation'],
-                ['security','אבטחה והגדרות','fa-shield-halved']
+                ['settings','הגדרות','fa-sliders'],
+                ['security','אבטחה','fa-shield-halved']
             ];
             return '<div class="space-y-5">'+
                 '<div class="glass-card p-3"><div class="flex flex-wrap gap-2">'+tabs.map(t=>
@@ -2126,6 +2130,7 @@
                 else if(adminTab==='events') root.innerHTML=await adminRenderEvents();
                 else if(adminTab==='sms') root.innerHTML=await adminRenderSms();
                 else if(adminTab==='reports') root.innerHTML=await adminRenderReports();
+                else if(adminTab==='settings') root.innerHTML=await adminRenderSettings();
                 else if(adminTab==='security') root.innerHTML=await adminRenderSecurity();
                 else root.innerHTML='';
             }catch(e){
@@ -2358,6 +2363,42 @@
             if(error)throw error;
             const rows=data||[];
             return '<div class="glass-card p-6"><h3 class="text-2xl font-bold">דיווחים ובטיחות</h3><p class="text-sm text-slate-500">כל הדיווחים מהמשתמשים, עם פרטי האירוע והמדווח.</p><div class="space-y-3 mt-5">'+(rows.length?rows.map(r=>'<div class="border rounded-xl p-4 '+(r.status==='open'?'bg-amber-50 border-amber-200':'bg-white')+'"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold">'+esc(r.event_name)+'</div><div class="text-sm text-slate-600">'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-400 mt-2">מדווח: '+esc(r.reporter_name)+' · <span dir="ltr">'+esc(displayPhone(r.reporter_phone||''))+'</span> · '+esc(adminDateTime(r.created_at))+'</div></div><div>'+adminStatusPill(r.status,r.status==='open'?'warn':'neutral')+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 border border-green-200 rounded-lg px-3 py-2 text-sm font-bold">טופל</button><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-3 py-2">דחה</button></div>':'')+'</div></div></div>').join(''):'<p class="text-slate-500 py-8 text-center">אין דיווחים.</p>')+'</div></div>';
+        }
+
+        async function adminRenderSettings(){
+            const [{data:site,error:siteErr},{data:sms,error:smsErr}]=await Promise.all([
+                _supabase.rpc('admin_site_settings'),
+                _supabase.rpc('admin_sms_status')
+            ]);
+            if(siteErr)throw siteErr;if(smsErr)throw smsErr;
+            const ss=sms?.settings||{};
+            return '<div class="space-y-5">'+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">הגדרות תפעוליות</h3><p class="text-sm text-slate-500">מתגים מרכזיים לעצירה או הפעלה של פעולות באתר במקרה הצורך.</p><form onsubmit="event.preventDefault(); adminSaveSiteSettings();" class="space-y-4 mt-5">'+
+                    '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>הרשמות חדשות</b><span class="block text-sm text-slate-500">מאפשר יצירת חשבונות חדשים למשמחים ולבעלי שמחה.</span></span><input id="admin-setting-registration" type="checkbox" '+(site?.registration_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
+                    '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>פרסום אירועים חדשים</b><span class="block text-sm text-slate-500">משתמשים קיימים יוכלו או לא יוכלו לפרסם אירוע חדש.</span></span><input id="admin-setting-events" type="checkbox" '+(site?.event_creation_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
+                    '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>הרשמת בני 12–17</b><span class="block text-sm text-slate-500">שולט בהרשמה חדשה של חשבונות שמנוהלים על ידי הורה.</span></span><input id="admin-setting-minors" type="checkbox" '+(site?.minor_registration_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
+                    '<button class="btn-dark px-5 py-3">שמור הגדרות אתר</button>'+
+                '</form><div class="text-xs text-slate-400 mt-3">עודכן לאחרונה: '+esc(adminDateTime(site?.updated_at))+'</div></div>'+
+                '<div class="glass-card p-6"><h4 class="font-bold text-lg">מצב SMS מהיר</h4><div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-4">'+
+                    adminMetric('שליחה כללית',ss.sending_enabled?'פעילה':'כבויה')+
+                    adminMetric('הזמנות',ss.invite_enabled?'פעילות':'כבויות')+
+                    adminMetric('תזכורות',ss.reminder_enabled?'פעילות':'כבויות')+
+                    adminMetric('תזכורת לפני',Number(ss.reminder_hours_before||24)+' שעות')+
+                '</div><button onclick="adminOpenTab(\'sms\')" class="btn-soft px-4 py-2 mt-4">פתח הגדרות SMS מלאות</button></div>'+
+            '</div>';
+        }
+
+        async function adminSaveSiteSettings(){
+            const ok=await askConfirm('שמירת הגדרות אתר','לשמור את הגדרות התפעול? שינוי כאן משפיע מיידית על משתמשים.');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('admin_update_site_settings',{
+                p_registration_enabled:!!$('admin-setting-registration')?.checked,
+                p_event_creation_enabled:!!$('admin-setting-events')?.checked,
+                p_minor_registration_enabled:!!$('admin-setting-minors')?.checked
+            });
+            if(error)return showToast(readableError(error),'error');
+            showToast('הגדרות האתר נשמרו.','success');
+            await adminOpenTab('settings');
         }
 
         async function adminRenderSecurity(){

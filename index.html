@@ -820,13 +820,15 @@
             ]);
         }
 
-        function rebuildSelect(id,items,{includeAll=false,allLabel='כל המגזרים',keep=true}={}){
+        function rebuildSelect(id,items,{includeAll=false,allLabel='כל המגזרים',placeholder='',keep=true}={}){
             const el=$(id);if(!el)return;
             const current=keep?String(el.value||''):'';
             const rows=(items||[]).filter(x=>x.enabled!==false);
-            el.innerHTML=(includeAll?'<option value="all">'+esc(allLabel)+'</option>':'')+
+            el.innerHTML=(placeholder?'<option value="" disabled>'+esc(placeholder)+'</option>':'')+
+                (includeAll?'<option value="all">'+esc(allLabel)+'</option>':'')+
                 rows.map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join('');
             if(current&&[...el.options].some(o=>o.value===current))el.value=current;
+            else if(placeholder)el.value='';
         }
 
         function updateChoiceLabels(name,items){
@@ -852,7 +854,9 @@
 
             rebuildSelect('ev-type',eventTypes);
             rebuildSelect('edit-ev-type',eventTypes);
-            ['vol-sector','profile-sector','family-child-sector'].forEach(id=>rebuildSelect(id,sectors));
+            rebuildSelect('vol-sector',sectors,{placeholder:'בחר'});
+            rebuildSelect('profile-sector',sectors);
+            rebuildSelect('family-child-sector',sectors,{placeholder:'בחר'});
             ['ev-sector','edit-ev-sector'].forEach(id=>rebuildSelect(id,sectors,{includeAll:true}));
             ['vol-radius','profile-radius','family-child-radius'].forEach(id=>rebuildSelect(id,radii));
 
@@ -1295,6 +1299,7 @@
                 ['invalid_sms_template','נוסח הודעת ה-SMS ריק או ארוך מדי.'],
                 ['sms_template_missing','תבנית ה-SMS לא נמצאה.'],
                 ['upload_failed','העלאת התמונה נכשלה. נסה שוב.'],
+                ['configured_option_disabled','האפשרות שנבחרה אינה פעילה כרגע לפי הגדרות האתר.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
                 ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
@@ -1404,7 +1409,7 @@
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v7',{
+                const {data:token,error}=await _supabase.rpc('username_register_v8',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
                     p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
@@ -1671,7 +1676,7 @@
             validateEventPayload(ev);
             const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
 
-            const {data:eventId,error}=await _supabase.rpc('create_event_v4',{
+            const {data:eventId,error}=await _supabase.rpc('create_event_v5',{
                 p_event_name:ev.event_name,p_event_type:ev.event_type,p_event_date:ev.event_date,
                 p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
                 p_city:ev.city,p_street:ev.street,p_house_number:ev.house_number,
@@ -1725,7 +1730,7 @@
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v7',{
+                const {data:token,error}=await _supabase.rpc('username_register_v8',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_volunteer_event_type_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
@@ -1985,14 +1990,14 @@
                 const coords=await verifyTypedAddress(city,street,number);
                 let result;
                 if(id){
-                    result=await _supabase.rpc('update_family_child',{
+                    result=await _supabase.rpc('update_family_child_v2',{
                         p_child_id:id,p_full_name:name,p_gender:gender,p_birth_year:birthYear,p_sector:sector,
                         p_event_type_preferences:eventTypes,p_city:city,p_street:street,p_house_number:number,
                         p_radius:radius,p_availability_days:days,p_availability_from:from,p_availability_until:until,
                         p_transport_mode:transport,p_strict_separation:separation,p_lat:coords.lat,p_lng:coords.lng
                     });
                 }else{
-                    result=await _supabase.rpc('add_family_child',{
+                    result=await _supabase.rpc('add_family_child_v2',{
                         p_full_name:name,p_gender:gender,p_birth_year:birthYear,p_sector:sector,
                         p_event_type_preferences:eventTypes,p_city:city,p_street:street,p_house_number:number,
                         p_radius:radius,p_availability_days:days,p_availability_from:from,p_availability_until:until,
@@ -2301,7 +2306,7 @@
             try{
                 const ev=collectEventForm('edit-');validateEventPayload(ev);
                 const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
-                const {error}=await _supabase.rpc('update_event_v3',{
+                const {error}=await _supabase.rpc('update_event_v4',{
                     p_event_id:$('edit-event-id').value,p_event_name:ev.event_name,p_event_type:ev.event_type,
                     p_event_date:ev.event_date,p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
                     p_city:ev.city,p_street:ev.street,p_house_number:ev.house_number,p_start_time:ev.start_time,p_close_time:ev.close_time,
@@ -2369,7 +2374,7 @@
                 const eventTypePrefs=checkedValues('profile-event-type-pref');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
-                const {error}=await _supabase.rpc('update_my_profile_v4',{
+                const {error}=await _supabase.rpc('update_my_profile_v5',{
                     p_full_name:$('profile-name').value.trim(),p_gender:$('profile-gender').value,p_sector:$('profile-sector').value,
                     p_volunteer_sector_preferences:checkedValues('profile-sector-pref'),p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:Number($('profile-birth-year').value),
                     p_city:city,p_street:street,p_house_number:number,p_radius:Number($('profile-radius').value||30),

@@ -1232,18 +1232,17 @@
 
 
         function renderAdminPasswordCard(mustChange=false){
-            return '<div class="glass-card p-6 '+(mustChange?'border-2 border-amber-300':'')+'"><h3 class="text-xl font-bold">'+(mustChange?'נדרשת החלפת סיסמה':'שינוי סיסמת מנהל')+'</h3>'+(mustChange?'<p class="text-sm text-amber-700 mt-1">החשבון נוצר עם סיסמה זמנית. יש להחליף אותה לפני כניסה לפאנל הניהול.</p>':'')+'<form id="admin-password-form" onsubmit="event.preventDefault(); handleAdminPasswordChange();" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4"><input type="password" id="admin-current-password" class="input-clean" placeholder="סיסמה נוכחית" required autocomplete="current-password"><input type="password" id="admin-new-password" class="input-clean" placeholder="סיסמה חדשה — לפחות 12 תווים" minlength="12" maxlength="72" required autocomplete="new-password"><input type="password" id="admin-new-password-confirm" class="input-clean" placeholder="אימות סיסמה חדשה" minlength="12" maxlength="72" required autocomplete="new-password"><button id="admin-password-submit" type="submit" class="btn-dark py-3 md:col-span-3">שמור סיסמה חדשה</button></form></div>';
+            return '<div class="glass-card p-6 '+(mustChange?'border-2 border-amber-300':'')+'"><h3 class="text-xl font-bold">'+(mustChange?'נדרשת החלפת סיסמה':'שינוי סיסמת מנהל')+'</h3>'+(mustChange?'<p class="text-sm text-amber-700 mt-1">החשבון נוצר עם סיסמה זמנית. מאחר שכבר נכנסת כמנהל, צריך לבחור רק סיסמה חדשה.</p>':'<p class="text-sm text-slate-500 mt-1">הכניסה הפעילה שלך מאשרת את הזהות, לכן אין צורך להזין שוב את הסיסמה הנוכחית.</p>')+'<form id="admin-password-form" onsubmit="event.preventDefault(); handleAdminPasswordChange();" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4"><input type="password" id="admin-new-password" class="input-clean" placeholder="סיסמה חדשה — לפחות 12 תווים" minlength="12" maxlength="72" required autocomplete="new-password"><input type="password" id="admin-new-password-confirm" class="input-clean" placeholder="אימות סיסמה חדשה" minlength="12" maxlength="72" required autocomplete="new-password"><button id="admin-password-submit" type="submit" class="btn-dark py-3 md:col-span-2">שמור סיסמה חדשה</button></form></div>';
         }
 
         async function handleAdminPasswordChange(){
             setBusy('admin-password-submit',true,'שומר...');
             try{
-                const current=$('admin-current-password').value;
                 const next=$('admin-new-password').value;
                 const confirm=$('admin-new-password-confirm').value;
                 if(next.length<12) throw new Error('invalid_admin_new_password');
                 if(next!==confirm) throw new Error('הסיסמאות אינן זהות.');
-                const {error}=await _supabase.rpc('admin_change_password',{p_current_password:current,p_new_password:next});
+                const {error}=await _supabase.rpc('admin_set_password',{p_new_password:next});
                 if(error) throw error;
                 $('admin-password-form')?.reset();
                 showToast('סיסמת המנהל עודכנה.','success');

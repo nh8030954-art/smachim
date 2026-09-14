@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; upgrade-insecure-requests">
     <title>שמחים בשמחתם</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -539,6 +541,8 @@
         let adminSmsFilter = 'all';
         let publicSiteConfig = {content:{},field_config:{}};
         let adminEditorState = null;
+        let adminIdleTimer = null;
+        const ADMIN_IDLE_MS = 30 * 60 * 1000;
         let calendarEventCache = new Map();
         let modalResolver = null;
         let dashboardArea = localStorage.getItem('smachimDashboardArea') || '';
@@ -552,6 +556,17 @@
         let chatPollTimer = null;
         const EVENT_DRAFT_PREFIX = 'smachimEventDraftV5:';
         const LEGACY_PERSONAL_STORAGE_KEYS = ['smachimEventDraftV4','pendingHostEvent'];
+
+        function armAdminIdleLogout(){
+            if(adminIdleTimer){clearTimeout(adminIdleTimer);adminIdleTimer=null;}
+            if(!adminMode)return;
+            adminIdleTimer=setTimeout(()=>{
+                if(adminMode){
+                    showToast('סשן המנהל נסגר לאחר חוסר פעילות.','warning');
+                    handleLogout();
+                }
+            },ADMIN_IDLE_MS);
+        }
 
         function eventDraftKey() {
             return sessionToken && currentProfile?.id ? EVENT_DRAFT_PREFIX + currentProfile.id : '';
@@ -590,6 +605,7 @@
             currentProfile=null;
             currentIsAdmin=false;
             adminMode=false;
+            if(adminIdleTimer){clearTimeout(adminIdleTimer);adminIdleTimer=null;}
             dashboardArea='';
             hostEventsCache.clear();
             privateEventCache.clear();
@@ -1370,7 +1386,7 @@
                 applyAdminSessionToken('');
             }
             updateHeaderActions();
-            if(adminMode&&currentIsAdmin) await loadAdminArea();
+            if(adminMode&&currentIsAdmin){armAdminIdleLogout();await loadAdminArea();}
         }
         async function openPersonalArea(){if(!sessionToken)return navigate('login');const profile=await loadProfile();if(!profile){applySessionToken('');updateHeaderActions();showToast('ההתחברות פגה. יש להתחבר מחדש.','warning');return navigate('login');}await loadDashboard();}
 
@@ -1522,6 +1538,7 @@
                 if(adminErr||!profile||!adminFlag)throw new Error('not_allowed');
 
                 currentIsAdmin=true;
+                armAdminIdleLogout();
                 $('login-form')?.reset();
                 updateHeaderActions();
                 await loadAdminArea();
@@ -2592,12 +2609,12 @@
         }
 
         async function adminRenderUsers(){
-            const {data,error}=await _supabase.rpc('admin_list_users',{p_search:adminUserSearch||'',p_limit:200,p_offset:0});
+            const {data,error}=await _supabase.rpc('admin_list_users_v2',{p_search:adminUserSearch||'',p_limit:200,p_offset:0});
             if(error)throw error;
             adminUsersCache=data||[];
             return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-end"><div><h3 class="text-2xl font-bold">משתמשים</h3><p class="text-sm text-slate-500">חיפוש, בדיקת פרופיל, חסימה, SMS וניתוק סשנים.</p></div><div class="flex gap-2"><input id="admin-user-search" class="input-clean min-w-56" value="'+esc(adminUserSearch)+'" placeholder="שם, טלפון או עיר"><button onclick="adminSearchUsers()" class="btn-dark px-4">חפש</button></div></div>'+
                 '<div class="mt-5 space-y-3">'+(adminUsersCache.length?adminUsersCache.map(u=>
-                    '<div class="border rounded-xl p-4 bg-white"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold text-lg">'+esc(u.full_name)+'</div><div class="text-sm text-slate-500"><span dir="ltr">'+esc(displayPhone(u.phone||''))+'</span> · '+esc(adminRoleLabel(u.role))+' · '+esc(u.city||'ללא עיר')+'</div><div class="flex flex-wrap gap-2 mt-2">'+(u.is_blocked?adminStatusPill('חסום','bad'):adminStatusPill('פעיל','good'))+(u.guardian_managed?adminStatusPill('מנוהל ע״י הורה','warn'):'')+(u.sms_notifications_enabled?adminStatusPill('SMS פעיל','neutral'):adminStatusPill('SMS כבוי','warn'))+'</div></div>'+
+                    '<div class="border rounded-xl p-4 bg-white"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold text-lg">'+esc(u.full_name)+'</div><div class="text-sm text-slate-500"><span dir="ltr">'+esc(u.phone_masked||'••••')+'</span> · '+esc(adminRoleLabel(u.role))+' · '+esc(u.city||'ללא עיר')+'</div><div class="flex flex-wrap gap-2 mt-2">'+(u.is_blocked?adminStatusPill('חסום','bad'):adminStatusPill('פעיל','good'))+(u.guardian_managed?adminStatusPill('מנוהל ע״י הורה','warn'):'')+(u.sms_notifications_enabled?adminStatusPill('SMS פעיל','neutral'):adminStatusPill('SMS כבוי','warn'))+'</div></div>'+
                     '<div class="flex flex-wrap gap-2 items-start"><button onclick="adminShowUser(\''+esc(u.id)+'\')" class="btn-soft px-3 py-2">פרטים</button><button onclick="adminToggleBlock(\''+esc(u.id)+'\','+(!u.is_blocked)+')" class="'+(u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-700')+' border rounded-lg px-3 py-2 font-bold text-sm">'+(u.is_blocked?'פתח חסימה':'חסום')+'</button><button onclick="adminSetUserSms(\''+esc(u.id)+'\','+(!u.sms_notifications_enabled)+')" class="btn-soft px-3 py-2">'+(u.sms_notifications_enabled?'כבה SMS':'הפעל SMS')+'</button><button onclick="adminForceLogout(\''+esc(u.id)+'\')" class="btn-soft px-3 py-2">נתק מהמערכת</button></div></div>'+
                     '<div class="text-xs text-slate-400 mt-3">אירועים שפורסמו: '+Number(u.hosted_events||0)+' · הרשמות: '+Number(u.registrations_count||0)+' · נוצר: '+esc(adminDateTime(u.created_at))+'</div></div>'
                 ).join(''):'<p class="text-slate-500 py-8 text-center">לא נמצאו משתמשים.</p>')+'</div></div>';
@@ -2676,7 +2693,7 @@
         async function adminRenderSms(){
             const [{data:status,error:sErr},{data:rows,error:rErr},{data:inbound,error:iErr}]=await Promise.all([
                 _supabase.rpc('admin_sms_status'),
-                _supabase.rpc('admin_sms_recent',{p_filter:adminSmsFilter||'all',p_limit:100}),
+                _supabase.rpc('admin_sms_recent_v2',{p_filter:adminSmsFilter||'all',p_limit:100}),
                 _supabase.rpc('admin_sms_inbound_recent',{p_limit:40})
             ]);
             if(sErr)throw sErr;if(rErr)throw rErr;if(iErr)throw iErr;
@@ -2941,7 +2958,7 @@
             if(sErr)throw sErr;if(aErr)throw aErr;
             const a=s?.admin_account||{};
             return '<div class="space-y-5">'+
-                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אבטחה והגדרות מנהל</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5">'+adminMetric('סשנים משתמשים',s.active_user_sessions)+adminMetric('סשנים מנהל',s.active_admin_sessions)+adminMetric('סשנים שפג תוקפם',s.expired_sessions)+adminMetric('משתמשים חסומים',s.blocked_users)+adminMetric('ניסיונות מנהל שגויים',a.failed_attempts||0)+'</div><div class="mt-4 text-sm text-slate-500">שם משתמש מנהל: <b>'+esc(a.username||'—')+'</b> · נעילה עד: <b>'+esc(adminDateTime(a.locked_until))+'</b></div><button onclick="adminCleanupSessions()" class="btn-soft px-3 py-2 mt-4">נקה סשנים שפג תוקפם</button></div>'+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אבטחה והגדרות מנהל</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5">'+adminMetric('סשנים משתמשים',s.active_user_sessions)+adminMetric('סשנים מנהל',s.active_admin_sessions)+adminMetric('סשנים שפג תוקפם',s.expired_sessions)+adminMetric('משתמשים חסומים',s.blocked_users)+adminMetric('ניסיונות מנהל שגויים',a.failed_attempts||0)+'</div><div class="mt-4 text-sm text-slate-500">שם משתמש מנהל: <b>'+esc(a.username||'—')+'</b> · נעילה עד: <b>'+esc(adminDateTime(a.locked_until))+'</b></div><div class="mt-2 text-xs text-slate-500 bg-slate-50 border rounded-lg p-3">סשן מנהל נשמר רק בכרטיסייה הנוכחית, פג בשרת אחרי שעתיים ונסגר בדפדפן לאחר 30 דקות ללא פעילות. רק סשן מנהל יכול לקרוא או לשנות נתוני ניהול.</div><button onclick="adminCleanupSessions()" class="btn-soft px-3 py-2 mt-4">נקה סשנים שפג תוקפם</button></div>'+
                 renderAdminPasswordCard(false)+
                 '<div class="glass-card p-6"><h4 class="font-bold text-lg mb-4">יומן פעולות מנהל</h4><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="border-b text-slate-500"><th class="text-right py-2">זמן</th><th>פעולה</th><th>יעד</th><th>פרטים</th></tr></thead><tbody>'+((audit||[]).map(x=>'<tr class="border-b border-slate-100"><td class="py-2 whitespace-nowrap">'+esc(adminDateTime(x.created_at))+'</td><td>'+esc(x.action)+'</td><td>'+esc((x.target_type||'')+(x.target_id?' / '+x.target_id:''))+'</td><td class="max-w-96">'+esc(x.details?JSON.stringify(x.details):'')+'</td></tr>').join('')||'<tr><td colspan="4" class="py-6 text-slate-500">עדיין אין פעולות ביומן.</td></tr>')+'</tbody></table></div></div>'+
                 '<div class="glass-card p-6"><h4 class="font-bold">בדיקות הרשמה</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm"><div class="border rounded-lg p-3">חשבונות ותיקים ללא אישור פרטיות: <b>'+Number(s.users_missing_privacy_consent||0)+'</b></div><div class="border rounded-lg p-3">חשבונות ותיקים ללא אישור SMS: <b>'+Number(s.users_missing_sms_consent||0)+'</b></div></div></div>'+
@@ -2999,6 +3016,7 @@
         updateHeaderActions();
         $('modal-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();resolveAppModal(true);}});
         $('chat-input')?.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();sendChatMessage();}});
+        ['pointerdown','keydown'].forEach(evt=>document.addEventListener(evt,()=>{if(adminMode)armAdminIdleLogout();},{passive:true}));
         loadPublicSiteConfig().finally(()=>initSession());
     </script>
 </body>

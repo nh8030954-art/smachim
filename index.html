@@ -2548,7 +2548,7 @@
                 const eventTypePrefs=checkedValues('profile-event-type-pref');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
-                const {error}=await _supabase.rpc('update_my_profile_v5',{
+                const {error}=await _supabase.rpc('update_my_profile_v6',{
                     p_full_name:$('profile-name').value.trim(),p_gender:$('profile-gender').value,p_sector:$('profile-sector').value,
                     p_volunteer_sector_preferences:checkedValues('profile-sector-pref'),p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:Number($('profile-birth-year').value),
                     p_city:city,p_street:street,p_house_number:number,p_radius:Number($('profile-radius').value||30),

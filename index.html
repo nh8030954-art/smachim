@@ -3204,17 +3204,26 @@
         }
 
         async function adminRenderSecurity(){
-            const [{data:s,error:sErr},{data:audit,error:aErr}]=await Promise.all([
+            const [{data:s,error:sErr},{data:audit,error:aErr},{data:health,error:hErr}]=await Promise.all([
                 _supabase.rpc('admin_security_status'),
-                _supabase.rpc('admin_audit_recent',{p_limit:100})
+                _supabase.rpc('admin_audit_recent',{p_limit:100}),
+                _supabase.rpc('admin_launch_health')
             ]);
-            if(sErr)throw sErr;if(aErr)throw aErr;
+            if(sErr)throw sErr;if(aErr)throw aErr;if(hErr)throw hErr;
             const a=s?.admin_account||{};
             return '<div class="space-y-5">'+
                 '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אבטחה והגדרות מנהל</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5">'+adminMetric('סשנים משתמשים',s.active_user_sessions)+adminMetric('סשנים מנהל',s.active_admin_sessions)+adminMetric('סשנים שפג תוקפם',s.expired_sessions)+adminMetric('משתמשים חסומים',s.blocked_users)+adminMetric('ניסיונות מנהל שגויים',a.failed_attempts||0)+'</div><div class="mt-4 text-sm text-slate-500">שם משתמש מנהל: <b>'+esc(a.username||'—')+'</b> · נעילה עד: <b>'+esc(adminDateTime(a.locked_until))+'</b></div><div class="mt-2 text-xs text-slate-500 bg-slate-50 border rounded-lg p-3">סשן מנהל נשמר רק בכרטיסייה הנוכחית, פג בשרת אחרי שעתיים ונסגר בדפדפן לאחר 30 דקות ללא פעילות. רק סשן מנהל יכול לקרוא או לשנות נתוני ניהול.</div><button onclick="adminCleanupSessions()" class="btn-soft px-3 py-2 mt-4">נקה סשנים שפג תוקפם</button></div>'+
                 renderAdminPasswordCard(false)+
                 '<div class="glass-card p-6"><h4 class="font-bold text-lg mb-4">יומן פעולות מנהל</h4><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="border-b text-slate-500"><th class="text-right py-2">זמן</th><th>פעולה</th><th>יעד</th><th>פרטים</th></tr></thead><tbody>'+((audit||[]).map(x=>'<tr class="border-b border-slate-100"><td class="py-2 whitespace-nowrap">'+esc(adminDateTime(x.created_at))+'</td><td>'+esc(x.action)+'</td><td>'+esc((x.target_type||'')+(x.target_id?' / '+x.target_id:''))+'</td><td class="max-w-96">'+esc(x.details?JSON.stringify(x.details):'')+'</td></tr>').join('')||'<tr><td colspan="4" class="py-6 text-slate-500">עדיין אין פעולות ביומן.</td></tr>')+'</tbody></table></div></div>'+
                 '<div class="glass-card p-6"><h4 class="font-bold">בדיקות הרשמה</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm"><div class="border rounded-lg p-3">חשבונות ותיקים ללא אישור פרטיות: <b>'+Number(s.users_missing_privacy_consent||0)+'</b></div><div class="border rounded-lg p-3">חשבונות ותיקים ללא אישור SMS: <b>'+Number(s.users_missing_sms_consent||0)+'</b></div></div></div>'+
+                '<div class="glass-card p-6"><h4 class="font-bold text-lg">בדיקת מוכנות להפצה</h4><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-4 text-sm">'+
+                    '<div class="border rounded-lg p-3">חשבונות ללא טלפון: <b>'+Number(health?.profiles_without_phone||0)+'</b></div>'+
+                    '<div class="border rounded-lg p-3">משמחים ללא מיקום: <b>'+Number(health?.volunteers_missing_coords||0)+'</b></div>'+
+                    '<div class="border rounded-lg p-3">אירועים פעילים ללא מיקום: <b>'+Number(health?.active_events_missing_location||0)+'</b></div>'+
+                    '<div class="border rounded-lg p-3">הרשמות פעילות כפולות: <b>'+Number(health?.duplicate_active_registrations||0)+'</b></div>'+
+                    '<div class="border rounded-lg p-3">SMS פעילים שפג תוקפם: <b>'+Number(health?.expired_pending_sms||0)+'</b></div>'+
+                    '<div class="border rounded-lg p-3 '+(Number(health?.legacy_under18_nonfamily_volunteers||0)?'bg-amber-50 border-amber-200':'')+'">חשבונות ותיקים מתחת ל־18 שאינם חשבון משפחתי: <b>'+Number(health?.legacy_under18_nonfamily_volunteers||0)+'</b><span class="block text-xs text-slate-500 mt-1">חשבונות כאלה אינם יכולים להשתתף כמשמחים עד להסדרה.</span></div>'+
+                '</div>'+(Number(health?.legacy_under18_currently_matchable||0)>0?'<div class="mt-4 bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 font-bold">נמצאו חשבונות קטינים ישנים שעדיין יכולים לקבל התאמות — נדרש טיפול.</div>':'<div class="mt-4 bg-green-50 border border-green-200 text-green-700 rounded-lg p-3">לא נמצאה אפשרות להתאמה של קטין מחוץ לחשבון משפחתי.</div>')+'</div>'+
             '</div>';
         }
 

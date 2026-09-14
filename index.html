@@ -1520,6 +1520,9 @@
                 ['sms_template_missing','תבנית ה-SMS לא נמצאה.'],
                 ['upload_failed','העלאת התמונה נכשלה. נסה שוב.'],
                 ['configured_option_disabled','האפשרות שנבחרה אינה פעילה כרגע לפי הגדרות האתר.'],
+                ['admin_user_consent_required','יש לאשר שקיבלת הסכמה מהמשתמש לפתיחת החשבון ולשימוש התפעולי.'],
+                ['cannot_delete_current_admin','אי אפשר למחוק את חשבון המנהל שבו אתה משתמש כרגע.'],
+                ['cannot_delete_admin','אי אפשר למחוק חשבון מנהל מתוך רשימת המשתמשים.'],
                 ['invalid_site_text','הטקסט אינו תקין או ארוך מדי.'],
                 ['site_text_missing','הטקסט לא נמצא במאגר העריכה.'],
                 ['invalid_support_request','יש להשלים שם, טלפון תקין ותיאור של הפנייה.'],
@@ -2880,16 +2883,108 @@
             '</div>';
         }
 
+        function adminNewUserForm(){
+            const sectors=configuredSectors().filter(x=>x.enabled!==false);
+            const radii=configuredRadiusOptions().filter(x=>x.enabled!==false);
+            const currentYear=new Date().getFullYear();
+            const years=[];
+            for(let y=currentYear-18;y>=1900;y--)years.push('<option value="'+y+'">'+y+'</option>');
+            return '<div id="admin-new-user-card" class="glass-card p-6 mb-5 border-2 border-brand-100 hidden">'+
+                '<div class="flex justify-between gap-3 items-start"><div><h3 class="text-xl font-bold">הוספת משתמש חדש</h3><p class="text-sm text-slate-500">החשבון נוצר ישירות על ידי מנהל. למשמח/ת נדרשים גם פרטי התאמה מלאים.</p></div><button onclick="adminToggleNewUserForm(false)" class="btn-soft px-3 py-2">סגור</button></div>'+
+                '<form id="admin-new-user-form" onsubmit="event.preventDefault(); adminCreateUser();" class="space-y-4 mt-5">'+
+                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">שם מלא</span><input id="admin-new-name" class="input-clean" minlength="2" maxlength="100" required></label><label><span class="field-label">טלפון</span><input id="admin-new-phone" type="tel" class="input-clean" dir="ltr" placeholder="05XXXXXXXX" required></label></div>'+
+                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">סיסמה זמנית</span><input id="admin-new-password" type="password" class="input-clean" minlength="8" maxlength="72" required autocomplete="new-password"></label><label><span class="field-label">סוג חשבון</span><select id="admin-new-role" class="input-clean bg-white" onchange="adminSyncNewUserRole()" required><option value="host">בעל שמחה</option><option value="volunteer">משמח/ת</option><option value="both">בעל שמחה + משמח/ת</option></select></label></div>'+
+                    '<div id="admin-new-volunteer-fields" class="hidden space-y-4">'+
+                        '<div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">איך לפנות?</span><select id="admin-new-gender" class="input-clean bg-white"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="admin-new-birth-year" class="input-clean bg-white"><option value="">בחר/י</option>'+years.join('')+'</select></label><label><span class="field-label">מגזר</span><select id="admin-new-sector" class="input-clean bg-white"><option value="">בחר/י</option>'+sectors.map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join('')+'</select></label></div>'+
+                        '<div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><input id="admin-new-city" class="input-clean" placeholder="עיר"><input id="admin-new-street" class="input-clean" placeholder="רחוב"><input id="admin-new-house" class="input-clean" placeholder="מספר"></div></div>'+
+                        '<label><span class="field-label">מרחק מקסימלי</span><select id="admin-new-radius" class="input-clean bg-white">'+radii.map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join('')+'</select></label>'+
+                    '</div>'+
+                    '<label class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4"><input id="admin-new-consent" type="checkbox" class="mt-1" required><span class="text-sm">אני מאשר/ת שקיבלתי מהמשתמש הסכמה לפתיחת החשבון, לתנאי השימוש, למדיניות הפרטיות ולהודעות SMS תפעוליות.</span></label>'+
+                    '<button id="admin-new-submit" type="submit" class="btn-brand px-5 py-3">צור משתמש</button>'+
+                '</form>'+
+            '</div>';
+        }
+
         async function adminRenderUsers(){
-            const {data,error}=await _supabase.rpc('admin_list_users_v2',{p_search:adminUserSearch||'',p_limit:200,p_offset:0});
+            const {data,error}=await _supabase.rpc('admin_list_users_v3',{p_search:adminUserSearch||'',p_limit:200,p_offset:0});
             if(error)throw error;
             adminUsersCache=data||[];
-            return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-end"><div><h3 class="text-2xl font-bold">משתמשים</h3><p class="text-sm text-slate-500">חיפוש, בדיקת פרופיל, חסימה, SMS וניתוק סשנים.</p></div><div class="flex gap-2"><input id="admin-user-search" class="input-clean min-w-56" value="'+esc(adminUserSearch)+'" placeholder="שם, טלפון או עיר"><button onclick="adminSearchUsers()" class="btn-dark px-4">חפש</button></div></div>'+
+            return adminNewUserForm()+'<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-end"><div><h3 class="text-2xl font-bold">משתמשים</h3><p class="text-sm text-slate-500">חיפוש, הוספה, מחיקה, בדיקת פרופיל, חסימה, SMS וניתוק סשנים.</p></div><div class="flex flex-wrap gap-2"><button onclick="adminToggleNewUserForm(true)" class="btn-brand px-4 py-2"><i class="fa-solid fa-user-plus ml-1"></i> הוסף משתמש</button><input id="admin-user-search" class="input-clean min-w-56" value="'+esc(adminUserSearch)+'" placeholder="שם, טלפון או עיר"><button onclick="adminSearchUsers()" class="btn-dark px-4">חפש</button></div></div>'+
                 '<div class="mt-5 space-y-3">'+(adminUsersCache.length?adminUsersCache.map(u=>
-                    '<div class="border rounded-xl p-4 bg-white"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold text-lg">'+esc(u.full_name)+'</div><div class="text-sm text-slate-500"><span dir="ltr">'+esc(u.phone_masked||'••••')+'</span> · '+esc(adminRoleLabel(u.role))+' · '+esc(u.city||'ללא עיר')+'</div><div class="flex flex-wrap gap-2 mt-2">'+(u.is_blocked?adminStatusPill('חסום','bad'):adminStatusPill('פעיל','good'))+(u.guardian_managed?adminStatusPill('מנוהל ע״י הורה','warn'):'')+(u.sms_notifications_enabled?adminStatusPill('SMS פעיל','neutral'):adminStatusPill('SMS כבוי','warn'))+'</div></div>'+
-                    '<div class="flex flex-wrap gap-2 items-start"><button onclick="adminShowUser(\''+esc(u.id)+'\')" class="btn-soft px-3 py-2">פרטים</button><button onclick="adminToggleBlock(\''+esc(u.id)+'\','+(!u.is_blocked)+')" class="'+(u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-700')+' border rounded-lg px-3 py-2 font-bold text-sm">'+(u.is_blocked?'פתח חסימה':'חסום')+'</button><button onclick="adminSetUserSms(\''+esc(u.id)+'\','+(!u.sms_notifications_enabled)+')" class="btn-soft px-3 py-2">'+(u.sms_notifications_enabled?'כבה SMS':'הפעל SMS')+'</button><button onclick="adminForceLogout(\''+esc(u.id)+'\')" class="btn-soft px-3 py-2">נתק מהמערכת</button></div></div>'+
-                    '<div class="text-xs text-slate-400 mt-3">אירועים שפורסמו: '+Number(u.hosted_events||0)+' · הרשמות: '+Number(u.registrations_count||0)+' · נוצר: '+esc(adminDateTime(u.created_at))+'</div></div>'
+                    '<div class="border rounded-xl p-4 bg-white"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold text-lg">'+esc(u.full_name)+(u.is_admin?' <span class="text-xs bg-slate-100 border rounded-full px-2 py-1">מנהל</span>':'')+'</div><div class="text-sm text-slate-500"><span dir="ltr">'+esc(u.phone_masked||'••••')+'</span> · '+esc(adminRoleLabel(u.role))+' · '+esc(u.city||'ללא עיר')+'</div><div class="flex flex-wrap gap-2 mt-2">'+(u.is_blocked?adminStatusPill('חסום','bad'):adminStatusPill('פעיל','good'))+(Number(u.family_children_count||0)?adminStatusPill(Number(u.family_children_count)+' ילדים','warn'):'')+(u.sms_notifications_enabled?adminStatusPill('SMS פעיל','neutral'):adminStatusPill('SMS כבוי','warn'))+'</div></div>'+
+                    '<div class="flex flex-wrap gap-2 items-start"><button onclick="adminShowUser(\''+esc(u.id)+'\')" class="btn-soft px-3 py-2">פרטים</button><button onclick="adminToggleBlock(\''+esc(u.id)+'\','+(!u.is_blocked)+')" class="'+(u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-700')+' border rounded-lg px-3 py-2 font-bold text-sm">'+(u.is_blocked?'פתח חסימה':'חסום')+'</button><button onclick="adminSetUserSms(\''+esc(u.id)+'\','+(!u.sms_notifications_enabled)+')" class="btn-soft px-3 py-2">'+(u.sms_notifications_enabled?'כבה SMS':'הפעל SMS')+'</button><button onclick="adminForceLogout(\''+esc(u.id)+'\')" class="btn-soft px-3 py-2">נתק</button>'+(!u.is_admin?'<button onclick="adminDeleteUser(\''+esc(u.id)+'\',\''+esc(u.full_name)+'\')" class="bg-red-50 text-red-700 border border-red-200 rounded-lg px-3 py-2 font-bold text-sm">מחק</button>':'')+'</div></div>'+
+                    '<div class="text-xs text-slate-400 mt-3">אירועים שפורסמו: '+Number(u.hosted_events||0)+' · הרשמות: '+Number(u.registrations_count||0)+' · ילדים בחשבון: '+Number(u.family_children_count||0)+' · נוצר: '+esc(adminDateTime(u.created_at))+'</div></div>'
                 ).join(''):'<p class="text-slate-500 py-8 text-center">לא נמצאו משתמשים.</p>')+'</div></div>';
+        }
+
+        function adminToggleNewUserForm(show=true){
+            const card=$('admin-new-user-card');
+            if(!card)return;
+            card.classList.toggle('hidden',!show);
+            if(show){adminSyncNewUserRole();card.scrollIntoView({behavior:'smooth',block:'start'});}
+        }
+
+        function adminSyncNewUserRole(){
+            const role=$('admin-new-role')?.value||'host';
+            const volunteer=role==='volunteer'||role==='both';
+            $('admin-new-volunteer-fields')?.classList.toggle('hidden',!volunteer);
+            for(const id of ['admin-new-gender','admin-new-birth-year','admin-new-sector','admin-new-city','admin-new-street','admin-new-house']){
+                const el=$(id);if(el)el.required=volunteer;
+            }
+        }
+
+        async function adminCreateUser(){
+            setBusy('admin-new-submit',true,'יוצר...');
+            try{
+                const name=$('admin-new-name').value.trim();
+                const phone=normalizePhone($('admin-new-phone').value);
+                const password=$('admin-new-password').value;
+                const role=$('admin-new-role').value;
+                const volunteer=role==='volunteer'||role==='both';
+                const gender=volunteer?$('admin-new-gender').value:null;
+                const birthYear=volunteer?Number($('admin-new-birth-year').value):null;
+                const sector=volunteer?$('admin-new-sector').value:'all';
+                const city=volunteer?$('admin-new-city').value.trim():'';
+                const street=volunteer?$('admin-new-street').value.trim():'';
+                const house=volunteer?$('admin-new-house').value.trim():'';
+                const radius=volunteer?Number($('admin-new-radius').value):10;
+                if(name.length<2)throw new Error('invalid_name');
+                if(!isValidPhone(phone))throw new Error('invalid_phone');
+                if(password.length<8)throw new Error('invalid_password');
+                if(!$('admin-new-consent').checked)throw new Error('admin_user_consent_required');
+                let coords={lat:null,lng:null};
+                if(volunteer){
+                    if(!gender)throw new Error('gender_required');
+                    if(!birthYear||new Date().getFullYear()-birthYear<18)throw new Error('adult_account_required');
+                    if(!sector)throw new Error('invalid_sector');
+                    if(!city||!street||!house)throw new Error('address_incomplete');
+                    coords=await verifyTypedAddress(city,street,house);
+                }
+                const {data,error}=await _supabase.rpc('admin_create_user',{
+                    p_full_name:name,p_phone:phone,p_password:password,p_role:role,
+                    p_gender:gender,p_birth_year:birthYear,p_sector:sector,
+                    p_city:city,p_street:street,p_house_number:house,p_radius:radius,
+                    p_lat:coords.lat,p_lng:coords.lng,p_consent_confirmed:true
+                });
+                if(error)throw error;
+                $('admin-new-user-form')?.reset();
+                showToast('המשתמש נוצר בהצלחה.','success');
+                await adminOpenTab('users');
+                if(data)await adminShowUser(data);
+            }catch(e){showToast(readableError(e),'error');}
+            finally{setBusy('admin-new-submit',false);}
+        }
+
+        async function adminDeleteUser(id,name){
+            const ok=await askConfirm('מחיקת משתמש','למחוק לצמיתות את '+(name||'המשתמש')+'? ההרשמות והילדים המנוהלים בחשבון יוסרו. אם קיימים אירועים עתידיים פעילים, המחיקה תיחסם עד לביטולם.','מחק לצמיתות');
+            if(!ok)return;
+            const typed=await askText('אישור מחיקה','כדי למנוע מחיקה בטעות, הקלד/י מחיקה','מחיקה');
+            if(typed!=='מחיקה')return showToast('המחיקה בוטלה.','warning');
+            const {error}=await _supabase.rpc('admin_delete_user',{p_profile_id:id});
+            if(error)return showToast(readableError(error),'error');
+            showToast('המשתמש נמחק.','success');
+            adminCloseDetail();
+            await adminOpenTab('users');
         }
 
         async function adminSearchUsers(){

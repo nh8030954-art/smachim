@@ -84,7 +84,7 @@
                 </button>
             </div>
             <button type="button" class="site-title-wrap" onclick="navigate('home')" aria-label="שמחים בשמחתם - דף הבית">
-                <img src="./assets/site-title.jpg" alt="שמחים בשמחתם" width="2048" height="938" decoding="async">
+                <img id="site-logo-img" src="./assets/site-title.jpg" alt="שמחים בשמחתם" width="2048" height="938" decoding="async">
             </button>
         </div>
     </header>
@@ -92,23 +92,23 @@
     <main class="flex-grow w-full">
         <!-- דף הבית -->
         <div id="view-home" class="screen active">
-            <div class="home-hero"><img src="./assets/hero-banner.jpg" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async"></div>
+            <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async"></div>
             <div class="max-w-5xl mx-auto px-6 pt-6 pb-14">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <button onclick="navigate('register-volunteer')" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4 text-brand-600 text-2xl"><i class="fa-solid fa-hand-holding-heart"></i></div>
-                        <span class="text-2xl font-bold text-slate-800 mb-2">אני רוצה לשמח</span>
-                        <span class="text-slate-500">הרשמה מלאה וחיפוש אירועים מתאימים.</span>
+                        <span data-site-text="home_volunteer_title" class="text-2xl font-bold text-slate-800 mb-2">אני רוצה לשמח</span>
+                        <span data-site-text="home_volunteer_subtitle" class="text-slate-500">הרשמה מלאה וחיפוש אירועים מתאימים.</span>
                     </button>
                     <button onclick="openAddEvent()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-700 text-2xl"><i class="fa-solid fa-calendar-plus"></i></div>
-                        <span class="text-2xl font-bold text-slate-800 mb-2">יש לי אירוע</span>
-                        <span class="text-slate-500">הרשמה כבעל שמחה ופרסום אירוע.</span>
+                        <span data-site-text="home_host_title" class="text-2xl font-bold text-slate-800 mb-2">יש לי אירוע</span>
+                        <span data-site-text="home_host_subtitle" class="text-slate-500">הרשמה כבעל שמחה ופרסום אירוע.</span>
                     </button>
                     <button onclick="openPersonalArea()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-700 text-2xl"><i class="fa-solid fa-user"></i></div>
-                        <span class="text-2xl font-bold text-slate-800 mb-2">אזור אישי</span>
-                        <span class="text-slate-500">התחברות וניהול אירועים או התנדבויות.</span>
+                        <span data-site-text="home_account_title" class="text-2xl font-bold text-slate-800 mb-2">אזור אישי</span>
+                        <span data-site-text="home_account_subtitle" class="text-slate-500">התחברות וניהול אירועים או התנדבויות.</span>
                     </button>
                 </div>
             </div>
@@ -117,8 +117,8 @@
         <!-- התחברות -->
         <div id="view-login" class="screen max-w-md mx-auto px-6 py-20">
             <div class="glass-card p-8 text-center">
-                <h2 class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h2>
-                <p class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות מספר טלפון וסיסמה.</p>
+                <h2 data-site-text="login_title" class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h2>
+                <p data-site-text="login_subtitle" class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות מספר טלפון וסיסמה.</p>
                 <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6" autocomplete="off">
                     <input type="text" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="username">
                     <input type="password" id="login-password" class="input-clean" placeholder="סיסמה" required autocomplete="current-password">
@@ -155,8 +155,8 @@
         <!-- הרשמה למשמח -->
         <div id="view-register-volunteer" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
-                <h2 class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h2>
-                <p class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
+                <h2 data-site-text="volunteer_registration_title" class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h2>
+                <p data-site-text="volunteer_registration_subtitle" class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
                 <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="off">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span id="vol-name-label" class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
@@ -477,15 +477,16 @@
     </main>
     <footer class="border-t border-slate-200 bg-white py-5 px-6">
         <div class="max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
-            <button type="button" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
-            <button type="button" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
+            <button type="button" data-site-text="footer_privacy_label" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
+            <button type="button" data-site-text="footer_terms_label" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
         </div>
     </footer>
 
     <script>
         const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_JjkT61xxSWFUImTeMNHWxA_e1zkZWr-';
-        let sessionToken = localStorage.getItem('smachimSession') || '';
+        const storedAdminSession = sessionStorage.getItem('smachimAdminSession') || '';
+        let sessionToken = storedAdminSession || localStorage.getItem('smachimSession') || '';
 
         function createAppClient() {
             const headers = sessionToken ? { 'x-app-session': sessionToken } : {};
@@ -499,15 +500,32 @@
 
         function applySessionToken(token) {
             sessionToken = token || '';
+            sessionStorage.removeItem('smachimAdminSession');
+            sessionStorage.removeItem('smachimAdminMode');
+            sessionStorage.removeItem('smachimAdminMode');
             if (sessionToken) localStorage.setItem('smachimSession', sessionToken);
             else localStorage.removeItem('smachimSession');
+            _supabase = createAppClient();
+        }
+
+        function applyAdminSessionToken(token) {
+            sessionToken = token || '';
+            localStorage.removeItem('smachimSession');
+            sessionStorage.removeItem('smachimAdminMode');
+            if (sessionToken) {
+                sessionStorage.setItem('smachimAdminSession', sessionToken);
+                sessionStorage.setItem('smachimAdminMode','1');
+            } else {
+                sessionStorage.removeItem('smachimAdminSession');
+                sessionStorage.removeItem('smachimAdminMode');
+            }
             _supabase = createAppClient();
         }
 
         let currentUser = null;
         let currentProfile = null;
         let currentIsAdmin = false;
-        let adminMode = localStorage.getItem('smachimAdminMode') === '1';
+        let adminMode = sessionStorage.getItem('smachimAdminMode') === '1' && !!storedAdminSession;
         let hostEventsCache = new Map();
         let privateEventCache = new Map();
         let matchingEventsCache = [];
@@ -520,6 +538,8 @@
         let adminEventSearch = '';
         let adminEventStatus = 'all';
         let adminSmsFilter = 'all';
+        let publicSiteConfig = {content:{},field_config:{}};
+        let adminEditorState = null;
         let calendarEventCache = new Map();
         let modalResolver = null;
         let dashboardArea = localStorage.getItem('smachimDashboardArea') || '';
@@ -545,7 +565,9 @@
                 });
                 LEGACY_PERSONAL_STORAGE_KEYS.forEach(key=>localStorage.removeItem(key));
                 localStorage.removeItem('smachimDashboardArea');
-                localStorage.removeItem('smachimAdminMode');
+                sessionStorage.removeItem('smachimAdminMode');
+                sessionStorage.removeItem('smachimAdminMode');
+                sessionStorage.removeItem('smachimAdminSession');
             } catch(_) {}
         }
 
@@ -751,6 +773,135 @@
         }
 
 
+        function siteText(key,fallback=''){
+            const v=publicSiteConfig?.content?.[key];
+            return typeof v==='string'&&v.trim()?v:fallback;
+        }
+
+        function configuredItems(key,fallback=[]){
+            const v=publicSiteConfig?.field_config?.[key];
+            return Array.isArray(v)&&v.length?v:fallback;
+        }
+
+        function configuredEventTypes(){
+            return configuredItems('event_types',[
+                {value:'wedding',label:'חתונה',enabled:true},
+                {value:'engagement',label:'אירוסין',enabled:true},
+                {value:'bar_mitzvah',label:'בר מצווה',enabled:true},
+                {value:'bat_mitzvah',label:'בת מצווה',enabled:true}
+            ]);
+        }
+
+        function configuredSectors(){
+            return configuredItems('sectors',[
+                {value:'haredi',label:'חרדי',enabled:true},
+                {value:'religious',label:'דתי לאומי',enabled:true},
+                {value:'traditional',label:'מסורתי',enabled:true},
+                {value:'secular',label:'חילוני',enabled:true}
+            ]);
+        }
+
+        function configuredAgeRanges(){
+            return configuredItems('age_ranges',[
+                {value:'all',label:'ללא הגבלת גיל',min:null,max:null,enabled:true,minor_only:false},
+                {value:'12-18',label:'12–18',min:12,max:18,enabled:true,minor_only:true},
+                {value:'18-25',label:'18–25',min:18,max:25,enabled:true,minor_only:false},
+                {value:'26-35',label:'26–35',min:26,max:35,enabled:true,minor_only:false},
+                {value:'36-50',label:'36–50',min:36,max:50,enabled:true,minor_only:false},
+                {value:'51-65',label:'51–65',min:51,max:65,enabled:true,minor_only:false},
+                {value:'66+',label:'66 ומעלה',min:66,max:null,enabled:true,minor_only:false}
+            ]);
+        }
+
+        function configuredRadiusOptions(){
+            return configuredItems('radius_options',[
+                {value:10,label:'עד 10 ק״מ',enabled:true},{value:20,label:'עד 20 ק״מ',enabled:true},
+                {value:50,label:'עד 50 ק״מ',enabled:true},{value:100,label:'עד 100 ק״מ',enabled:true},
+                {value:999,label:'כל הארץ',enabled:true}
+            ]);
+        }
+
+        function rebuildSelect(id,items,{includeAll=false,allLabel='כל המגזרים',keep=true}={}){
+            const el=$(id);if(!el)return;
+            const current=keep?String(el.value||''):'';
+            const rows=(items||[]).filter(x=>x.enabled!==false);
+            el.innerHTML=(includeAll?'<option value="all">'+esc(allLabel)+'</option>':'')+
+                rows.map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join('');
+            if(current&&[...el.options].some(o=>o.value===current))el.value=current;
+        }
+
+        function updateChoiceLabels(name,items){
+            const map=new Map((items||[]).map(x=>[String(x.value),x]));
+            document.querySelectorAll('input[name="'+name+'"]').forEach(input=>{
+                if(input.value==='all')return;
+                const item=map.get(String(input.value));
+                const label=input.closest('label');
+                if(!label)return;
+                if(!item){label.classList.add('hidden');input.disabled=true;return;}
+                label.classList.toggle('hidden',item.enabled===false);
+                input.disabled=item.enabled===false;
+                const textNodes=[...label.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE);
+                if(textNodes.length)textNodes[textNodes.length-1].textContent=' '+item.label;
+            });
+        }
+
+        function applyFieldConfig(){
+            const eventTypes=configuredEventTypes();
+            const sectors=configuredSectors();
+            const ages=configuredAgeRanges();
+            const radii=configuredRadiusOptions();
+
+            rebuildSelect('ev-type',eventTypes);
+            rebuildSelect('edit-ev-type',eventTypes);
+            ['vol-sector','profile-sector','family-child-sector'].forEach(id=>rebuildSelect(id,sectors));
+            ['ev-sector','edit-ev-sector'].forEach(id=>rebuildSelect(id,sectors,{includeAll:true}));
+            ['vol-radius','profile-radius','family-child-radius'].forEach(id=>rebuildSelect(id,radii));
+
+            updateChoiceLabels('vol-event-type-pref',eventTypes);
+            updateChoiceLabels('profile-event-type-pref',eventTypes);
+            updateChoiceLabels('family-event-type',eventTypes.filter(x=>['bar_mitzvah','bat_mitzvah'].includes(x.value)));
+            updateChoiceLabels('vol-sector-pref',sectors);
+            updateChoiceLabels('profile-sector-pref',sectors);
+            updateChoiceLabels('ev-accepted-sector',sectors);
+            updateChoiceLabels('edit-ev-accepted-sector',sectors);
+
+            for(const id of ['ev-age-range','edit-ev-age-range']){
+                const el=$(id);if(!el)continue;
+                const current=el.value||'all';
+                el.innerHTML=ages.filter(x=>x.enabled!==false).map(x=>'<option value="'+esc(x.value)+'" '+(x.minor_only?'data-minor-age':'')+'>'+esc(x.label)+'</option>').join('');
+                if([...el.options].some(o=>o.value===current))el.value=current;
+            }
+
+            const defaultType=publicSiteConfig?.field_config?.volunteer_event_default||'wedding';
+            if(!sessionToken){
+                setCheckedValues('vol-event-type-pref',[defaultType]);
+            }
+            syncEventAgeRangeOptions('');
+            syncEventAgeRangeOptions('edit-');
+        }
+
+        function applyPublicSiteConfig(){
+            const logo=$('site-logo-img'),hero=$('home-hero-img');
+            if(logo&&publicSiteConfig?.logo_url)logo.src=publicSiteConfig.logo_url;
+            if(hero&&publicSiteConfig?.hero_url)hero.src=publicSiteConfig.hero_url;
+            document.querySelectorAll('[data-site-text]').forEach(el=>{
+                const key=el.getAttribute('data-site-text');
+                const v=publicSiteConfig?.content?.[key];
+                if(typeof v==='string'&&v.trim())el.textContent=v;
+            });
+            applyFieldConfig();
+        }
+
+        async function loadPublicSiteConfig(){
+            try{
+                const {data,error}=await _supabase.rpc('public_site_config');
+                if(!error&&data){
+                    publicSiteConfig=data;
+                    applyPublicSiteConfig();
+                }
+            }catch(e){console.warn('public site config unavailable',e);}
+        }
+
         function formatDate(dateStr) {
             if (!dateStr) return '';
             const d = new Date(dateStr + 'T12:00:00');
@@ -758,11 +909,12 @@
         }
 
         function sectorLabel(v) {
-            return ({haredi:'חרדי', religious:'דתי לאומי', traditional:'מסורתי', secular:'חילוני', all:'כל המגזרים'})[v] || v || '';
+            if(v==='all')return 'כל המגזרים';
+            return configuredSectors().find(x=>x.value===v)?.label || v || '';
         }
 
         function eventTypeLabel(v) {
-            return ({wedding:'חתונה',bar_mitzvah:'בר מצווה',bat_mitzvah:'בת מצווה',engagement:'אירוסין'})[v] || 'אירוע';
+            return configuredEventTypes().find(x=>x.value===v)?.label || 'אירוע';
         }
 
         function eventTypeListLabel(values) {
@@ -773,24 +925,13 @@
 
         function ageRangeBounds(value) {
             const v=String(value||'all');
-            if(v==='12-18') return {min:12,max:18};
-            if(v==='18-25') return {min:18,max:25};
-            if(v==='26-35') return {min:26,max:35};
-            if(v==='36-50') return {min:36,max:50};
-            if(v==='51-65') return {min:51,max:65};
-            if(v==='66+') return {min:66,max:null};
-            return {min:null,max:null};
+            const row=configuredAgeRanges().find(x=>String(x.value)===v);
+            return row?{min:row.min==null?null:Number(row.min),max:row.max==null?null:Number(row.max)}:{min:null,max:null};
         }
 
         function ageRangeValue(min,max) {
-            const a=min==null?null:Number(min), b=max==null?null:Number(max);
-            if(a===12&&b===18) return '12-18';
-            if(a===18&&b===25) return '18-25';
-            if(a===26&&b===35) return '26-35';
-            if(a===36&&b===50) return '36-50';
-            if(a===51&&b===65) return '51-65';
-            if(a===66&&b==null) return '66+';
-            return 'all';
+            const a=min==null?null:Number(min),b=max==null?null:Number(max);
+            return configuredAgeRanges().find(x=>(x.min==null?null:Number(x.min))===a&&(x.max==null?null:Number(x.max))===b)?.value||'all';
         }
 
 
@@ -1212,7 +1353,7 @@
             currentIsAdmin=!!adminFlag;
             if(adminMode&&!currentIsAdmin){
                 adminMode=false;
-                localStorage.removeItem('smachimAdminMode');
+                applyAdminSessionToken('');
             }
             updateHeaderActions();
             if(adminMode&&currentIsAdmin) await loadAdminArea();
@@ -1302,7 +1443,7 @@
             if(!profile||!currentIsAdmin){
                 applySessionToken('');
                 adminMode=false;
-                localStorage.removeItem('smachimAdminMode');
+                sessionStorage.removeItem('smachimAdminMode');
                 updateHeaderActions();
                 showToast('אין הרשאת מנהל.','error');
                 return navigate('login');
@@ -1337,7 +1478,7 @@
                     applySessionToken(token);
                     adminMode=false;
                     currentIsAdmin=false;
-                    localStorage.removeItem('smachimAdminMode');
+                    sessionStorage.removeItem('smachimAdminMode');
 
                     const profile=await loadProfile();
                     if(!profile)throw new Error('session_expired');
@@ -1359,9 +1500,8 @@
                 const token=data?.token;
                 if(!token)throw new Error('invalid_admin_login');
 
-                applySessionToken(token);
+                applyAdminSessionToken(token);
                 adminMode=true;
-                localStorage.setItem('smachimAdminMode','1');
 
                 const profile=await loadProfile();
                 const {data:adminFlag,error:adminErr}=await _supabase.rpc('is_admin');
@@ -1377,10 +1517,9 @@
                 }
             }catch(e){
                 if(!isPhone){
-                    applySessionToken('');
+                    applyAdminSessionToken('');
                     adminMode=false;
                     currentIsAdmin=false;
-                    localStorage.removeItem('smachimAdminMode');
                     showToast('פרטי ההתחברות שגויים.','error');
                 }else{
                     showToast(readableError(e),'error');
@@ -1394,8 +1533,9 @@
 
         async function handleLogout(){
             const token=sessionToken;
+            const wasAdmin=adminMode;
             try{if(token)await _supabase.rpc('username_logout',{p_token:token});}catch(_){}
-            applySessionToken('');
+            if(wasAdmin) applyAdminSessionToken(''); else applySessionToken('');
             clearAllPersonalBrowserStorage();
             clearRuntimeUserData();
             updateHeaderActions();
@@ -1700,7 +1840,7 @@
 
         function radiusLabel(value){
             const n=Number(value||10);
-            return n>=999 ? 'כל הארץ' : 'עד '+n+' ק״מ';
+            return configuredRadiusOptions().find(x=>Number(x.value)===n)?.label || (n>=999?'כל הארץ':'עד '+n+' ק״מ');
         }
 
         function setDashHtml(id,html){const el=$(id);if(el)el.innerHTML=html||'';}
@@ -1762,7 +1902,7 @@
             const {data,error}=await _supabase.rpc('get_family_children');
             if(error)return '<div class="glass-card p-5"><h3 class="font-bold">המשפחה שלי</h3><p class="text-sm text-slate-500 mt-1">לא הצלחנו לטעון כרגע.</p></div>';
             familyChildrenCache=data||[];
-            return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="text-xl font-bold">המשפחה שלי</h3><p class="text-sm text-slate-500">אפשר להוסיף ילד/ה בגיל 12–17 לחשבון רק אם תרצה/י. הילד/ה לא מקבל/ת חשבון נפרד.</p></div><button onclick="openFamilyChildForm()" class="btn-soft px-4 py-2"><i class="fa-solid fa-user-plus ml-1"></i> הוסף ילד/ה</button></div>'+
+            return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="text-xl font-bold">'+esc(siteText('family_title','המשפחה שלי'))+'</h3><p class="text-sm text-slate-500">'+esc(siteText('family_subtitle','אפשר להוסיף ילד/ה בגיל 12–17 לחשבון רק אם תרצה/י. הילד/ה לא מקבל/ת חשבון נפרד.'))+'</p></div><button onclick="openFamilyChildForm()" class="btn-soft px-4 py-2"><i class="fa-solid fa-user-plus ml-1"></i> הוסף ילד/ה</button></div>'+
                 (familyChildrenCache.length?'<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5">'+familyChildrenCache.map(c=>'<div class="border rounded-xl p-4 bg-slate-50"><div class="flex justify-between gap-3"><div><div class="font-bold text-lg">'+esc(c.full_name)+'</div><div class="text-sm text-slate-500">'+esc(adminGenderLabel(c.gender))+' · גיל '+(new Date().getFullYear()-Number(c.birth_year||0))+' · '+esc(eventTypeListLabel(c.volunteer_event_type_preferences))+'</div><div class="text-xs text-slate-400 mt-1">הרשמות פעילות: '+Number(c.active_registrations||0)+'</div></div><button onclick="openFamilyChildArea(\''+esc(c.id)+'\')" class="btn-brand px-3 py-2 text-sm">ניהול</button></div></div>').join('')+'</div>':'<div class="mt-4 text-sm text-slate-500">לא נוספו ילדים לחשבון. אין צורך להגדיר דבר אם האפשרות הזאת לא רלוונטית לך.</div>')+
             '</div>';
         }
@@ -2674,7 +2814,7 @@
         updateHeaderActions();
         $('modal-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();resolveAppModal(true);}});
         $('chat-input')?.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();sendChatMessage();}});
-        initSession();
+        loadPublicSiteConfig().finally(()=>initSession());
     </script>
 </body>
 </html>

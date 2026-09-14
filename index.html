@@ -60,6 +60,7 @@
             .site-title-wrap { width:230px; height:68px; }
             .site-title-wrap img { width:230px; transform:translateY(-15px); }
             .site-header-actions { left:.5rem; }
+            .site-header-actions .header-home-action { display:none !important; }
             .site-header-actions button { font-size:.72rem !important; }
             .site-header-actions .flex { gap:.45rem !important; }
         }
@@ -78,7 +79,7 @@
     <header class="site-header sticky top-0 z-50">
         <div class="site-header-inner max-w-7xl mx-auto px-6">
             <div id="header-actions" class="site-header-actions">
-                <button onclick="navigate('home')" class="text-sm font-semibold text-slate-500 hover:text-brand-600 transition">
+                <button onclick="navigate('home')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600 transition">
                     <i class="fa-solid fa-house ml-1"></i> דף הבית
                 </button>
             </div>
@@ -123,6 +124,22 @@
                     <input type="password" id="login-password" class="input-clean" placeholder="סיסמה" required autocomplete="current-password">
                     <button id="login-submit" type="submit" class="w-full btn-dark py-3">כניסה למערכת</button>
                 </form>
+                <button type="button" onclick="navigate('reset-password')" class="mt-4 text-sm font-bold text-brand-700 hover:underline">שכחתי סיסמה</button>
+            </div>
+        </div>
+
+        <!-- איפוס סיסמה -->
+        <div id="view-reset-password" class="screen max-w-md mx-auto px-6 py-16">
+            <div class="glass-card p-8">
+                <h2 class="text-2xl font-bold text-brand-dark">איפוס סיסמה</h2>
+                <p class="text-sm text-slate-500 mt-2">נשלח קוד אימות ב-SMS למספר הרשום בחשבון.</p>
+                <form id="reset-password-form" onsubmit="event.preventDefault(); handlePasswordReset();" class="space-y-4 mt-6">
+                    <input type="tel" id="reset-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" inputmode="tel" required>
+                    <input type="password" id="reset-password" class="input-clean" placeholder="סיסמה חדשה" minlength="8" maxlength="72" required>
+                    <input type="password" id="reset-password-confirm" class="input-clean" placeholder="אימות סיסמה חדשה" minlength="8" maxlength="72" required>
+                    <button id="reset-password-submit" type="submit" class="w-full btn-brand py-3">שלח קוד ואפס סיסמה</button>
+                </form>
+                <button type="button" onclick="navigate('login')" class="mt-4 text-sm font-bold text-slate-500 hover:text-brand-700">חזרה להתחברות</button>
             </div>
         </div>
 
@@ -141,7 +158,7 @@
                         <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label><span class="field-label">מין לצורך מכסת האירוע</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="male">גבר</option><option value="female">אישה</option></select></label>
+                        <label><span class="field-label">אני</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
                         <label><span class="field-label">שנת לידה</span><select id="vol-birth-year" class="input-clean bg-white birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
                         <label><span class="field-label">המגזר שאני משתייך אליו</span><select id="vol-sector" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
                     </div>
@@ -158,16 +175,11 @@
                     <div>
                         <span class="field-label">כתובת מגורים</span>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div id="vol-city-select-wrap"><select id="vol-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div>
-                            <div id="vol-street-select-wrap"><select id="vol-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div>
-                            <input id="vol-house-number" class="input-clean" placeholder="מספר בית" autocomplete="address-line2">
+                            <input id="vol-city" class="input-clean" placeholder="עיר" autocomplete="address-level2" required>
+                            <input id="vol-street" class="input-clean" placeholder="רחוב" autocomplete="address-line1" required>
+                            <input id="vol-house-number" class="input-clean" placeholder="מספר בית" autocomplete="address-line2" required>
                         </div>
-                        <div id="vol-address-manual-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                            <input id="vol-city-manual" class="input-clean" placeholder="עיר — הקלדה ידנית">
-                            <input id="vol-street-manual" class="input-clean" placeholder="רחוב — הקלדה ידנית">
-                        </div>
-                        <button type="button" onclick="toggleManualAddress('vol')" class="mt-2 text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="vol-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button>
-                        <div class="field-help">הרשימה כוללת את היישובים והרחובות השמורים אצלנו מהמאגר הרשמי. אם משהו לא מופיע, אפשר לעבור להקלדה ידנית.</div>
+                        <div class="field-help">יש להקליד עיר, רחוב ומספר בית. לפני יצירת החשבון נוודא שהכתובת ניתנת לזיהוי במפה.</div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label><span class="field-label">רדיוס מקסימלי מהבית</span><select id="vol-radius" class="input-clean bg-white" required><option value="10" selected>עד 10 ק״מ</option><option value="20">עד 20 ק״מ</option><option value="50">עד 50 ק״מ</option><option value="100">עד 100 ק״מ</option><option value="999">כל הארץ</option></select></label>
@@ -189,6 +201,10 @@
                         <label><span class="field-label">פנוי עד שעה</span><input type="time" id="vol-available-until" class="input-clean"></label>
                     </div>
                     <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"><input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700 text-sm">הצג לי רק אירועים בהפרדה מלאה</span></label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל הודעות SMS תפעוליות לצורך אימות החשבון, הזמנות לאירועים, אישורים, שינויים ותזכורות.</span></label>
+                    </div>
                     <button id="vol-submit" type="submit" class="w-full btn-brand py-4">השלם הרשמה</button>
                 </form>
             </div>
@@ -215,6 +231,8 @@
                             <label><span class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                             <label><span class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                         </div>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל SMS תפעולי לצורך אימות החשבון וניהול האירוע.</span></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">שם האירוע</span><input type="text" id="ev-name" class="input-clean" placeholder="לדוגמה: חתונת משפחת כהן" required></label>
@@ -256,8 +274,8 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">מכסת משמחים — גברים</span><input type="number" id="ev-men" class="input-clean" value="0" min="0" max="500" required></label>
-                        <label><span class="field-label">מכסת משמחות — נשים</span><input type="number" id="ev-women" class="input-clean" value="0" min="0" max="500" required></label>
+                        <label><span class="field-label">מכסת משמחים</span><input type="number" id="ev-men" class="input-clean" value="0" min="0" max="500" required></label>
+                        <label><span class="field-label">מכסת משמחות</span><input type="number" id="ev-women" class="input-clean" value="0" min="0" max="500" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">גיל מינימלי</span><input type="number" id="ev-age-min" class="input-clean" min="0" max="120" placeholder="לא משנה"></label>
@@ -293,7 +311,7 @@
                     <button type="button" onclick="toggleManualAddress('edit-ev')" class="text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="edit-ev-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מגזר האירוע</span><select id="edit-ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label><label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold">הפרדה מלאה</span></label></div>
                     <div><span class="field-label">מגזרי משמחים מתאימים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="all"> כולם</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="secular"> חילוני</label></div></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת גברים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת נשים</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת משמחים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת משמחות</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">גיל מינימלי</span><input type="number" id="edit-ev-age-min" class="input-clean" min="0" max="120"></label><label><span class="field-label">גיל מקסימלי</span><input type="number" id="edit-ev-age-max" class="input-clean" min="0" max="120"></label></div>
                     <label><span class="field-label">הערה למשמחים</span><textarea id="edit-ev-note" class="input-clean min-h-24" maxlength="600"></textarea></label>
                     <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
@@ -308,15 +326,46 @@
                 <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div></div>
                 <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-6">
                     <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">מין</span><select id="profile-gender" class="input-clean bg-white"><option value="male">גבר</option><option value="female">אישה</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">אני</span><select id="profile-gender" class="input-clean bg-white"><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
                     <div><span class="field-label">באילו מגזרים אני מוכן לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="all"> כל המגזרים</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="secular"> חילוני</label></div></div>
-                    <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><div id="profile-city-select-wrap"><select id="profile-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div><div id="profile-street-select-wrap"><select id="profile-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div><input id="profile-house-number" class="input-clean" placeholder="מספר בית"></div><div id="profile-address-manual-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3"><input id="profile-city-manual" class="input-clean" placeholder="עיר — הקלדה ידנית"><input id="profile-street-manual" class="input-clean" placeholder="רחוב — הקלדה ידנית"></div><button type="button" onclick="toggleManualAddress('profile')" class="mt-2 text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="profile-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button></div>
+                    <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><input id="profile-city" class="input-clean" placeholder="עיר" required><input id="profile-street" class="input-clean" placeholder="רחוב" required><input id="profile-house-number" class="input-clean" placeholder="מספר בית" required></div><div class="field-help">הכתובת נבדקת מחדש לפני שמירת השינויים.</div></div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">רדיוס מקסימלי</span><select id="profile-radius" class="input-clean bg-white"><option value="10">עד 10 ק״מ</option><option value="20">עד 20 ק״מ</option><option value="50">עד 50 ק״מ</option><option value="100">עד 100 ק״מ</option><option value="999">כל הארץ</option></select></label><label><span class="field-label">ימים בשבוע</span><select id="profile-days" class="input-clean bg-white"><option value="1">עד יום אחד</option><option value="2">עד יומיים</option><option value="3">עד 3 ימים</option><option value="4">עד 4 ימים</option><option value="5">עד 5 ימים</option><option value="7">ללא הגבלה</option></select></label><label><span class="field-label">אמצעי הגעה</span><select id="profile-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">לא משנה</option></select></label></div>
                     <div><span class="field-label">ימים פנויים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="0"> א׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="1"> ב׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="2"> ג׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="3"> ד׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="4"> ה׳</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">פנוי החל משעה</span><input type="time" id="profile-available-from" class="input-clean"></label><label><span class="field-label">פנוי עד שעה</span><input type="time" id="profile-available-until" class="input-clean"></label></div>
                     <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="profile-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">הצג לי רק אירועים בהפרדה מלאה</span></label>
                     <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button></div>
                 </form>
+                <div class="mt-8 pt-6 border-t border-red-100">
+                    <h3 class="font-bold text-red-700">מחיקת חשבון</h3>
+                    <p class="text-sm text-slate-500 mt-1">מחיקה מסירה את החשבון והמידע האישי המקושר אליו. אם יש אירועים עתידיים שפרסמת, יש לבטל אותם קודם.</p>
+                    <button type="button" onclick="deleteMyAccount()" class="mt-3 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-2 font-bold text-sm">מחק את החשבון שלי</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- מדיניות פרטיות -->
+        <div id="view-privacy" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8 space-y-5">
+                <h2 class="text-3xl font-bold text-brand-dark">מדיניות פרטיות</h2>
+                <p class="text-slate-600">שמחים בשמחתם משתמשת במידע רק לצורך הפעלת השירות, התאמת משמחים לאירועים, אבטחת החשבון ותקשורת תפעולית.</p>
+                <div><h3 class="font-bold">איזה מידע נשמר?</h3><p class="text-sm text-slate-600 mt-1">שם, מספר טלפון, שנת לידה, שיוך והעדפות, כתובת וקואורדינטות לצורך חישוב מרחק, הרשמות לאירועים, הודעות ותגובות תפעוליות.</p></div>
+                <div><h3 class="font-bold">מי רואה את המידע?</h3><p class="text-sm text-slate-600 mt-1">בעלי אירועים רואים רק מידע הנדרש לניהול הנרשמים. כתובת המגורים של משמח/ת אינה מוצגת לבעל האירוע. ספקי התשתית מקבלים רק מידע הנדרש להפעלת השירות.</p></div>
+                <div><h3 class="font-bold">SMS</h3><p class="text-sm text-slate-600 mt-1">הודעות SMS משמשות לאימות מספר הטלפון, הזמנות, אישורים, שינויים ותזכורות. המערכת אינה מיועדת לשליחת פרסום מסחרי ללא הסכמה נפרדת.</p></div>
+                <div><h3 class="font-bold">מחיקת חשבון</h3><p class="text-sm text-slate-600 mt-1">ניתן למחוק את החשבון מתוך הגדרות הפרופיל. מידע שעשוי להידרש לצרכים טכניים, אבטחתיים או משפטיים עשוי להישמר לתקופה מוגבלת בהתאם לצורך.</p></div>
+                <button type="button" onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
+            </div>
+        </div>
+
+        <!-- תנאי שימוש -->
+        <div id="view-terms" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8 space-y-5">
+                <h2 class="text-3xl font-bold text-brand-dark">תנאי שימוש</h2>
+                <p class="text-slate-600">השירות מחבר בין בעלי שמחה לבין אנשים המעוניינים לשמח באירועים. השימוש באתר כפוף לכללים הבאים.</p>
+                <div><h3 class="font-bold">פרטים נכונים</h3><p class="text-sm text-slate-600 mt-1">יש למסור פרטים אמיתיים ועדכניים. בעל אירוע אחראי לנכונות פרטי האירוע והמשמח/ת אחראי/ת לעדכן אם אינו/ה יכול/ה להגיע.</p></div>
+                <div><h3 class="font-bold">שימוש ראוי</h3><p class="text-sm text-slate-600 mt-1">אין להשתמש בשירות להטרדה, התחזות, הפצת תוכן אסור או שימוש שאינו קשור למטרת המיזם. ניתן לחסום חשבון במקרה של שימוש לרעה.</p></div>
+                <div><h3 class="font-bold">התאמות והגעה</h3><p class="text-sm text-slate-600 mt-1">המערכת מסייעת בהתאמה אך אינה יכולה להבטיח הגעה בפועל, זמינות תחבורה או התאמה מושלמת בכל מצב.</p></div>
+                <div><h3 class="font-bold">שינויים וביטולים</h3><p class="text-sm text-slate-600 mt-1">יש לעדכן שינוי מהותי או ביטול מוקדם ככל האפשר כדי שניתן יהיה לעדכן את המשתתפים.</p></div>
+                <button type="button" onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
             </div>
         </div>
 
@@ -347,6 +396,12 @@
         </div>
         <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><input id="modal-input" class="input-clean mt-4 hidden" type="text"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
     </main>
+    <footer class="border-t border-slate-200 bg-white py-5 px-6">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
+            <button type="button" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
+            <button type="button" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
+        </div>
+    </footer>
 
     <script>
         const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
@@ -407,7 +462,7 @@
         }
 
         function clearSensitiveForms() {
-            ['login-form','volunteer-form','event-form','edit-event-form','profile-form'].forEach(id=>{
+            ['login-form','reset-password-form','volunteer-form','event-form','edit-event-form','profile-form'].forEach(id=>{
                 try { $(id)?.reset(); } catch(_) {}
             });
             ['profile-phone-display','profile-role-display','user-greeting'].forEach(id=>{
@@ -508,7 +563,93 @@
         function mapButtons(address){if(!address)return'';const q=encodeURIComponent(address);return '<div class="flex flex-wrap gap-2 mt-2"><a target="_blank" rel="noopener" href="https://waze.com/ul?q='+q+'&navigate=yes" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-brands fa-waze ml-1"></i> Waze</a><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+q+'" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-solid fa-map-location-dot ml-1"></i> Google Maps</a></div>';}
         function icsEscape(v){return String(v||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
         function downloadCalendar(eventId){const e=calendarEventCache.get(eventId);if(!e)return showToast('לא מצאתי את פרטי האירוע ליומן.','error');const d=String(e.event_date||'').replaceAll('-','');const start=String(e.start_time||'00:00').slice(0,5).replace(':','')+'00';const end=String(e.close_time||e.start_time||'00:00').slice(0,5).replace(':','')+'00';const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Smachim//HE','BEGIN:VEVENT','UID:'+eventId+'@smachim','DTSTART;TZID=Asia/Jerusalem:'+d+'T'+start,'DTEND;TZID=Asia/Jerusalem:'+d+'T'+end,'SUMMARY:'+icsEscape('שמחים בשמחתם - '+(e.event_name||e.couple_names||'אירוע')),'LOCATION:'+icsEscape(e.exact_address||e.public_location||''),'DESCRIPTION:'+icsEscape('אירוע דרך שמחים בשמחתם'),'END:VEVENT','END:VCALENDAR'].join('\r\n');const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='event.ics';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-        function updateHeaderActions(){const box=$('header-actions');if(!box)return;box.innerHTML=sessionToken&&currentProfile?'<div class="flex gap-4 items-center"><button onclick="navigate(\'home\')" class="text-sm font-semibold text-slate-500 hover:text-brand-600"><i class="fa-solid fa-house ml-1"></i> דף הבית</button><button onclick="loadDashboard()" class="text-sm font-bold text-brand-700 hover:text-brand-900"><i class="fa-solid fa-user ml-1"></i> אזור אישי</button></div>':'<button onclick="navigate(\'home\')" class="text-sm font-semibold text-slate-500 hover:text-brand-600 transition"><i class="fa-solid fa-house ml-1"></i> דף הבית</button>';}
+        function updateHeaderActions(){const box=$('header-actions');if(!box)return;box.innerHTML=sessionToken&&currentProfile?'<div class="flex gap-4 items-center"><button onclick="navigate(\'home\')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600"><i class="fa-solid fa-house ml-1"></i> דף הבית</button><button onclick="loadDashboard()" class="text-sm font-bold text-brand-700 hover:text-brand-900"><i class="fa-solid fa-user ml-1"></i> אזור אישי</button></div>':'<button onclick="navigate(\'home\')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600 transition"><i class="fa-solid fa-house ml-1"></i> דף הבית</button>';}
+
+        async function callPublicEdge(name,payload){
+            const res=await fetch(SUPABASE_URL+'/functions/v1/'+name,{
+                method:'POST',
+                headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY},
+                body:JSON.stringify(payload||{})
+            });
+            const data=await res.json().catch(()=>({}));
+            if(!res.ok||data?.ok===false){
+                const e=new Error(data?.error||('edge_http_'+res.status));
+                e.status=res.status;
+                throw e;
+            }
+            return data;
+        }
+
+        async function ensurePhoneVerification(phone,purpose){
+            await callPublicEdge('phone-auth',{action:'request',phone,purpose});
+            showToast('שלחנו קוד אימות ב-SMS.','success');
+            for(let attempt=0;attempt<5;attempt++){
+                const code=await askText('אימות מספר טלפון','הקלד/י את הקוד בן 6 הספרות שנשלח ב-SMS.','123456');
+                if(code===null) throw new Error('verification_cancelled');
+                try{
+                    const result=await callPublicEdge('phone-auth',{action:'verify',phone,purpose,code:String(code).trim()});
+                    if(result?.token)return result.token;
+                    throw new Error('verification_invalid_code');
+                }catch(e){
+                    const m=String(e?.message||'');
+                    if(m.includes('verification_invalid_code')&&attempt<4){
+                        showToast('הקוד אינו נכון. נסה/י שוב.','error');
+                        continue;
+                    }
+                    throw e;
+                }
+            }
+            throw new Error('verification_too_many_attempts');
+        }
+
+        async function verifyTypedAddress(city,street,number){
+            const result=await callPublicEdge('address-verify',{city,street,number});
+            if(!result?.ok||!Number.isFinite(Number(result.lat))||!Number.isFinite(Number(result.lng))) throw new Error('address_not_found');
+            return {lat:Number(result.lat),lng:Number(result.lng),formatted_address:result.formatted_address||'',provider:result.provider||''};
+        }
+
+        function showLegalSummary(kind){
+            if(kind==='privacy'){
+                return openAppModal({title:'מדיניות פרטיות',message:'אנחנו שומרים את הפרטים הנדרשים להפעלת החשבון ולהתאמת אירועים: טלפון, פרטי פרופיל, כתובת לצורך חישוב מרחק ופעילות במערכת. כתובת המגורים אינה מוצגת לבעלי אירועים. ניתן למחוק חשבון מההגדרות.',confirmText:'הבנתי',cancelText:'סגור'});
+            }
+            return openAppModal({title:'תנאי שימוש',message:'יש למסור פרטים נכונים, להשתמש בשירות למטרת המיזם בלבד ולעדכן ביטול או שינוי בזמן. המערכת מסייעת בהתאמה אך אינה יכולה להבטיח הגעה בפועל.',confirmText:'הבנתי',cancelText:'סגור'});
+        }
+
+        async function handlePasswordReset(){
+            setBusy('reset-password-submit',true,'שולח קוד...');
+            try{
+                const phone=normalizePhone($('reset-phone').value);
+                const password=$('reset-password').value;
+                const confirm=$('reset-password-confirm').value;
+                if(!isValidPhone(phone))throw new Error('invalid_phone');
+                if(password.length<8)throw new Error('invalid_password');
+                if(password!==confirm)throw new Error('הסיסמאות אינן זהות.');
+                const verificationToken=await ensurePhoneVerification(phone,'reset_password');
+                const {error}=await _supabase.rpc('reset_password_with_verification',{
+                    p_phone:phone,p_verification_token:verificationToken,p_new_password:password
+                });
+                if(error)throw error;
+                $('reset-password-form')?.reset();
+                showToast('הסיסמה עודכנה. אפשר להתחבר.','success');
+                navigate('login');
+            }catch(e){showToast(readableError(e),'error');}
+            finally{setBusy('reset-password-submit',false);}
+        }
+
+        async function deleteMyAccount(){
+            const ok=await askConfirm('מחיקת חשבון','המחיקה היא פעולה בלתי הפיכה. אם יש לך אירועים עתידיים שפרסמת, יש לבטל אותם קודם.','המשך למחיקה');
+            if(!ok)return;
+            const typed=await askText('אישור אחרון','כדי לאשר, יש להקליד את המילה: מחיקה','מחיקה');
+            if(typed!=='מחיקה')return showToast('החשבון לא נמחק.','warning');
+            const {error}=await _supabase.rpc('delete_my_account');
+            if(error)return showToast(readableError(error),'error');
+            applySessionToken('');
+            clearAllPersonalBrowserStorage();
+            clearRuntimeUserData();
+            updateHeaderActions();
+            navigate('home');
+            showToast('החשבון נמחק.','success');
+        }
 
         function normalizePhone(phone) {
             const raw = String(phone || '').replace(/[\s\-()]/g, '');
@@ -766,10 +907,8 @@
 
         async function initializeAddressLists(){
             await Promise.all([
-                ensureCities('vol-city'),
                 ensureCities('ev-city'),
-                ensureCities('edit-ev-city'),
-                ensureCities('profile-city')
+                ensureCities('edit-ev-city')
             ]);
         }
 
@@ -798,11 +937,11 @@
                 ['profile_missing','לא הצלחנו לטעון את הפרופיל. נסה להתחבר מחדש.'],
                 ['weekly_limit_reached','הגעת למספר ימי ההתנדבות המקסימלי שהגדרת לשבוע זה.'],
                 ['time_conflict','כבר יש לך התנדבות אחרת שחופפת בשעות לאירוע הזה.'],
-                ['gender_required','יש להגדיר מין בפרופיל.'],
+                ['gender_required','יש לבחור משמח או משמחת בפרופיל.'],
                 ['birth_year_required','יש להגדיר שנת לידה.'],
                 ['invalid_birth_year','שנת הלידה אינה תקינה.'],
                 ['address_required','יש להשלים עיר ורחוב בפרופיל.'],
-                ['address_not_found','לא הצלחנו לזהות את הכתובת. נסה לבחור עיר ורחוב מההצעות.'],
+                ['address_not_found','לא הצלחנו לזהות את הכתובת במפה. בדוק/י את העיר, הרחוב ומספר הבית.'],
                 ['invalid_address','יש להשלים עיר ורחוב.'],
                 ['invalid_availability','טווח שעות הזמינות אינו תקין.'],
                 ['invalid_transport_mode','אמצעי ההגעה אינו תקין.'],
@@ -824,7 +963,7 @@
                 ['invalid_event_name','יש להזין שם לאירוע.'],
                 ['invalid_location','יש להשלים עיר, רחוב וכתובת אולם.'],
                 ['event_location_missing','לא הצלחנו לזהות את כתובת האולם במפה.'],
-                ['gender_change_with_active_registrations','לא ניתן לשנות מין כל עוד יש הרשמות פעילות לאירועים עתידיים.'],
+                ['gender_change_with_active_registrations','לא ניתן לשנות בין משמח למשמחת כל עוד יש הרשמות פעילות לאירועים עתידיים.'],
                 ['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],
                 ['event_date_in_past','לא ניתן לבחור תאריך שכבר עבר.'],
                 ['invalid_login','מספר הטלפון או הסיסמה שגויים.'],
@@ -835,7 +974,20 @@
                 ['invalid_name','יש להזין שם מלא.'],
                 ['not_allowed','אין הרשאה לבצע את הפעולה הזאת.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
-                ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.']
+                ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
+                ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
+                ['phone_verification_required','יש לאמת את מספר הטלפון לפני המשך ההרשמה.'],
+                ['verification_rate_limited','נשלח קוד לאחרונה. יש להמתין כדקה לפני שליחת קוד נוסף.'],
+                ['verification_invalid_code','קוד האימות שגוי.'],
+                ['verification_expired','קוד האימות פג. יש לשלוח קוד חדש.'],
+                ['verification_too_many_attempts','בוצעו יותר מדי ניסיונות קוד. יש לשלוח קוד חדש.'],
+                ['gateway_unavailable','שירות ה-SMS אינו זמין כרגע. נסה שוב בעוד כמה דקות.'],
+                ['gateway_send_failed','לא הצלחנו לשלוח את קוד האימות. נסה שוב בעוד כמה דקות.'],
+                ['verification_cancelled','האימות בוטל.'],
+                ['reset_not_available','לא ניתן לאפס סיסמה עבור המספר הזה.'],
+                ['active_host_events_exist','לפני מחיקת החשבון יש לבטל את האירועים העתידיים שפרסמת.'],
+                ['address_incomplete','יש להקליד עיר, רחוב ומספר בית.'],
+                ['address_lookup_failed','לא הצלחנו לבדוק את הכתובת כרגע. נסה שוב בעוד רגע.']
             ];
             for(const [key,text] of pairs) if(m.includes(key)) return text;
             if(m.includes('אינן זהות')) return 'הסיסמאות אינן זהות.';
@@ -909,22 +1061,26 @@
                 const availableUntil=$('vol-available-until').value||null;
                 const transport=$('vol-transport').value;
                 const separation=$('vol-separation').checked;
+                const legalConsent=!!$('vol-legal-consent')?.checked;
+                const smsConsent=!!$('vol-sms-consent')?.checked;
 
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
                 if(password.length<8) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
-                const address=fullAddress(city,street,number);
-                const coords=await geocodeAddress(address);
-                if(coords.lat==null) throw new Error('address_not_found');
+                if(!legalConsent||!smsConsent) throw new Error('consent_required');
+                if(!city||!street||!number) throw new Error('address_incomplete');
+                const coords=await verifyTypedAddress(city,street,number);
+                const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v2',{
+                const {data:token,error}=await _supabase.rpc('username_register_v3',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
                     p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
                     p_radius:radius,p_max_days_per_week:maxDays,p_strict_separation:separation,
                     p_availability_days:days,p_availability_from:availableFrom,p_availability_until:availableUntil,
-                    p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng
+                    p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng,
+                    p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true
                 });
                 if(error) throw error;
                 applySessionToken(token); await loadProfile(); updateHeaderActions();
@@ -971,7 +1127,7 @@
         async function openAddEvent(){
             if(sessionToken&&!currentProfile) await loadProfile();
             const block=$('host-account-block');
-            const fields=['host-name','host-phone','host-pass','host-pass-confirm'];
+            const fields=['host-name','host-phone','host-pass','host-pass-confirm','host-legal-consent','host-sms-consent'];
             if(currentProfile){
                 block.classList.add('hidden');
                 fields.forEach(id=>{const el=$(id);if(el){el.required=false;el.value='';}});
@@ -1123,7 +1279,7 @@
                 });
                 if(error) throw error;
                 const x=data?.[0]||{men_count:0,women_count:0,total_count:0};
-                box.innerHTML='<b>'+Number(x.total_count||0)+'</b> משמחים מתאימים כרגע · גברים '+Number(x.men_count||0)+' · נשים '+Number(x.women_count||0);
+                box.innerHTML='<b>'+Number(x.total_count||0)+'</b> משמחים מתאימים כרגע · משמחים '+Number(x.men_count||0)+' · משמחות '+Number(x.women_count||0);
             }catch(e){box.textContent=readableError(e);}
         }
 
@@ -1143,16 +1299,20 @@
 
                 const name=$('host-name').value.trim(),phone=normalizePhone($('host-phone').value);
                 const password=$('host-pass').value,confirmPassword=$('host-pass-confirm').value;
+                const legalConsent=!!$('host-legal-consent')?.checked,smsConsent=!!$('host-sms-consent')?.checked;
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
                 if(password.length<8) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
+                if(!legalConsent||!smsConsent) throw new Error('consent_required');
+                const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v2',{
+                const {data:token,error}=await _supabase.rpc('username_register_v3',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
                     p_strict_separation:false,p_availability_days:[0,1,2,3,4],
-                    p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null
+                    p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null,
+                    p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true
                 });
                 if(error){
                     if(String(error.message).includes('already_registered')){
@@ -1229,7 +1389,7 @@
         function renderProfileCompleteness() {
             if(!['volunteer','both'].includes(currentProfile.role)) return '';
             const missing=[];
-            if(!currentProfile.gender) missing.push('מין');
+            if(!currentProfile.gender) missing.push('משמח/משמחת');
             if(!currentProfile.birth_year) missing.push('שנת לידה');
             if(!currentProfile.sector||currentProfile.sector==='all') missing.push('מגזר אישי');
             if(!currentProfile.city||!currentProfile.street) missing.push('כתובת');
@@ -1250,12 +1410,12 @@
         }
 
         function renderVolunteerCriteriaSummary() {
-            const gender=currentProfile.gender==='male'?'גברים':'נשים';
+            const gender=currentProfile.gender==='male'?'משמח':'משמחת';
             const age=currentProfile.birth_year?new Date().getFullYear()-Number(currentProfile.birth_year):'—';
             const time=(currentProfile.availability_from||currentProfile.availability_until)
                 ? (currentProfile.availability_from?.slice(0,5)||'כל שעה')+'–'+(currentProfile.availability_until?.slice(0,5)||'כל שעה')
                 : 'ללא הגבלת שעות';
-            return '<div class="glass-card p-5"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="font-bold text-lg">העדפות ההתאמה שלי</h3><p class="text-sm text-slate-600 mt-1">מין: '+esc(gender)+' · גיל: '+esc(age)+' · שיוך: '+esc(sectorLabel(currentProfile.sector))+' · מוכן לשמח: '+esc(sectorListLabel(currentProfile.volunteer_sector_preferences))+'</p><p class="text-sm text-slate-500 mt-1">'+esc(radiusLabel(currentProfile.radius))+' · '+(currentProfile.strict_separation?'רק הפרדה מלאה':'גם ללא הפרדה')+' · '+esc(time)+' · '+(currentProfile.transport_mode==='transit'?'תחבורה ציבורית':currentProfile.transport_mode==='any'?'כל אמצעי':'רכב')+'</p></div><button onclick="openProfileSettings()" class="btn-soft px-3 py-2 text-sm">שנה העדפות</button></div></div>';
+            return '<div class="glass-card p-5"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="font-bold text-lg">העדפות ההתאמה שלי</h3><p class="text-sm text-slate-600 mt-1">אני: '+esc(gender)+' · גיל: '+esc(age)+' · שיוך: '+esc(sectorLabel(currentProfile.sector))+' · מוכן לשמח: '+esc(sectorListLabel(currentProfile.volunteer_sector_preferences))+'</p><p class="text-sm text-slate-500 mt-1">'+esc(radiusLabel(currentProfile.radius))+' · '+(currentProfile.strict_separation?'רק הפרדה מלאה':'גם ללא הפרדה')+' · '+esc(time)+' · '+(currentProfile.transport_mode==='transit'?'תחבורה ציבורית':currentProfile.transport_mode==='any'?'כל אמצעי':'רכב')+'</p></div><button onclick="openProfileSettings()" class="btn-soft px-3 py-2 text-sm">שנה העדפות</button></div></div>';
         }
 
         function radiusChoiceValue(value){
@@ -1455,7 +1615,7 @@
                 const available=Math.max(quota-count,0);
                 const ageRange=ev.age_min==null&&ev.age_max==null?'ללא הגבלת גיל':(ev.age_min??'—')+'–'+(ev.age_max??'—');
                 const exact=(ev.hall_name?ev.hall_name+' · ':'')+(ev.hall_address||fullAddress(ev.city,ev.street,ev.house_number));
-                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(ev.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(relativeDateLabel(ev.event_date))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(ev.event_type))+'</span></div><p class="text-sm text-slate-500 mt-1">בעל השמחה: <b>'+esc(ev.host_name)+'</b></p><p class="text-sm text-slate-600 mt-1">📅 '+dayName(ev.event_date)+' · '+formatDate(ev.event_date)+' · ⏰ '+esc(timeRange(ev.start_time,ev.close_time))+'</p><p class="text-sm font-bold text-brand-700 mt-1">📍 '+esc(exact)+'</p><p class="text-xs text-slate-600 mt-2"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>הרשמה עד:</b> '+esc(formatDateTime(ev.registration_deadline))+'</p><p class="text-xs text-brand-700 font-semibold mt-1"><i class="fa-solid fa-circle-check ml-1"></i>התאמה מלאה: מגזר אירוע '+esc(sectorLabel(ev.sector_pref))+' · מגזרי משמחים '+esc(sectorListLabel(ev.accepted_volunteer_sectors))+' · '+(ev.is_separated?'הפרדה מלאה':'ללא הפרדה')+' · גיל '+esc(ageRange)+'</p><p class="text-xs text-slate-500 mt-1">נותרו '+available+' מקומות במכסה שלך · גברים '+ev.men_registered+'/'+ev.quota_men+' · נשים '+ev.women_registered+'/'+ev.quota_women+'</p>'+(ev.volunteer_note?'<div class="mt-2 bg-white border rounded-lg p-2 text-sm"><b>הערת בעל השמחה:</b> '+esc(ev.volunteer_note)+'</div>':'')+'</div><div class="flex flex-wrap gap-2 shrink-0"><button onclick="rsvpEvent(\''+esc(ev.id)+'\')" class="btn-brand px-4 py-2 text-sm">הירשם לשמח</button><button onclick="reportEvent(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-regular fa-flag"></i></button></div></div><div class="mt-4 border-t pt-4"><div id="route-map-'+esc(ev.id)+'" data-event-map="'+esc(ev.id)+'" class="route-map"></div><div id="route-stats-'+esc(ev.id)+'" class="text-sm text-slate-600 mt-3"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מחשב מסלול...</div>'+externalNavButtons(ev)+'</div></div>';
+                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(ev.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(relativeDateLabel(ev.event_date))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(ev.event_type))+'</span></div><p class="text-sm text-slate-500 mt-1">בעל השמחה: <b>'+esc(ev.host_name)+'</b></p><p class="text-sm text-slate-600 mt-1">📅 '+dayName(ev.event_date)+' · '+formatDate(ev.event_date)+' · ⏰ '+esc(timeRange(ev.start_time,ev.close_time))+'</p><p class="text-sm font-bold text-brand-700 mt-1">📍 '+esc(exact)+'</p><p class="text-xs text-slate-600 mt-2"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>הרשמה עד:</b> '+esc(formatDateTime(ev.registration_deadline))+'</p><p class="text-xs text-brand-700 font-semibold mt-1"><i class="fa-solid fa-circle-check ml-1"></i>התאמה מלאה: מגזר אירוע '+esc(sectorLabel(ev.sector_pref))+' · מגזרי משמחים '+esc(sectorListLabel(ev.accepted_volunteer_sectors))+' · '+(ev.is_separated?'הפרדה מלאה':'ללא הפרדה')+' · גיל '+esc(ageRange)+'</p><p class="text-xs text-slate-500 mt-1">נותרו '+available+' מקומות במכסה שלך · משמחים '+ev.men_registered+'/'+ev.quota_men+' · משמחות '+ev.women_registered+'/'+ev.quota_women+'</p>'+(ev.volunteer_note?'<div class="mt-2 bg-white border rounded-lg p-2 text-sm"><b>הערת בעל השמחה:</b> '+esc(ev.volunteer_note)+'</div>':'')+'</div><div class="flex flex-wrap gap-2 shrink-0"><button onclick="rsvpEvent(\''+esc(ev.id)+'\')" class="btn-brand px-4 py-2 text-sm">הירשם לשמח</button><button onclick="reportEvent(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-regular fa-flag"></i></button></div></div><div class="mt-4 border-t pt-4"><div id="route-map-'+esc(ev.id)+'" data-event-map="'+esc(ev.id)+'" class="route-map"></div><div id="route-stats-'+esc(ev.id)+'" class="text-sm text-slate-600 mt-3"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מחשב מסלול...</div>'+externalNavButtons(ev)+'</div></div>';
             }).join('');
         }
 
@@ -1515,7 +1675,7 @@
                 const total=Number(e.approved_men)+Number(e.approved_women),quota=Number(e.quota_men)+Number(e.quota_women);
                 const pct=quota?Math.min(100,Math.round(total/quota*100)):0;
                 const age=e.age_min==null&&e.age_max==null?'לא משנה':(e.age_min??'—')+'–'+(e.age_max??'—');
-                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div><div class="flex flex-wrap gap-2 items-center"><h4 class="font-bold text-lg">'+esc(e.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(eventStatusLabel(e))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(e.event_type))+'</span></div><p class="text-sm text-slate-600 mt-1">📅 '+formatDate(e.event_date)+' · '+esc(timeRange(e.start_time,e.close_time))+' · הרשמה עד '+esc(formatDateTime(e.registration_deadline))+'</p><p class="text-sm font-semibold text-brand-700 mt-1">📍 '+esc((e.hall_name?e.hall_name+' · ':'')+e.hall_address)+'</p><p class="text-xs text-slate-600 mt-2">מגזר אירוע: '+esc(sectorLabel(e.sector_pref))+' · משמחים: '+esc(sectorListLabel(e.accepted_volunteer_sectors))+' · גיל: '+esc(age)+' · '+(e.is_separated?'הפרדה מלאה':'ללא הפרדה')+'</p><div class="mt-3 max-w-md"><div class="flex justify-between text-xs text-slate-600 mb-1"><span>נרשמו '+total+'/'+quota+'</span><span>'+pct+'%</span></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="text-xs text-slate-500 mt-1">גברים '+e.approved_men+'/'+e.quota_men+' (אישרו הגעה '+e.confirmed_men+') · נשים '+e.approved_women+'/'+e.quota_women+' (אישרו '+e.confirmed_women+')</p></div></div><div class="flex flex-wrap gap-2"><button onclick="showRegistrants(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">נרשמים</button><button onclick="openEventChat(\''+esc(e.id)+'\')" class="btn-brand px-3 py-2 text-sm"><i class="fa-regular fa-comments ml-1"></i> צ׳אט</button><button onclick="downloadCalendar(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">יומן</button>'+(e.event_status!=='cancelled'&&e.event_date>=new Date().toISOString().slice(0,10)?'<button onclick="openEditEvent(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">עריכה</button><button onclick="cancelHostEvent(\''+esc(e.id)+'\')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm">ביטול</button>':'')+'</div></div><div id="registrants-'+esc(e.id)+'" class="mt-3 hidden"></div></div>';
+                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div><div class="flex flex-wrap gap-2 items-center"><h4 class="font-bold text-lg">'+esc(e.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(eventStatusLabel(e))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(e.event_type))+'</span></div><p class="text-sm text-slate-600 mt-1">📅 '+formatDate(e.event_date)+' · '+esc(timeRange(e.start_time,e.close_time))+' · הרשמה עד '+esc(formatDateTime(e.registration_deadline))+'</p><p class="text-sm font-semibold text-brand-700 mt-1">📍 '+esc((e.hall_name?e.hall_name+' · ':'')+e.hall_address)+'</p><p class="text-xs text-slate-600 mt-2">מגזר אירוע: '+esc(sectorLabel(e.sector_pref))+' · משמחים: '+esc(sectorListLabel(e.accepted_volunteer_sectors))+' · גיל: '+esc(age)+' · '+(e.is_separated?'הפרדה מלאה':'ללא הפרדה')+'</p><div class="mt-3 max-w-md"><div class="flex justify-between text-xs text-slate-600 mb-1"><span>נרשמו '+total+'/'+quota+'</span><span>'+pct+'%</span></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="text-xs text-slate-500 mt-1">משמחים '+e.approved_men+'/'+e.quota_men+' (אישרו הגעה '+e.confirmed_men+') · משמחות '+e.approved_women+'/'+e.quota_women+' (אישרו '+e.confirmed_women+')</p></div></div><div class="flex flex-wrap gap-2"><button onclick="showRegistrants(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">נרשמים</button><button onclick="openEventChat(\''+esc(e.id)+'\')" class="btn-brand px-3 py-2 text-sm"><i class="fa-regular fa-comments ml-1"></i> צ׳אט</button><button onclick="downloadCalendar(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">יומן</button>'+(e.event_status!=='cancelled'&&e.event_date>=new Date().toISOString().slice(0,10)?'<button onclick="openEditEvent(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2 text-sm">עריכה</button><button onclick="cancelHostEvent(\''+esc(e.id)+'\')" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold text-sm">ביטול</button>':'')+'</div></div><div id="registrants-'+esc(e.id)+'" class="mt-3 hidden"></div></div>';
             }).join(''):'<p class="text-slate-500">עדיין לא פרסמת אירוע.</p>')+'</div></div>';
         }
 
@@ -1527,7 +1687,7 @@
             if(error) return box.innerHTML='<div class="text-sm text-slate-600">לא הצלחנו לטעון את רשימת הנרשמים.</div>';
             box.innerHTML=data?.length?'<div class="border-t pt-3 space-y-2">'+data.map(r=>{
                 const age=r.birth_year?new Date().getFullYear()-Number(r.birth_year):'—';
-                return '<div class="flex justify-between items-center text-sm gap-3"><span class="font-semibold">'+esc(r.full_name)+' · '+(r.gender==='male'?'גבר':'אישה')+' · גיל '+esc(age)+'<span class="block text-xs text-slate-400 font-normal">נרשם '+new Date(r.registered_at).toLocaleDateString('he-IL')+'</span></span>'+(r.attendance_confirmed_at?'<span class="status-pill bg-brand-50 text-brand-700">אישר הגעה</span>':'<span class="status-pill bg-slate-100 text-slate-500">טרם אישר</span>')+'</div>';
+                return '<div class="flex justify-between items-center text-sm gap-3"><span class="font-semibold">'+esc(r.full_name)+' · '+(r.gender==='male'?'משמח':'משמחת')+' · גיל '+esc(age)+'<span class="block text-xs text-slate-400 font-normal">נרשם '+new Date(r.registered_at).toLocaleDateString('he-IL')+'</span></span>'+(r.attendance_confirmed_at?'<span class="status-pill bg-brand-50 text-brand-700">אישר הגעה</span>':'<span class="status-pill bg-slate-100 text-slate-500">טרם אישר</span>')+'</div>';
             }).join('')+'</div>':'<div class="text-sm text-slate-500 border-t pt-3">אין נרשמים עדיין.</div>';
         }
 
@@ -1588,9 +1748,8 @@
             $('profile-birth-year').value=currentProfile.birth_year||'';
             $('profile-sector').value=(currentProfile.sector&&currentProfile.sector!=='all')?currentProfile.sector:'haredi';
             setCheckedValues('profile-sector-pref',currentProfile.volunteer_sector_preferences||['all']);
-            await toggleManualAddress('profile',false);
-            await ensureCities('profile-city',currentProfile.city||'');
-            await loadStreets(currentProfile.city||'','profile-street',currentProfile.street||'');
+            $('profile-city').value=currentProfile.city||'';
+            $('profile-street').value=currentProfile.street||'';
             $('profile-house-number').value=currentProfile.house_number||'';
             $('profile-radius').value=radiusChoiceValue(currentProfile.radius);
             $('profile-days').value=currentProfile.max_days_per_week||3;
@@ -1606,8 +1765,8 @@
             setBusy('profile-submit',true,'שומר...');
             try{
                 const {city,street,number}=getAddressParts('profile');
-                const coords=await geocodeAddress(fullAddress(city,street,number));
-                if(coords.lat==null) throw new Error('address_not_found');
+                if(!city||!street||!number) throw new Error('address_incomplete');
+                const coords=await verifyTypedAddress(city,street,number);
                 const days=checkedNumbers('profile-available-day');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 const {error}=await _supabase.rpc('update_my_profile_v2',{
@@ -1683,10 +1842,8 @@
         bindAllChoice('ev-accepted-sector');
         bindAllChoice('edit-ev-accepted-sector');
         bindAllChoice('profile-sector-pref');
-        wireAddressSelect('vol-city','vol-street');
         wireAddressSelect('ev-city','ev-street');
         wireAddressSelect('edit-ev-city','edit-ev-street');
-        wireAddressSelect('profile-city','profile-street');
         $('ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
         $('edit-ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
         initializeAddressLists();

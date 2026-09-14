@@ -245,12 +245,12 @@
                             <p class="text-xs text-slate-500 mt-1">הטלפון ישמש כשם המשתמש להתחברות לאזור האישי.</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" autocomplete="off" required></label>
-                            <label><span class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="off" required></label>
+                            <label><span data-field-label="host_name" class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" autocomplete="name" minlength="2" maxlength="100" required></label>
+                            <label><span data-field-label="host_phone" class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
-                            <label><span class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                            <label><span data-field-label="host_password" class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                            <label><span data-field-label="host_password_confirm" class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                         </div>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל SMS תפעולי לצורך אימות החשבון וניהול האירוע.</span></label>
@@ -899,6 +899,7 @@
                 event_name:'שם האירוע',event_type:'סוג האירוע',event_date:'תאריך האירוע',
                 event_start:'שעת התחלה',event_end:'שעת סיום',event_deadline:'עד מתי אפשר להירשם?',
                 event_venue:'האולם',event_age_range:'טווח גילאים למשמחים',
+                host_name:'שם בעל השמחה',host_phone:'טלפון — שם המשתמש',host_password:'סיסמה',host_password_confirm:'אימות סיסמה',
                 family_name:'שם הילד/ה',family_gender:'איך לפנות?',family_birth_year:'שנת לידה',family_sector:'מגזר'
             };
             const labels={...defaultLabels,...(publicSiteConfig?.field_config?.labels||{})};
@@ -1865,6 +1866,7 @@
                 const name=$('host-name').value.trim(),phone=normalizePhone($('host-phone').value);
                 const password=$('host-pass').value,confirmPassword=$('host-pass-confirm').value;
                 const legalConsent=!!$('host-legal-consent')?.checked,smsConsent=!!$('host-sms-consent')?.checked;
+                if(name.length<2) throw new Error('invalid_name');
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
                 if(password.length<8) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
@@ -2970,6 +2972,10 @@
                 event_deadline:'מועד אחרון להרשמה',
                 event_venue:'כותרת כתובת/אולם',
                 event_age_range:'טווח גילאים',
+                host_name:'שם בעל השמחה',
+                host_phone:'טלפון בעל השמחה',
+                host_password:'סיסמת בעל השמחה',
+                host_password_confirm:'אימות סיסמת בעל השמחה',
                 family_name:'שם ילד/ה',
                 family_gender:'פנייה לילד/ה',
                 family_birth_year:'שנת לידה לילד/ה',
@@ -3121,6 +3127,7 @@
             const labelKeys=[
                 'vol_name','vol_phone','vol_gender','vol_birth_year','vol_sector','vol_address',
                 'event_name','event_type','event_date','event_start','event_end','event_deadline','event_venue','event_age_range',
+                'host_name','host_phone','host_password','host_password_confirm',
                 'family_name','family_gender','family_birth_year','family_sector'
             ];
             const labels={...(base.labels||{})};

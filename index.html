@@ -509,7 +509,7 @@
             if(!active) return;
             const current=active.id.replace('view-','');
             if(current===nextView) return;
-            if(['login','register-volunteer','add-event'].includes(current)) clearSensitiveForms();
+            if(['login','reset-password','register-volunteer','add-event'].includes(current)) clearSensitiveForms();
         }
 
         const $ = (id) => document.getElementById(id);

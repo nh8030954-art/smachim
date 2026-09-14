@@ -146,12 +146,20 @@
         <!-- הרשמה למשמח -->
         <div id="view-register-volunteer" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
-                <h2 class="text-2xl font-bold mb-2 text-brand-dark">הרשמה - משמח חתן וכלה</h2>
+                <h2 class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h2>
                 <p class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
                 <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="off">
+                    <label class="flex items-start gap-3 p-4 bg-brand-50 border border-brand-100 rounded-xl cursor-pointer">
+                        <input type="checkbox" id="vol-guardian-mode" class="mt-1 w-5 h-5" onchange="syncVolunteerGuardianMode()">
+                        <span><b>אני הורה/אפוטרופוס ורושם/ת נער/ה בגיל 12–17</b><span class="block text-xs text-slate-600 mt-1">במקרה כזה החשבון, קוד האימות והודעות ה-SMS מנוהלים על ידי ההורה. משמחים מתחת לגיל 18 מותאמים רק לבר מצווה ולבת מצווה.</span></span>
+                    </label>
+                    <div id="vol-guardian-block" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                        <label><span class="field-label">שם ההורה / האפוטרופוס</span><input type="text" id="vol-guardian-name" class="input-clean bg-white"></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-guardian-consent" class="mt-1"><span>אני ההורה/האפוטרופוס של הנער/ה ומאשר/ת את ההרשמה וההשתתפות באירועים דרך המערכת.</span></label>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
-                        <label><span class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
+                        <label><span id="vol-name-label" class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
+                        <label><span id="vol-phone-label" class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">סיסמה</span><input type="password" id="vol-pass" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
@@ -173,7 +181,7 @@
                         </div>
                     </div>
                     <div>
-                        <span class="field-label">באילו סוגי אירועים תרצה/י לשמח?</span>
+                        <span id="vol-event-type-heading" class="field-label">באילו סוגי אירועים תרצה/י לשמח?</span>
                         <div class="choice-grid">
                             <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="all"> כל סוגי האירועים</label>
                             <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="wedding" checked> חתונה</label>
@@ -282,7 +290,7 @@
                         <label><span class="field-label">מכסת משמחים</span><input type="number" id="ev-men" class="input-clean" value="0" min="0" max="500" required></label>
                         <label><span class="field-label">מכסת משמחות</span><input type="number" id="ev-women" class="input-clean" value="0" min="0" max="500" required></label>
                     </div>
-                    <label><span class="field-label">טווח גילאים למשמחים</span><select id="ev-age-range" class="input-clean bg-white"><option value="all" selected>ללא הגבלת גיל</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
+                    <label><span class="field-label">טווח גילאים למשמחים</span><select id="ev-age-range" class="input-clean bg-white"><option value="all" selected>ללא הגבלת גיל</option><option value="12-18" data-minor-age hidden disabled>12–18</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
                     <label><span class="field-label">הערה למשמחים</span><textarea id="ev-note" class="input-clean min-h-24" maxlength="600" placeholder="לדוגמה: מחפשים בעיקר ריקודים, יש הסעה מירושלים, נא להגיע עד 20:00..."></textarea></label>
                     <div class="bg-slate-50 border rounded-xl p-4">
                         <div class="flex flex-wrap gap-3 justify-between items-center">
@@ -313,7 +321,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מגזר האירוע</span><select id="edit-ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label><label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold">הפרדה מלאה</span></label></div>
                     <div><span class="field-label">מגזרי משמחים מתאימים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="all"> כולם</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="secular"> חילוני</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת משמחים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת משמחות</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
-                    <label><span class="field-label">טווח גילאים למשמחים</span><select id="edit-ev-age-range" class="input-clean bg-white"><option value="all">ללא הגבלת גיל</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
+                    <label><span class="field-label">טווח גילאים למשמחים</span><select id="edit-ev-age-range" class="input-clean bg-white"><option value="all">ללא הגבלת גיל</option><option value="12-18" data-minor-age hidden disabled>12–18</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
                     <label><span class="field-label">הערה למשמחים</span><textarea id="edit-ev-note" class="input-clean min-h-24" maxlength="600"></textarea></label>
                     <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
                 </form>
@@ -324,7 +332,7 @@
         <div id="view-profile-settings" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הגדרות משמח</h2>
-                <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div></div>
+                <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div><div id="profile-guardian-note" class="hidden mt-3 text-sm text-slate-600 bg-white border rounded-lg p-3"></div></div>
                 <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-6">
                     <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">איך לפנות אליך?</span><select id="profile-gender" class="input-clean bg-white"><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
@@ -685,6 +693,7 @@
 
         function ageRangeBounds(value) {
             const v=String(value||'all');
+            if(v==='12-18') return {min:12,max:18};
             if(v==='18-25') return {min:18,max:25};
             if(v==='26-35') return {min:26,max:35};
             if(v==='36-50') return {min:36,max:50};
@@ -695,12 +704,66 @@
 
         function ageRangeValue(min,max) {
             const a=min==null?null:Number(min), b=max==null?null:Number(max);
+            if(a===12&&b===18) return '12-18';
             if(a===18&&b===25) return '18-25';
             if(a===26&&b===35) return '26-35';
             if(a===36&&b===50) return '36-50';
             if(a===51&&b===65) return '51-65';
             if(a===66&&b==null) return '66+';
             return 'all';
+        }
+
+
+        function syncEventAgeRangeOptions(prefix='') {
+            const type=$(prefix+'ev-type')?.value||'';
+            const select=$(prefix+'ev-age-range');
+            if(!select) return;
+            const minor=select.querySelector('option[value="12-18"]');
+            const allowed=type==='bar_mitzvah'||type==='bat_mitzvah';
+            if(minor){minor.hidden=!allowed;minor.disabled=!allowed;}
+            if(!allowed&&select.value==='12-18') select.value='all';
+        }
+
+        function syncVolunteerGuardianMode() {
+            const managed=!!$('vol-guardian-mode')?.checked;
+            const block=$('vol-guardian-block');
+            if(block) block.classList.toggle('hidden',!managed);
+            if($('vol-guardian-name')) $('vol-guardian-name').required=managed;
+            if($('vol-guardian-consent')) $('vol-guardian-consent').required=managed;
+            if($('vol-name-label')) $('vol-name-label').textContent=managed?'שם הנער/ה':'שם מלא';
+            if($('vol-phone-label')) $('vol-phone-label').textContent=managed?'טלפון ההורה/אפוטרופוס — שם המשתמש':'מספר טלפון — שם המשתמש';
+            if($('vol-event-type-heading')) $('vol-event-type-heading').textContent=managed?'באילו אירועי בר/בת מצווה הנער/ה מעוניין/ת לשמח?':'באילו סוגי אירועים תרצה/י לשמח?';
+
+            const now=new Date().getFullYear();
+            const birth=$('vol-birth-year');
+            if(birth){
+                [...birth.options].forEach(o=>{
+                    if(!o.value)return;
+                    const age=now-Number(o.value);
+                    const allowed=managed?(age>=12&&age<18):(age>=18);
+                    o.disabled=!allowed;
+                    o.hidden=!allowed;
+                });
+                if(birth.value){
+                    const age=now-Number(birth.value);
+                    if((managed&&!(age>=12&&age<18))||(!managed&&age<18)) birth.value='';
+                }
+            }
+
+            const all=document.querySelector('input[name="vol-event-type-pref"][value="all"]');
+            const wedding=document.querySelector('input[name="vol-event-type-pref"][value="wedding"]');
+            const engagement=document.querySelector('input[name="vol-event-type-pref"][value="engagement"]');
+            const bar=document.querySelector('input[name="vol-event-type-pref"][value="bar_mitzvah"]');
+            const bat=document.querySelector('input[name="vol-event-type-pref"][value="bat_mitzvah"]');
+            [all,wedding,engagement].forEach(x=>{if(x){x.disabled=managed;if(managed)x.checked=false;}});
+            if(managed){
+                if(bar)bar.checked=true;
+                if(bat)bat.checked=true;
+            }else{
+                if(bar)bar.checked=false;
+                if(bat)bat.checked=false;
+                if(wedding)wedding.checked=true;
+            }
         }
 
         function checkedValues(name) {
@@ -972,6 +1035,10 @@
                 ['invalid_age_range','טווח הגילאים אינו תקין.'],
                 ['invalid_event_type','סוג האירוע אינו תקין.'],
                 ['invalid_event_type_preferences','יש לבחור לפחות סוג אירוע אחד שבו תרצה/י לשמח.'],
+                ['minimum_volunteer_age','הגיל המינימלי למשמח/ת הוא 12.'],
+                ['guardian_required','למשמח/ת מתחת לגיל 18 נדרש רישום ואישור של הורה או אפוטרופוס.'],
+                ['minor_event_types_only','משמחים מתחת לגיל 18 יכולים להירשם רק לאירועי בר מצווה ובת מצווה.'],
+                ['minor_age_range_only_mitzvah','טווח גיל 12–18 זמין רק בבר מצווה ובבת מצווה.'],
                 ['weekend_event_forbidden','לא ניתן לפרסם אירוע ביום שישי או בשבת.'],
                 ['weekend_availability_forbidden','זמינות למשמחים היא בימים ראשון עד חמישי בלבד.'],
                 ['address_list_unavailable','רשימת הערים והרחובות אינה זמינה כרגע. נסה לרענן את הדף.'],
@@ -1086,6 +1153,9 @@
                 const availableUntil=$('vol-available-until').value||null;
                 const transport=$('vol-transport').value;
                 const separation=$('vol-separation').checked;
+                const guardianManaged=!!$('vol-guardian-mode')?.checked;
+                const guardianName=$('vol-guardian-name')?.value.trim()||'';
+                const guardianConsent=!!$('vol-guardian-consent')?.checked;
                 const legalConsent=!!$('vol-legal-consent')?.checked;
                 const smsConsent=!!$('vol-sms-consent')?.checked;
 
@@ -1094,19 +1164,24 @@
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
+                const calculatedAge=new Date().getFullYear()-birthYear;
+                if(calculatedAge<12) throw new Error('minimum_volunteer_age');
+                if(calculatedAge<18&&(!guardianManaged||guardianName.length<2||!guardianConsent)) throw new Error('guardian_required');
+                if(calculatedAge<18&&eventTypePrefs.some(x=>!['bar_mitzvah','bat_mitzvah'].includes(x))) throw new Error('minor_event_types_only');
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 if(!city||!street||!number) throw new Error('address_incomplete');
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v4',{
+                const {data:token,error}=await _supabase.rpc('username_register_v5',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
                     p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
                     p_radius:radius,p_max_days_per_week:maxDays,p_strict_separation:separation,
                     p_availability_days:days,p_availability_from:availableFrom,p_availability_until:availableUntil,
                     p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng,
-                    p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true
+                    p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true,
+                    p_guardian_managed:guardianManaged,p_guardian_name:guardianName||null,p_guardian_consent:guardianConsent
                 });
                 if(error) throw error;
                 applySessionToken(token); await loadProfile(); updateHeaderActions();
@@ -1162,6 +1237,7 @@
                 fields.forEach(id=>{const el=$(id);if(el)el.required=true;});
             }
             $('ev-date').min=new Date().toISOString().slice(0,10);
+            syncEventAgeRangeOptions('');
             await restoreEventDraft();
             navigate('add-event');
         }
@@ -1193,7 +1269,9 @@
                 const map={event_name:'ev-name',event_type:'ev-type',event_date:'ev-date',registration_deadline:'ev-registration-deadline',
                     hall_name:'ev-hall-name',city:'ev-city',street:'ev-street',house_number:'ev-house-number',start_time:'ev-start',
                     close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women',age_range:'ev-age-range',note:'ev-note'};
-                Object.entries(map).forEach(([k,id])=>{if(d[k]!==undefined&&$(id))$(id).value=d[k];});
+                Object.entries(map).forEach(([k,id])=>{if(k!=='age_range'&&d[k]!==undefined&&$(id))$(id).value=d[k];});
+                syncEventAgeRangeOptions('');
+                if(d.age_range!==undefined&&$('ev-age-range')) $('ev-age-range').value=d.age_range;
                 if($('ev-separation')) $('ev-separation').checked=!!d.is_separated;
                 setCheckedValues('ev-accepted-sector',d.accepted_sectors||['all']);
                 if($('draft-indicator')) $('draft-indicator').textContent='שוחזרה טיוטה';
@@ -1266,7 +1344,7 @@
             validateEventPayload(ev);
             const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
 
-            const {data:eventId,error}=await _supabase.rpc('create_event_v2',{
+            const {data:eventId,error}=await _supabase.rpc('create_event_v3',{
                 p_event_name:ev.event_name,p_event_type:ev.event_type,p_event_date:ev.event_date,
                 p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
                 p_city:ev.city,p_street:ev.street,p_house_number:ev.house_number,
@@ -1320,13 +1398,14 @@
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v4',{
+                const {data:token,error}=await _supabase.rpc('username_register_v5',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_volunteer_event_type_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
                     p_strict_separation:false,p_availability_days:[0,1,2,3,4],
                     p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null,
-                    p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true
+                    p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true,
+                    p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false
                 });
                 if(error){
                     if(String(error.message).includes('already_registered')){
@@ -1710,6 +1789,7 @@
             $('edit-event-id').value=e.id;
             $('edit-ev-name').value=e.event_name||'';
             $('edit-ev-type').value=e.event_type||'wedding';
+            syncEventAgeRangeOptions('edit-');
             $('edit-ev-date').value=e.event_date||''; $('edit-ev-date').min=new Date().toISOString().slice(0,10);
             $('edit-ev-registration-deadline').value=toDateTimeLocal(e.registration_deadline);
             $('edit-ev-hall-name').value=e.hall_name||'';
@@ -1729,7 +1809,7 @@
             try{
                 const ev=collectEventForm('edit-');validateEventPayload(ev);
                 const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
-                const {error}=await _supabase.rpc('update_event_v2',{
+                const {error}=await _supabase.rpc('update_event_v3',{
                     p_event_id:$('edit-event-id').value,p_event_name:ev.event_name,p_event_type:ev.event_type,
                     p_event_date:ev.event_date,p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
                     p_city:ev.city,p_street:ev.street,p_house_number:ev.house_number,p_start_time:ev.start_time,p_close_time:ev.close_time,
@@ -1755,12 +1835,25 @@
             populateBirthYears();
             $('profile-phone-display').textContent=displayPhone(currentProfile.phone);
             $('profile-role-display').textContent='סוג חשבון: '+roleLabel(currentProfile.role);
+            const guardianNote=$('profile-guardian-note');
+            if(guardianNote){
+                guardianNote.classList.toggle('hidden',!currentProfile.guardian_managed);
+                guardianNote.textContent=currentProfile.guardian_managed?'חשבון זה מנוהל על ידי הורה/אפוטרופוס'+(currentProfile.guardian_name?' — '+currentProfile.guardian_name:'')+'. הודעות האימות והאירועים נשלחות לטלפון ההורה.':'';
+            }
             $('profile-name').value=currentProfile.full_name||'';
             $('profile-gender').value=currentProfile.gender||'male';
             $('profile-birth-year').value=currentProfile.birth_year||'';
             $('profile-sector').value=(currentProfile.sector&&currentProfile.sector!=='all')?currentProfile.sector:'haredi';
             setCheckedValues('profile-sector-pref',currentProfile.volunteer_sector_preferences||['all']);
             setCheckedValues('profile-event-type-pref',currentProfile.volunteer_event_type_preferences||['all']);
+            const isMinorManaged=!!currentProfile.guardian_managed&&(new Date().getFullYear()-Number(currentProfile.birth_year||0)<18);
+            ['all','wedding','engagement'].forEach(v=>{
+                const el=document.querySelector('input[name="profile-event-type-pref"][value="'+v+'"]');
+                if(el){el.disabled=isMinorManaged;if(isMinorManaged)el.checked=false;}
+            });
+            if(isMinorManaged&&!checkedValues('profile-event-type-pref').length){
+                setCheckedValues('profile-event-type-pref',['bar_mitzvah','bat_mitzvah']);
+            }
             $('profile-city').value=currentProfile.city||'';
             $('profile-street').value=currentProfile.street||'';
             $('profile-house-number').value=currentProfile.house_number||'';
@@ -1784,7 +1877,7 @@
                 const eventTypePrefs=checkedValues('profile-event-type-pref');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
-                const {error}=await _supabase.rpc('update_my_profile_v3',{
+                const {error}=await _supabase.rpc('update_my_profile_v4',{
                     p_full_name:$('profile-name').value.trim(),p_gender:$('profile-gender').value,p_sector:$('profile-sector').value,
                     p_volunteer_sector_preferences:checkedValues('profile-sector-pref'),p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:Number($('profile-birth-year').value),
                     p_city:city,p_street:street,p_house_number:number,p_radius:Number($('profile-radius').value||30),
@@ -1853,12 +1946,17 @@
         async function adminCancelEvent(eventId){const ok=await askConfirm('ביטול אירוע כמנהל','לבטל את האירוע?','בטל אירוע');if(!ok)return;const {error}=await _supabase.rpc('admin_cancel_event',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else await loadDashboard();}
 
         populateBirthYears();
+        syncVolunteerGuardianMode();
+        syncEventAgeRangeOptions('');
+        syncEventAgeRangeOptions('edit-');
         bindAllChoice('vol-sector-pref');
         bindAllChoice('vol-event-type-pref');
         bindAllChoice('ev-accepted-sector');
         bindAllChoice('edit-ev-accepted-sector');
         bindAllChoice('profile-sector-pref');
         bindAllChoice('profile-event-type-pref');
+        $('ev-type')?.addEventListener('change',()=>syncEventAgeRangeOptions(''));
+        $('edit-ev-type')?.addEventListener('change',()=>syncEventAgeRangeOptions('edit-'));
         $('ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
         $('edit-ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
         initializeAddressLists();

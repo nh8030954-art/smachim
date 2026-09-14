@@ -282,10 +282,7 @@
                         <label><span class="field-label">מכסת משמחים</span><input type="number" id="ev-men" class="input-clean" value="0" min="0" max="500" required></label>
                         <label><span class="field-label">מכסת משמחות</span><input type="number" id="ev-women" class="input-clean" value="0" min="0" max="500" required></label>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">גיל מינימלי</span><input type="number" id="ev-age-min" class="input-clean" min="0" max="120" placeholder="לא משנה"></label>
-                        <label><span class="field-label">גיל מקסימלי</span><input type="number" id="ev-age-max" class="input-clean" min="0" max="120" placeholder="לא משנה"></label>
-                    </div>
+                    <label><span class="field-label">טווח גילאים למשמחים</span><select id="ev-age-range" class="input-clean bg-white"><option value="all" selected>ללא הגבלת גיל</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
                     <label><span class="field-label">הערה למשמחים</span><textarea id="ev-note" class="input-clean min-h-24" maxlength="600" placeholder="לדוגמה: מחפשים בעיקר ריקודים, יש הסעה מירושלים, נא להגיע עד 20:00..."></textarea></label>
                     <div class="bg-slate-50 border rounded-xl p-4">
                         <div class="flex flex-wrap gap-3 justify-between items-center">
@@ -316,7 +313,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מגזר האירוע</span><select id="edit-ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label><label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold">הפרדה מלאה</span></label></div>
                     <div><span class="field-label">מגזרי משמחים מתאימים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="all"> כולם</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="secular"> חילוני</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת משמחים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת משמחות</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">גיל מינימלי</span><input type="number" id="edit-ev-age-min" class="input-clean" min="0" max="120"></label><label><span class="field-label">גיל מקסימלי</span><input type="number" id="edit-ev-age-max" class="input-clean" min="0" max="120"></label></div>
+                    <label><span class="field-label">טווח גילאים למשמחים</span><select id="edit-ev-age-range" class="input-clean bg-white"><option value="all">ללא הגבלת גיל</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
                     <label><span class="field-label">הערה למשמחים</span><textarea id="edit-ev-note" class="input-clean min-h-24" maxlength="600"></textarea></label>
                     <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
                 </form>
@@ -684,6 +681,26 @@
             const a=values||[];
             if(a.includes('all')) return 'כל סוגי האירועים';
             return a.map(eventTypeLabel).join(', ')||'לא הוגדר';
+        }
+
+        function ageRangeBounds(value) {
+            const v=String(value||'all');
+            if(v==='18-25') return {min:18,max:25};
+            if(v==='26-35') return {min:26,max:35};
+            if(v==='36-50') return {min:36,max:50};
+            if(v==='51-65') return {min:51,max:65};
+            if(v==='66+') return {min:66,max:null};
+            return {min:null,max:null};
+        }
+
+        function ageRangeValue(min,max) {
+            const a=min==null?null:Number(min), b=max==null?null:Number(max);
+            if(a===18&&b===25) return '18-25';
+            if(a===26&&b===35) return '26-35';
+            if(a===36&&b===50) return '36-50';
+            if(a===51&&b===65) return '51-65';
+            if(a===66&&b==null) return '66+';
+            return 'all';
         }
 
         function checkedValues(name) {
@@ -1161,7 +1178,7 @@
                 house_number:addr.number,start_time:$('ev-start')?.value||'',close_time:$('ev-close')?.value||'',
                 sector_pref:$('ev-sector')?.value||'all',accepted_sectors:checkedValues('ev-accepted-sector'),
                 is_separated:!!$('ev-separation')?.checked,quota_men:$('ev-men')?.value||'0',quota_women:$('ev-women')?.value||'0',
-                age_min:$('ev-age-min')?.value||'',age_max:$('ev-age-max')?.value||'',note:$('ev-note')?.value||''
+                age_range:$('ev-age-range')?.value||'all',note:$('ev-note')?.value||''
             };
             localStorage.setItem(key,JSON.stringify(draft));
             if($('draft-indicator')) $('draft-indicator').textContent='הטיוטה נשמרה';
@@ -1175,7 +1192,7 @@
                 const d=JSON.parse(raw);
                 const map={event_name:'ev-name',event_type:'ev-type',event_date:'ev-date',registration_deadline:'ev-registration-deadline',
                     hall_name:'ev-hall-name',city:'ev-city',street:'ev-street',house_number:'ev-house-number',start_time:'ev-start',
-                    close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women',age_min:'ev-age-min',age_max:'ev-age-max',note:'ev-note'};
+                    close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women',age_range:'ev-age-range',note:'ev-note'};
                 Object.entries(map).forEach(([k,id])=>{if(d[k]!==undefined&&$(id))$(id).value=d[k];});
                 if($('ev-separation')) $('ev-separation').checked=!!d.is_separated;
                 setCheckedValues('ev-accepted-sector',d.accepted_sectors||['all']);
@@ -1211,6 +1228,7 @@
             const n=(name)=>{const v=id(name).value;return v===''?null:Number(v);};
             const acceptedName=prefix?'edit-ev-accepted-sector':'ev-accepted-sector';
             const addr=getAddressParts(prefix?'edit-ev':'ev');
+            const ageRange=ageRangeBounds(id('ev-age-range').value);
             return {
                 event_name:id('ev-name').value.trim(),
                 event_type:id('ev-type').value,
@@ -1227,8 +1245,8 @@
                 is_separated:id('ev-separation').checked,
                 quota_men:Number(id('ev-men').value||0),
                 quota_women:Number(id('ev-women').value||0),
-                age_min:n('ev-age-min'),
-                age_max:n('ev-age-max'),
+                age_min:ageRange.min,
+                age_max:ageRange.max,
                 note:id('ev-note').value.trim()
             };
         }
@@ -1701,7 +1719,7 @@
             $('edit-ev-start').value=e.start_time?.slice(0,5)||''; $('edit-ev-close').value=e.close_time?.slice(0,5)||'';
             $('edit-ev-sector').value=e.sector_pref||'all'; $('edit-ev-separation').checked=!!e.is_separated;
             $('edit-ev-men').value=e.quota_men??0; $('edit-ev-women').value=e.quota_women??0;
-            $('edit-ev-age-min').value=e.age_min??''; $('edit-ev-age-max').value=e.age_max??''; $('edit-ev-note').value=e.volunteer_note||'';
+            $('edit-ev-age-range').value=ageRangeValue(e.age_min,e.age_max); $('edit-ev-note').value=e.volunteer_note||'';
             setCheckedValues('edit-ev-accepted-sector',e.accepted_volunteer_sectors||['all']);
             navigate('edit-event');
         }

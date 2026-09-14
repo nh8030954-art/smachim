@@ -1616,8 +1616,15 @@
 
             try{
                 if(isPhone){
-                    const {data:token,error}=await _supabase.rpc('username_login',{p_phone:phone,p_password:password});
-                    if(error)throw error;
+                    const loginRes=await fetch(SUPABASE_URL+'/functions/v1/user-auth',{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY},
+                        body:JSON.stringify({phone,password})
+                    });
+                    const loginData=await loginRes.json().catch(()=>({}));
+                    if(!loginRes.ok)throw new Error(loginData?.error||'invalid_login');
+                    const token=loginData?.token;
+                    if(!token)throw new Error('invalid_login');
 
                     applySessionToken(token);
                     adminMode=false;

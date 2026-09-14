@@ -161,17 +161,17 @@
                 <p data-site-text="volunteer_registration_subtitle" class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
                 <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="off">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span id="vol-name-label" class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
-                        <label><span id="vol-phone-label" class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
+                        <label><span id="vol-name-label" data-field-label="vol_name" class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
+                        <label><span id="vol-phone-label" data-field-label="vol_phone" class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">סיסמה</span><input type="password" id="vol-pass" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                         <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label><span class="field-label">איך לפנות אליך?</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
-                        <label><span class="field-label">שנת לידה</span><select id="vol-birth-year" class="input-clean bg-white birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
-                        <label><span class="field-label">המגזר שאני משתייך אליו</span><select id="vol-sector" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
+                        <label><span data-field-label="vol_gender" class="field-label">איך לפנות אליך?</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
+                        <label><span data-field-label="vol_birth_year" class="field-label">שנת לידה</span><select id="vol-birth-year" class="input-clean bg-white birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
+                        <label><span data-field-label="vol_sector" class="field-label">המגזר שאני משתייך אליו</span><select id="vol-sector" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
                     </div>
                     <div>
                         <span class="field-label">באילו מגזרים אני מוכן לשמח?</span>
@@ -194,7 +194,7 @@
                         </div>
                     </div>
                     <div>
-                        <span class="field-label">כתובת מגורים</span>
+                        <span data-field-label="vol_address" class="field-label">כתובת מגורים</span>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <input id="vol-city" class="input-clean" placeholder="עיר" autocomplete="address-level2" required>
                             <input id="vol-street" class="input-clean" placeholder="רחוב" autocomplete="address-line1" required>
@@ -256,17 +256,17 @@
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל SMS תפעולי לצורך אימות החשבון וניהול האירוע.</span></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">שם האירוע</span><input type="text" id="ev-name" class="input-clean" placeholder="לדוגמה: חתונת משפחת כהן" required></label>
-                        <label><span class="field-label">סוג האירוע</span><select id="ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="engagement">אירוסין</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option></select></label>
+                        <label><span data-field-label="event_name" class="field-label">שם האירוע</span><input type="text" id="ev-name" class="input-clean" placeholder="לדוגמה: חתונת משפחת כהן" required></label>
+                        <label><span data-field-label="event_type" class="field-label">סוג האירוע</span><select id="ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="engagement">אירוסין</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option></select></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label><span class="field-label">תאריך האירוע</span><input type="date" id="ev-date" class="input-clean" required><div class="field-help">לא ניתן לפרסם אירוע ביום שישי או בשבת.</div></label>
-                        <label><span class="field-label">שעת התחלה</span><input type="time" id="ev-start" class="input-clean" required></label>
-                        <label><span class="field-label">שעת סיום</span><input type="time" id="ev-close" class="input-clean" required></label>
+                        <label><span data-field-label="event_date" class="field-label">תאריך האירוע</span><input type="date" id="ev-date" class="input-clean" required><div class="field-help">לא ניתן לפרסם אירוע ביום שישי או בשבת.</div></label>
+                        <label><span data-field-label="event_start" class="field-label">שעת התחלה</span><input type="time" id="ev-start" class="input-clean" required></label>
+                        <label><span data-field-label="event_end" class="field-label">שעת סיום</span><input type="time" id="ev-close" class="input-clean" required></label>
                     </div>
-                    <label><span class="field-label">עד מתי אפשר להירשם?</span><input type="datetime-local" id="ev-registration-deadline" class="input-clean" required><div class="field-help">אחרי המועד הזה האירוע יפסיק להופיע למשמחים חדשים.</div></label>
+                    <label><span data-field-label="event_deadline" class="field-label">עד מתי אפשר להירשם?</span><input type="datetime-local" id="ev-registration-deadline" class="input-clean" required><div class="field-help">אחרי המועד הזה האירוע יפסיק להופיע למשמחים חדשים.</div></label>
                     <div>
-                        <span class="field-label">האולם</span>
+                        <span data-field-label="event_venue" class="field-label">האולם</span>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                             <input id="ev-hall-name" class="input-clean" placeholder="שם האולם">
                             <input id="ev-city" class="input-clean" placeholder="עיר" required>
@@ -293,7 +293,7 @@
                         <label><span class="field-label">מכסת משמחים</span><input type="number" id="ev-men" class="input-clean" value="0" min="0" max="500" required></label>
                         <label><span class="field-label">מכסת משמחות</span><input type="number" id="ev-women" class="input-clean" value="0" min="0" max="500" required></label>
                     </div>
-                    <label><span class="field-label">טווח גילאים למשמחים</span><select id="ev-age-range" class="input-clean bg-white"><option value="all" selected>ללא הגבלת גיל</option><option value="12-18" data-minor-age hidden disabled>12–18</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
+                    <label><span data-field-label="event_age_range" class="field-label">טווח גילאים למשמחים</span><select id="ev-age-range" class="input-clean bg-white"><option value="all" selected>ללא הגבלת גיל</option><option value="12-18" data-minor-age hidden disabled>12–18</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
                     <label><span class="field-label">הערה למשמחים</span><textarea id="ev-note" class="input-clean min-h-24" maxlength="600" placeholder="לדוגמה: מחפשים בעיקר ריקודים, יש הסעה מירושלים, נא להגיע עד 20:00..."></textarea></label>
                     <div class="bg-slate-50 border rounded-xl p-4">
                         <div class="flex flex-wrap gap-3 justify-between items-center">
@@ -392,11 +392,11 @@
                 <form id="family-child-form" onsubmit="event.preventDefault(); saveFamilyChild();" class="space-y-5 mt-6">
                     <input type="hidden" id="family-child-id">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label><span class="field-label">שם הילד/ה</span><input id="family-child-name" class="input-clean" required></label>
-                        <label><span class="field-label">איך לפנות?</span><select id="family-child-gender" class="input-clean bg-white" required onchange="syncFamilyChildEventDefault()"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
-                        <label><span class="field-label">שנת לידה</span><select id="family-child-birth-year" class="input-clean bg-white family-birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
+                        <label><span data-field-label="family_name" class="field-label">שם הילד/ה</span><input id="family-child-name" class="input-clean" required></label>
+                        <label><span data-field-label="family_gender" class="field-label">איך לפנות?</span><select id="family-child-gender" class="input-clean bg-white" required onchange="syncFamilyChildEventDefault()"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
+                        <label><span data-field-label="family_birth_year" class="field-label">שנת לידה</span><select id="family-child-birth-year" class="input-clean bg-white family-birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
                     </div>
-                    <label><span class="field-label">מגזר</span><select id="family-child-sector" class="input-clean bg-white" required><option value="">בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
+                    <label><span data-field-label="family_sector" class="field-label">מגזר</span><select id="family-child-sector" class="input-clean bg-white" required><option value="">בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
                     <div>
                         <span class="field-label">באילו אירועים הילד/ה מעוניין/ת לשמח?</span>
                         <div class="choice-grid">
@@ -867,6 +867,19 @@
             const sectors=configuredSectors();
             const ages=configuredAgeRanges();
             const radii=configuredRadiusOptions();
+            const defaultLabels={
+                vol_name:'שם מלא',vol_phone:'מספר טלפון — שם המשתמש',vol_gender:'איך לפנות אליך?',
+                vol_birth_year:'שנת לידה',vol_sector:'המגזר שאני משתייך אליו',vol_address:'כתובת מגורים',
+                event_name:'שם האירוע',event_type:'סוג האירוע',event_date:'תאריך האירוע',
+                event_start:'שעת התחלה',event_end:'שעת סיום',event_deadline:'עד מתי אפשר להירשם?',
+                event_venue:'האולם',event_age_range:'טווח גילאים למשמחים',
+                family_name:'שם הילד/ה',family_gender:'איך לפנות?',family_birth_year:'שנת לידה',family_sector:'מגזר'
+            };
+            const labels={...defaultLabels,...(publicSiteConfig?.field_config?.labels||{})};
+            document.querySelectorAll('[data-field-label]').forEach(el=>{
+                const key=el.getAttribute('data-field-label');
+                if(labels[key])el.textContent=labels[key];
+            });
 
             rebuildSelect('ev-type',eventTypes);
             rebuildSelect('edit-ev-type',eventTypes);
@@ -2776,6 +2789,33 @@
             ).join('')+'</div>';
         }
 
+        function adminFieldLabelsEditor(){
+            const defs={
+                vol_name:'שם מלא — הרשמת משמח/ת',
+                vol_phone:'טלפון — הרשמת משמח/ת',
+                vol_gender:'פנייה — הרשמת משמח/ת',
+                vol_birth_year:'שנת לידה — הרשמת משמח/ת',
+                vol_sector:'מגזר — הרשמת משמח/ת',
+                vol_address:'כתובת — הרשמת משמח/ת',
+                event_name:'שם האירוע',
+                event_type:'סוג האירוע',
+                event_date:'תאריך האירוע',
+                event_start:'שעת התחלה',
+                event_end:'שעת סיום',
+                event_deadline:'מועד אחרון להרשמה',
+                event_venue:'כותרת כתובת/אולם',
+                event_age_range:'טווח גילאים',
+                family_name:'שם ילד/ה',
+                family_gender:'פנייה לילד/ה',
+                family_birth_year:'שנת לידה לילד/ה',
+                family_sector:'מגזר ילד/ה'
+            };
+            const current=adminEditorState?.field_config?.labels||{};
+            return '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">'+Object.entries(defs).map(([key,desc])=>
+                '<label><span class="field-label">'+esc(desc)+'</span><input id="admin-field-label-'+key+'" class="input-clean" value="'+esc(current[key]||'')+'" placeholder="'+esc(desc)+'"></label>'
+            ).join('')+'</div>';
+        }
+
         async function adminRenderSettings(){
             const [{data:site,error:siteErr},{data:sms,error:smsErr},{data:editor,error:editorErr},{data:templates,error:templatesErr}]=await Promise.all([
                 _supabase.rpc('admin_site_settings'),
@@ -2831,7 +2871,7 @@
                         '<div><h4 class="font-bold mb-3">טווחי גיל</h4>'+adminConfigRows('age',ageRanges)+'</div>'+
                         '<div><h4 class="font-bold mb-3">מרחקים</h4>'+adminConfigRows('radius',radii)+'</div>'+
                         '<div><h4 class="font-bold mb-3">מגזרים</h4>'+adminConfigRows('sector',sectors)+'</div>'+
-                    '</div><button onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3 mt-5">שמור אפשרויות ושדות</button>'+
+                    '</div><div class="border-t mt-6 pt-5"><h4 class="font-bold mb-3">שמות שדות בטפסים</h4><p class="text-sm text-slate-500 mb-4">אפשר לשנות את הכיתוב שמוצג למשתמש בלי לשנות את מבנה הנתונים או את כללי האבטחה.</p>'+adminFieldLabelsEditor()+'</div><button onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3 mt-5">שמור אפשרויות ושדות</button>'+
                 '</div>'+
 
                 '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3"><div><h3 class="text-2xl font-bold">נוסחי הודעות SMS</h3><p class="text-sm text-slate-500">אפשר לערוך את כל ההודעות. משתנים מותרים: {{event_name}}, {{date}}, {{time}}, {{place}}, {{address}}, {{sector}}, {{separation}}, {{note}}, {{link}}.</p></div><button onclick="adminOpenTab(\'sms\')" class="btn-soft px-4 py-2">הגדרות שליחה</button></div>'+
@@ -2905,8 +2945,19 @@
             ]) content[key]=$('admin-content-'+key)?.value.trim()||adminEditorState.content?.[key]||'';
 
             const base=adminEditorState.field_config||{};
+            const labelKeys=[
+                'vol_name','vol_phone','vol_gender','vol_birth_year','vol_sector','vol_address',
+                'event_name','event_type','event_date','event_start','event_end','event_deadline','event_venue','event_age_range',
+                'family_name','family_gender','family_birth_year','family_sector'
+            ];
+            const labels={...(base.labels||{})};
+            labelKeys.forEach(key=>{
+                const v=$('admin-field-label-'+key)?.value.trim();
+                if(v)labels[key]=v; else delete labels[key];
+            });
             const fieldConfig={
                 ...base,
+                labels,
                 volunteer_event_default:$('admin-config-event-default')?.value||base.volunteer_event_default||'wedding',
                 event_types:adminCollectConfigRows('event',base.event_types||[]),
                 age_ranges:adminCollectConfigRows('age',base.age_ranges||[]),

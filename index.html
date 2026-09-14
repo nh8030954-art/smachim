@@ -482,6 +482,7 @@
             try { toggleManualAddress('ev',false); } catch(_) {}
             try { toggleManualAddress('edit-ev',false); } catch(_) {}
             try { toggleManualAddress('profile',false); } catch(_) {}
+            try { syncVolunteerGuardianMode(); } catch(_) {}
             if($('draft-indicator')) $('draft-indicator').textContent='';
         }
 

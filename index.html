@@ -158,7 +158,7 @@
                         <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label><span class="field-label">אני</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
+                        <label><span class="field-label">איך לפנות אליך?</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
                         <label><span class="field-label">שנת לידה</span><select id="vol-birth-year" class="input-clean bg-white birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
                         <label><span class="field-label">המגזר שאני משתייך אליו</span><select id="vol-sector" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
                     </div>
@@ -170,6 +170,16 @@
                             <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="religious"> דתי לאומי</label>
                             <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="traditional"> מסורתי</label>
                             <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="secular"> חילוני</label>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="field-label">באילו סוגי אירועים תרצה/י לשמח?</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="all" checked> כל סוגי האירועים</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="wedding"> חתונה</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="engagement"> אירוסין</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="bar_mitzvah"> בר מצווה</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="bat_mitzvah"> בת מצווה</label>
                         </div>
                     </div>
                     <div>
@@ -236,7 +246,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">שם האירוע</span><input type="text" id="ev-name" class="input-clean" placeholder="לדוגמה: חתונת משפחת כהן" required></label>
-                        <label><span class="field-label">סוג האירוע</span><select id="ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="sheva_brachot">שבע ברכות</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option><option value="engagement">אירוסין</option><option value="other">אחר</option></select></label>
+                        <label><span class="field-label">סוג האירוע</span><select id="ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="engagement">אירוסין</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option></select></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label><span class="field-label">תאריך האירוע</span><input type="date" id="ev-date" class="input-clean" required><div class="field-help">לא ניתן לפרסם אירוע ביום שישי או בשבת.</div></label>
@@ -302,7 +312,7 @@
                     <input type="hidden" id="edit-event-id">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">שם האירוע</span><input type="text" id="edit-ev-name" class="input-clean" required></label>
-                        <label><span class="field-label">סוג האירוע</span><select id="edit-ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="sheva_brachot">שבע ברכות</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option><option value="engagement">אירוסין</option><option value="other">אחר</option></select></label>
+                        <label><span class="field-label">סוג האירוע</span><select id="edit-ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="engagement">אירוסין</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option></select></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">תאריך</span><input type="date" id="edit-ev-date" class="input-clean" required><div class="field-help">לא ניתן לבחור שישי או שבת.</div></label><label><span class="field-label">התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
                     <label><span class="field-label">סגירת הרשמה</span><input type="datetime-local" id="edit-ev-registration-deadline" class="input-clean" required></label>
@@ -326,8 +336,9 @@
                 <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div></div>
                 <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-6">
                     <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">אני</span><select id="profile-gender" class="input-clean bg-white"><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">איך לפנות אליך?</span><select id="profile-gender" class="input-clean bg-white"><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
                     <div><span class="field-label">באילו מגזרים אני מוכן לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="all"> כל המגזרים</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="secular"> חילוני</label></div></div>
+                    <div><span class="field-label">באילו סוגי אירועים תרצה/י לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="all"> כל סוגי האירועים</label><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="wedding"> חתונה</label><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="engagement"> אירוסין</label><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="bar_mitzvah"> בר מצווה</label><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="bat_mitzvah"> בת מצווה</label></div></div>
                     <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><input id="profile-city" class="input-clean" placeholder="עיר" required><input id="profile-street" class="input-clean" placeholder="רחוב" required><input id="profile-house-number" class="input-clean" placeholder="מספר בית" required></div><div class="field-help">הכתובת נבדקת מחדש לפני שמירת השינויים.</div></div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">רדיוס מקסימלי</span><select id="profile-radius" class="input-clean bg-white"><option value="10">עד 10 ק״מ</option><option value="20">עד 20 ק״מ</option><option value="50">עד 50 ק״מ</option><option value="100">עד 100 ק״מ</option><option value="999">כל הארץ</option></select></label><label><span class="field-label">ימים בשבוע</span><select id="profile-days" class="input-clean bg-white"><option value="1">עד יום אחד</option><option value="2">עד יומיים</option><option value="3">עד 3 ימים</option><option value="4">עד 4 ימים</option><option value="5">עד 5 ימים</option><option value="7">ללא הגבלה</option></select></label><label><span class="field-label">אמצעי הגעה</span><select id="profile-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">לא משנה</option></select></label></div>
                     <div><span class="field-label">ימים פנויים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="0"> א׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="1"> ב׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="2"> ג׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="3"> ד׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="4"> ה׳</label></div></div>
@@ -672,7 +683,13 @@
         }
 
         function eventTypeLabel(v) {
-            return ({wedding:'חתונה',sheva_brachot:'שבע ברכות',bar_mitzvah:'בר מצווה',bat_mitzvah:'בת מצווה',engagement:'אירוסין',other:'אחר'})[v] || 'אירוע';
+            return ({wedding:'חתונה',bar_mitzvah:'בר מצווה',bat_mitzvah:'בת מצווה',engagement:'אירוסין'})[v] || 'אירוע';
+        }
+
+        function eventTypeListLabel(values) {
+            const a=values||[];
+            if(a.includes('all')) return 'כל סוגי האירועים';
+            return a.map(eventTypeLabel).join(', ')||'לא הוגדר';
         }
 
         function checkedValues(name) {
@@ -948,6 +965,7 @@
                 ['invalid_registration_deadline','מועד סגירת ההרשמה חייב להיות מעכשיו ועד שעת תחילת האירוע.'],
                 ['invalid_age_range','טווח הגילאים אינו תקין.'],
                 ['invalid_event_type','סוג האירוע אינו תקין.'],
+                ['invalid_event_type_preferences','יש לבחור לפחות סוג אירוע אחד שבו תרצה/י לשמח.'],
                 ['weekend_event_forbidden','לא ניתן לפרסם אירוע ביום שישי או בשבת.'],
                 ['weekend_availability_forbidden','זמינות למשמחים היא בימים ראשון עד חמישי בלבד.'],
                 ['address_list_unavailable','רשימת הערים והרחובות אינה זמינה כרגע. נסה לרענן את הדף.'],
@@ -1053,6 +1071,7 @@
                 const birthYear=Number($('vol-birth-year').value);
                 const sector=$('vol-sector').value;
                 const prefs=checkedValues('vol-sector-pref');
+                const eventTypePrefs=checkedValues('vol-event-type-pref');
                 const {city,street,number}=getAddressParts('vol');
                 const radius=Number($('vol-radius').value);
                 const maxDays=Number($('vol-days').value);
@@ -1068,15 +1087,16 @@
                 if(password.length<8) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
+                if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 if(!city||!street||!number) throw new Error('address_incomplete');
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v3',{
+                const {data:token,error}=await _supabase.rpc('username_register_v4',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
-                    p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
+                    p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
                     p_radius:radius,p_max_days_per_week:maxDays,p_strict_separation:separation,
                     p_availability_days:days,p_availability_from:availableFrom,p_availability_until:availableUntil,
                     p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng,
@@ -1271,8 +1291,8 @@
                 box.textContent='בודק התאמות...';
                 const coords=await geocodeAddress(fullAddress(ev.city,ev.street,ev.house_number));
                 if(coords.lat==null) throw new Error('event_location_missing');
-                const {data,error}=await _supabase.rpc('preview_event_match_count_v2',{
-                    p_event_date:ev.event_date,p_start_time:ev.start_time,p_close_time:ev.close_time,
+                const {data,error}=await _supabase.rpc('preview_event_match_count_v3',{
+                    p_event_type:ev.event_type,p_event_date:ev.event_date,p_start_time:ev.start_time,p_close_time:ev.close_time,
                     p_sector_pref:ev.sector_pref,p_accepted_volunteer_sectors:ev.accepted_sectors,
                     p_is_separated:ev.is_separated,p_age_min:ev.age_min,p_age_max:ev.age_max,
                     p_lat:coords.lat,p_lng:coords.lng
@@ -1306,9 +1326,9 @@
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v3',{
+                const {data:token,error}=await _supabase.rpc('username_register_v4',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
-                    p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_birth_year:null,
+                    p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_volunteer_event_type_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
                     p_strict_separation:false,p_availability_days:[0,1,2,3,4],
                     p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null,
@@ -1415,7 +1435,7 @@
             const time=(currentProfile.availability_from||currentProfile.availability_until)
                 ? (currentProfile.availability_from?.slice(0,5)||'כל שעה')+'–'+(currentProfile.availability_until?.slice(0,5)||'כל שעה')
                 : 'ללא הגבלת שעות';
-            return '<div class="glass-card p-5"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="font-bold text-lg">העדפות ההתאמה שלי</h3><p class="text-sm text-slate-600 mt-1">אני: '+esc(gender)+' · גיל: '+esc(age)+' · שיוך: '+esc(sectorLabel(currentProfile.sector))+' · מוכן לשמח: '+esc(sectorListLabel(currentProfile.volunteer_sector_preferences))+'</p><p class="text-sm text-slate-500 mt-1">'+esc(radiusLabel(currentProfile.radius))+' · '+(currentProfile.strict_separation?'רק הפרדה מלאה':'גם ללא הפרדה')+' · '+esc(time)+' · '+(currentProfile.transport_mode==='transit'?'תחבורה ציבורית':currentProfile.transport_mode==='any'?'כל אמצעי':'רכב')+'</p></div><button onclick="openProfileSettings()" class="btn-soft px-3 py-2 text-sm">שנה העדפות</button></div></div>';
+            return '<div class="glass-card p-5"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="font-bold text-lg">העדפות ההתאמה שלי</h3><p class="text-sm text-slate-600 mt-1">אני: '+esc(gender)+' · גיל: '+esc(age)+' · שיוך: '+esc(sectorLabel(currentProfile.sector))+' · מוכן לשמח: '+esc(sectorListLabel(currentProfile.volunteer_sector_preferences))+' · סוגי אירועים: '+esc(eventTypeListLabel(currentProfile.volunteer_event_type_preferences))+'</p><p class="text-sm text-slate-500 mt-1">'+esc(radiusLabel(currentProfile.radius))+' · '+(currentProfile.strict_separation?'רק הפרדה מלאה':'גם ללא הפרדה')+' · '+esc(time)+' · '+(currentProfile.transport_mode==='transit'?'תחבורה ציבורית':currentProfile.transport_mode==='any'?'כל אמצעי':'רכב')+'</p></div><button onclick="openProfileSettings()" class="btn-soft px-3 py-2 text-sm">שנה העדפות</button></div></div>';
         }
 
         function radiusChoiceValue(value){
@@ -1748,6 +1768,7 @@
             $('profile-birth-year').value=currentProfile.birth_year||'';
             $('profile-sector').value=(currentProfile.sector&&currentProfile.sector!=='all')?currentProfile.sector:'haredi';
             setCheckedValues('profile-sector-pref',currentProfile.volunteer_sector_preferences||['all']);
+            setCheckedValues('profile-event-type-pref',currentProfile.volunteer_event_type_preferences||['all']);
             $('profile-city').value=currentProfile.city||'';
             $('profile-street').value=currentProfile.street||'';
             $('profile-house-number').value=currentProfile.house_number||'';
@@ -1768,10 +1789,12 @@
                 if(!city||!street||!number) throw new Error('address_incomplete');
                 const coords=await verifyTypedAddress(city,street,number);
                 const days=checkedNumbers('profile-available-day');
+                const eventTypePrefs=checkedValues('profile-event-type-pref');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
-                const {error}=await _supabase.rpc('update_my_profile_v2',{
+                if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
+                const {error}=await _supabase.rpc('update_my_profile_v3',{
                     p_full_name:$('profile-name').value.trim(),p_gender:$('profile-gender').value,p_sector:$('profile-sector').value,
-                    p_volunteer_sector_preferences:checkedValues('profile-sector-pref'),p_birth_year:Number($('profile-birth-year').value),
+                    p_volunteer_sector_preferences:checkedValues('profile-sector-pref'),p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:Number($('profile-birth-year').value),
                     p_city:city,p_street:street,p_house_number:number,p_radius:Number($('profile-radius').value||30),
                     p_max_days_per_week:Number($('profile-days').value||3),p_strict_separation:$('profile-separation').checked,
                     p_availability_days:days,p_availability_from:$('profile-available-from').value||null,
@@ -1839,9 +1862,11 @@
 
         populateBirthYears();
         bindAllChoice('vol-sector-pref');
+        bindAllChoice('vol-event-type-pref');
         bindAllChoice('ev-accepted-sector');
         bindAllChoice('edit-ev-accepted-sector');
         bindAllChoice('profile-sector-pref');
+        bindAllChoice('profile-event-type-pref');
         wireAddressSelect('ev-city','ev-street');
         wireAddressSelect('edit-ev-city','edit-ev-street');
         $('ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));

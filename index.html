@@ -502,7 +502,6 @@
             sessionToken = token || '';
             sessionStorage.removeItem('smachimAdminSession');
             sessionStorage.removeItem('smachimAdminMode');
-            sessionStorage.removeItem('smachimAdminMode');
             if (sessionToken) localStorage.setItem('smachimSession', sessionToken);
             else localStorage.removeItem('smachimSession');
             _supabase = createAppClient();
@@ -1286,6 +1285,16 @@
                 ['registration_temporarily_disabled','ההרשמה לאתר סגורה זמנית.'],
                 ['minor_registration_temporarily_disabled','הרשמת בני 12–17 סגורה זמנית.'],
                 ['event_creation_temporarily_disabled','פרסום אירועים חדשים סגור זמנית.'],
+                ['invalid_site_content','תוכן האתר אינו תקין.'],
+                ['invalid_field_config','הגדרות השדות אינן תקינות.'],
+                ['invalid_event_type_config','הגדרת סוגי האירועים אינה תקינה.'],
+                ['invalid_radius_config','הגדרת המרחקים אינה תקינה.'],
+                ['invalid_sector_config','הגדרת המגזרים אינה תקינה.'],
+                ['invalid_age_range_config','הגדרת טווחי הגיל אינה תקינה.'],
+                ['invalid_asset_url','כתובת קובץ התמונה אינה מאושרת.'],
+                ['invalid_sms_template','נוסח הודעת ה-SMS ריק או ארוך מדי.'],
+                ['sms_template_missing','תבנית ה-SMS לא נמצאה.'],
+                ['upload_failed','העלאת התמונה נכשלה. נסה שוב.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
                 ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
@@ -2712,20 +2721,101 @@
             return '<div class="glass-card p-6"><h3 class="text-2xl font-bold">דיווחים ובטיחות</h3><p class="text-sm text-slate-500">כל הדיווחים מהמשתמשים, עם פרטי האירוע והמדווח.</p><div class="space-y-3 mt-5">'+(rows.length?rows.map(r=>'<div class="border rounded-xl p-4 '+(r.status==='open'?'bg-amber-50 border-amber-200':'bg-white')+'"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold">'+esc(r.event_name)+'</div><div class="text-sm text-slate-600">'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-400 mt-2">מדווח: '+esc(r.reporter_name)+' · <span dir="ltr">'+esc(displayPhone(r.reporter_phone||''))+'</span> · '+esc(adminDateTime(r.created_at))+'</div></div><div>'+adminStatusPill(r.status,r.status==='open'?'warn':'neutral')+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 border border-green-200 rounded-lg px-3 py-2 text-sm font-bold">טופל</button><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-3 py-2">דחה</button></div>':'')+'</div></div></div>').join(''):'<p class="text-slate-500 py-8 text-center">אין דיווחים.</p>')+'</div></div>';
         }
 
+        function adminTemplateLabel(kind){
+            return ({
+                event_invite:'הזמנה לאירוע',
+                event_reminder:'תזכורת לפני אירוע',
+                event_changed:'שינוי מהותי באירוע',
+                event_note_update:'עדכון הערה',
+                event_cancelled:'אירוע בוטל',
+                registration_confirmed:'הרשמה אושרה',
+                registration_cancelled:'הרשמה בוטלה',
+                waitlist_joined:'כניסה לרשימת המתנה',
+                waitlist_promoted:'קידום מרשימת המתנה',
+                attendance_confirmed:'אישור הגעה',
+                invite_declined:'דחיית הזמנה'
+            })[kind]||kind;
+        }
+
+        function adminContentField(key,label,multiline=false){
+            const value=adminEditorState?.content?.[key]||'';
+            return '<label><span class="field-label">'+esc(label)+'</span>'+
+                (multiline?'<textarea id="admin-content-'+key+'" class="input-clean min-h-24">'+esc(value)+'</textarea>':'<input id="admin-content-'+key+'" class="input-clean" value="'+esc(value)+'">')+
+            '</label>';
+        }
+
+        function adminConfigRows(kind,items){
+            return '<div class="space-y-2">'+(items||[]).map((x,i)=>
+                '<div class="grid grid-cols-[auto_1fr_auto] gap-3 items-center border rounded-lg p-3">'+
+                    '<span class="text-xs font-mono text-slate-400">'+esc(x.value)+'</span>'+
+                    '<input id="admin-config-'+kind+'-label-'+i+'" class="input-clean" value="'+esc(x.label||'')+'">'+
+                    '<label class="text-sm font-bold flex gap-2 items-center"><input id="admin-config-'+kind+'-enabled-'+i+'" type="checkbox" '+(x.enabled!==false?'checked':'')+'> פעיל</label>'+
+                '</div>'
+            ).join('')+'</div>';
+        }
+
         async function adminRenderSettings(){
-            const [{data:site,error:siteErr},{data:sms,error:smsErr}]=await Promise.all([
+            const [{data:site,error:siteErr},{data:sms,error:smsErr},{data:editor,error:editorErr},{data:templates,error:templatesErr}]=await Promise.all([
                 _supabase.rpc('admin_site_settings'),
-                _supabase.rpc('admin_sms_status')
+                _supabase.rpc('admin_sms_status'),
+                _supabase.rpc('admin_site_editor_state'),
+                _supabase.rpc('admin_list_sms_templates')
             ]);
-            if(siteErr)throw siteErr;if(smsErr)throw smsErr;
+            if(siteErr)throw siteErr;if(smsErr)throw smsErr;if(editorErr)throw editorErr;if(templatesErr)throw templatesErr;
+            adminEditorState=editor||{content:{},field_config:{}};
             const ss=sms?.settings||{};
+            const cfg=adminEditorState.field_config||{};
+            const eventTypes=cfg.event_types||[];
+            const ageRanges=cfg.age_ranges||[];
+            const radii=cfg.radius_options||[];
+            const sectors=cfg.sectors||[];
+
             return '<div class="space-y-5">'+
                 '<div class="glass-card p-6"><h3 class="text-2xl font-bold">הגדרות תפעוליות</h3><p class="text-sm text-slate-500">מתגים מרכזיים לעצירה או הפעלה של פעולות באתר במקרה הצורך.</p><form onsubmit="event.preventDefault(); adminSaveSiteSettings();" class="space-y-4 mt-5">'+
                     '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>הרשמות חדשות</b><span class="block text-sm text-slate-500">מאפשר יצירת חשבונות חדשים למשמחים ולבעלי שמחה.</span></span><input id="admin-setting-registration" type="checkbox" '+(site?.registration_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
                     '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>פרסום אירועים חדשים</b><span class="block text-sm text-slate-500">משתמשים קיימים יוכלו או לא יוכלו לפרסם אירוע חדש.</span></span><input id="admin-setting-events" type="checkbox" '+(site?.event_creation_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
-                    '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>הרשמת בני 12–17</b><span class="block text-sm text-slate-500">שולט בהרשמה חדשה של חשבונות שמנוהלים על ידי הורה.</span></span><input id="admin-setting-minors" type="checkbox" '+(site?.minor_registration_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
-                    '<button class="btn-dark px-5 py-3">שמור הגדרות אתר</button>'+
-                '</form><div class="text-xs text-slate-400 mt-3">עודכן לאחרונה: '+esc(adminDateTime(site?.updated_at))+'</div></div>'+
+                    '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>הוספת ילדים בגיל 12–17</b><span class="block text-sm text-slate-500">שולט באפשרות של הורה להוסיף ילד/ה לחשבון המשפחתי.</span></span><input id="admin-setting-minors" type="checkbox" '+(site?.minor_registration_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
+                    '<button class="btn-dark px-5 py-3">שמור הגדרות תפעול</button>'+
+                '</form></div>'+
+
+                '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3"><div><h3 class="text-2xl font-bold">לוגו ותמונת דף הבית</h3><p class="text-sm text-slate-500">הקבצים עולים לאחסון מאובטח דרך השרת. מפתח השירות של Supabase לא נשלח לדפדפן.</p></div><button onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3">שמור תוכן ועיצוב</button></div>'+
+                    '<input type="hidden" id="admin-logo-url" value="'+esc(adminEditorState.logo_url||'')+'"><input type="hidden" id="admin-hero-url" value="'+esc(adminEditorState.hero_url||'')+'">'+
+                    '<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">'+
+                        '<div class="border rounded-xl p-4"><b>לוגו</b><div class="bg-slate-50 rounded-lg mt-3 p-3"><img id="admin-logo-preview" src="'+esc(adminEditorState.logo_url||'')+'" class="max-h-36 mx-auto object-contain"></div><input id="admin-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-clean mt-3"><button onclick="adminUploadAsset(\'logo\')" class="btn-soft px-4 py-2 mt-2">העלה לוגו</button></div>'+
+                        '<div class="border rounded-xl p-4"><b>תמונת דף הבית</b><div class="bg-slate-50 rounded-lg mt-3 p-3"><img id="admin-hero-preview" src="'+esc(adminEditorState.hero_url||'')+'" class="max-h-36 mx-auto object-contain"></div><input id="admin-hero-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-clean mt-3"><button onclick="adminUploadAsset(\'hero\')" class="btn-soft px-4 py-2 mt-2">העלה תמונה</button></div>'+
+                    '</div><p class="text-xs text-slate-400 mt-3">עד 5MB. JPG, PNG, WebP או GIF. העלאה לבדה אינה מפרסמת את השינוי עד ללחיצה על “שמור תוכן ועיצוב”.</p>'+
+                '</div>'+
+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">טקסטים באתר</h3><p class="text-sm text-slate-500">הטקסטים נשמרים כטקסט פשוט בלבד — לא ניתן להכניס HTML או קוד.</p><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">'+
+                    adminContentField('home_volunteer_title','כותרת — אני רוצה לשמח')+
+                    adminContentField('home_volunteer_subtitle','תיאור — אני רוצה לשמח')+
+                    adminContentField('home_host_title','כותרת — יש לי אירוע')+
+                    adminContentField('home_host_subtitle','תיאור — יש לי אירוע')+
+                    adminContentField('home_account_title','כותרת — אזור אישי')+
+                    adminContentField('home_account_subtitle','תיאור — אזור אישי')+
+                    adminContentField('login_title','כותרת התחברות')+
+                    adminContentField('login_subtitle','תיאור התחברות')+
+                    adminContentField('volunteer_registration_title','כותרת הרשמת משמח/ת')+
+                    adminContentField('volunteer_registration_subtitle','תיאור הרשמת משמח/ת',true)+
+                    adminContentField('family_title','כותרת אזור המשפחה')+
+                    adminContentField('family_subtitle','תיאור אזור המשפחה',true)+
+                    adminContentField('footer_privacy_label','טקסט קישור מדיניות פרטיות')+
+                    adminContentField('footer_terms_label','טקסט קישור תנאי שימוש')+
+                '</div><button onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3 mt-5">שמור תוכן ועיצוב</button></div>'+
+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אפשרויות ושדות</h3><p class="text-sm text-slate-500">אפשר לשנות שמות ולהסתיר אפשרויות קיימות. הערכים הפנימיים נשארים קבועים כדי לא לפגוע בהתאמות ובנתונים קיימים.</p>'+
+                    '<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-5">'+
+                        '<div><h4 class="font-bold mb-3">סוגי אירועים</h4>'+adminConfigRows('event',eventTypes)+'<label class="block mt-3"><span class="field-label">ברירת מחדל בהרשמת משמח/ת</span><select id="admin-config-event-default" class="input-clean bg-white">'+eventTypes.filter(x=>x.enabled!==false).map(x=>'<option value="'+esc(x.value)+'" '+(cfg.volunteer_event_default===x.value?'selected':'')+'>'+esc(x.label)+'</option>').join('')+'</select></label></div>'+
+                        '<div><h4 class="font-bold mb-3">טווחי גיל</h4>'+adminConfigRows('age',ageRanges)+'</div>'+
+                        '<div><h4 class="font-bold mb-3">מרחקים</h4>'+adminConfigRows('radius',radii)+'</div>'+
+                        '<div><h4 class="font-bold mb-3">מגזרים</h4>'+adminConfigRows('sector',sectors)+'</div>'+
+                    '</div><button onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3 mt-5">שמור אפשרויות ושדות</button>'+
+                '</div>'+
+
+                '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3"><div><h3 class="text-2xl font-bold">נוסחי הודעות SMS</h3><p class="text-sm text-slate-500">אפשר לערוך את כל ההודעות. משתנים מותרים: {{event_name}}, {{date}}, {{time}}, {{place}}, {{address}}, {{sector}}, {{separation}}, {{note}}, {{link}}.</p></div><button onclick="adminOpenTab(\'sms\')" class="btn-soft px-4 py-2">הגדרות שליחה</button></div>'+
+                    '<div class="space-y-5 mt-5">'+(templates||[]).map(t=>'<div class="border rounded-xl p-4"><div class="flex flex-wrap justify-between gap-2 items-center"><div><b>'+esc(adminTemplateLabel(t.kind))+'</b><div class="text-xs text-slate-400 font-mono">'+esc(t.kind)+'</div></div><div class="flex gap-2"><button onclick="adminSaveSmsTemplate(\''+esc(t.kind)+'\')" class="btn-brand px-3 py-2 text-sm">שמור נוסח</button><button onclick="adminResetSmsTemplate(\''+esc(t.kind)+'\')" class="btn-soft px-3 py-2 text-sm">שחזר ברירת מחדל</button></div></div><textarea id="admin-sms-template-'+esc(t.kind)+'" class="input-clean min-h-48 mt-3" dir="rtl">'+esc(t.template_text||'')+'</textarea></div>').join('')+'</div>'+
+                '</div>'+
+
                 '<div class="glass-card p-6"><h4 class="font-bold text-lg">מצב SMS מהיר</h4><div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-4">'+
                     adminMetric('שליחה כללית',ss.sending_enabled?'פעילה':'כבויה')+
                     adminMetric('הזמנות',ss.invite_enabled?'פעילות':'כבויות')+
@@ -2736,7 +2826,7 @@
         }
 
         async function adminSaveSiteSettings(){
-            const ok=await askConfirm('שמירת הגדרות אתר','לשמור את הגדרות התפעול? שינוי כאן משפיע מיידית על משתמשים.');
+            const ok=await askConfirm('שמירת הגדרות אתר','לשמור את ההגדרות התפעוליות? שינוי כאן משפיע מיידית על משתמשים.');
             if(!ok)return;
             const {error}=await _supabase.rpc('admin_update_site_settings',{
                 p_registration_enabled:!!$('admin-setting-registration')?.checked,
@@ -2745,6 +2835,96 @@
             });
             if(error)return showToast(readableError(error),'error');
             showToast('הגדרות האתר נשמרו.','success');
+            await adminOpenTab('settings');
+        }
+
+        async function adminUploadAsset(kind){
+            const input=$(kind==='logo'?'admin-logo-file':'admin-hero-file');
+            const file=input?.files?.[0];
+            if(!file)return showToast('יש לבחור קובץ תמונה.','warning');
+            if(file.size>5*1024*1024)return showToast('הקובץ גדול מ־5MB.','error');
+            const allowed=['image/jpeg','image/png','image/webp','image/gif'];
+            if(!allowed.includes(file.type))return showToast('סוג הקובץ אינו נתמך.','error');
+            try{
+                const form=new FormData();
+                form.append('kind',kind);
+                form.append('file',file);
+                const res=await fetch(SUPABASE_URL+'/functions/v1/admin-assets',{
+                    method:'POST',
+                    headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'x-app-session':sessionToken},
+                    body:form
+                });
+                const json=await res.json().catch(()=>({}));
+                if(!res.ok||!json?.url)throw new Error(json?.error||'upload_failed');
+                const url=json.url;
+                const hidden=$(kind==='logo'?'admin-logo-url':'admin-hero-url');
+                const preview=$(kind==='logo'?'admin-logo-preview':'admin-hero-preview');
+                if(hidden)hidden.value=url;if(preview)preview.src=url;
+                showToast('התמונה הועלתה. לחץ “שמור תוכן ועיצוב” כדי לפרסם אותה.','success');
+            }catch(e){showToast(readableError(e),'error');}
+        }
+
+        function adminCollectConfigRows(kind,items){
+            return (items||[]).map((x,i)=>({
+                ...x,
+                label:$('admin-config-'+kind+'-label-'+i)?.value.trim()||x.label,
+                enabled:!!$('admin-config-'+kind+'-enabled-'+i)?.checked
+            }));
+        }
+
+        async function adminSaveContentEditor(){
+            if(!adminEditorState)return;
+            const content={};
+            for(const key of [
+                'home_volunteer_title','home_volunteer_subtitle','home_host_title','home_host_subtitle',
+                'home_account_title','home_account_subtitle','login_title','login_subtitle',
+                'volunteer_registration_title','volunteer_registration_subtitle','family_title','family_subtitle',
+                'footer_privacy_label','footer_terms_label'
+            ]) content[key]=$('admin-content-'+key)?.value.trim()||adminEditorState.content?.[key]||'';
+
+            const base=adminEditorState.field_config||{};
+            const fieldConfig={
+                ...base,
+                volunteer_event_default:$('admin-config-event-default')?.value||base.volunteer_event_default||'wedding',
+                event_types:adminCollectConfigRows('event',base.event_types||[]),
+                age_ranges:adminCollectConfigRows('age',base.age_ranges||[]),
+                radius_options:adminCollectConfigRows('radius',base.radius_options||[]),
+                sectors:adminCollectConfigRows('sector',base.sectors||[])
+            };
+
+            if(!fieldConfig.event_types.some(x=>x.enabled))return showToast('חייב להישאר לפחות סוג אירוע פעיל אחד.','error');
+            if(!fieldConfig.age_ranges.some(x=>x.enabled))return showToast('חייב להישאר לפחות טווח גיל פעיל אחד.','error');
+            if(!fieldConfig.radius_options.some(x=>x.enabled))return showToast('חייב להישאר לפחות מרחק פעיל אחד.','error');
+            if(!fieldConfig.sectors.some(x=>x.enabled))return showToast('חייב להישאר לפחות מגזר פעיל אחד.','error');
+            if(!fieldConfig.event_types.some(x=>x.enabled&&x.value===fieldConfig.volunteer_event_default)){
+                return showToast('ברירת המחדל חייבת להיות סוג אירוע פעיל.','error');
+            }
+
+            const {error}=await _supabase.rpc('admin_update_site_editor',{
+                p_logo_url:$('admin-logo-url')?.value||adminEditorState.logo_url,
+                p_hero_url:$('admin-hero-url')?.value||adminEditorState.hero_url,
+                p_content:content,
+                p_field_config:fieldConfig
+            });
+            if(error)return showToast(readableError(error),'error');
+            showToast('תוכן האתר והאפשרויות עודכנו.','success');
+            await loadPublicSiteConfig();
+            await adminOpenTab('settings');
+        }
+
+        async function adminSaveSmsTemplate(kind){
+            const text=$('admin-sms-template-'+kind)?.value||'';
+            const {error}=await _supabase.rpc('admin_update_sms_template',{p_kind:kind,p_template_text:text});
+            if(error)return showToast(readableError(error),'error');
+            showToast('נוסח ההודעה נשמר.','success');
+        }
+
+        async function adminResetSmsTemplate(kind){
+            const ok=await askConfirm('שחזור נוסח','להחזיר את נוסח ההודעה לברירת המחדל המקורית?');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('admin_reset_sms_template',{p_kind:kind});
+            if(error)return showToast(readableError(error),'error');
+            showToast('הנוסח שוחזר.','success');
             await adminOpenTab('settings');
         }
 

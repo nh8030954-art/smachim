@@ -58,9 +58,78 @@
         .site-title-wrap img { width:380px; max-width:100%; height:110px; display:block; object-fit:contain; object-position:center; transform:none; visibility:visible; opacity:1; }
         .site-header-actions { position:absolute; left:1.5rem; top:50%; transform:translateY(-50%); z-index:2; }
         @media (max-width:640px) {
-            .site-header-inner { min-height:76px; padding-left:.75rem; padding-right:.75rem; }
-            .site-title-wrap { width:230px; height:68px; }
-            .site-title-wrap img { width:230px; height:68px; object-fit:contain; transform:none; }
+            .site-header {
+                position:relative !important;
+                top:auto !important;
+                display:block !important;
+                width:100% !important;
+                min-height:84px !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                overflow:visible !important;
+                z-index:20 !important;
+            }
+            .site-header-inner {
+                position:relative !important;
+                width:100% !important;
+                min-height:84px !important;
+                height:84px !important;
+                padding:0 .75rem !important;
+                display:flex !important;
+                align-items:center !important;
+                justify-content:center !important;
+                overflow:visible !important;
+            }
+            .site-title-wrap {
+                -webkit-appearance:none !important;
+                appearance:none !important;
+                width:min(260px,72vw) !important;
+                height:76px !important;
+                min-height:76px !important;
+                display:flex !important;
+                align-items:center !important;
+                justify-content:center !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                overflow:visible !important;
+                background:#fff !important;
+                border:0 !important;
+                padding:0 !important;
+                margin:0 auto !important;
+            }
+            .site-title-wrap img {
+                display:block !important;
+                width:auto !important;
+                max-width:100% !important;
+                height:76px !important;
+                max-height:76px !important;
+                object-fit:contain !important;
+                object-position:center !important;
+                transform:none !important;
+                visibility:visible !important;
+                opacity:1 !important;
+            }
+            .home-hero {
+                position:relative !important;
+                display:block !important;
+                width:100% !important;
+                min-height:1px !important;
+                overflow:visible !important;
+                visibility:visible !important;
+                opacity:1 !important;
+            }
+            .home-hero img {
+                position:relative !important;
+                display:block !important;
+                width:100% !important;
+                max-width:100% !important;
+                height:auto !important;
+                min-height:1px !important;
+                object-fit:contain !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                margin:0 !important;
+            }
             .site-header-actions { left:.5rem; }
             .site-header-actions .header-home-action { display:none !important; }
             .site-header-actions button { font-size:.72rem !important; }
@@ -86,7 +155,7 @@
                 </button>
             </div>
             <button type="button" class="site-title-wrap" onclick="navigate('home')" aria-label="שמחים בשמחתם - דף הבית">
-                <img id="site-logo-img" src="./assets/site-title.jpg" alt="שמחים בשמחתם" width="2048" height="938" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/site-title.jpg';}">
+                <img id="site-logo-img" src="./assets/site-title.jpg?v=mobilefix2" alt="שמחים בשמחתם" width="2048" height="938" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/site-title.jpg?v=mobilefix2';}">
             </button>
         </div>
     </header>
@@ -94,7 +163,7 @@
     <main class="flex-grow w-full">
         <!-- דף הבית -->
         <div id="view-home" class="screen active">
-            <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/hero-banner.jpg';}"></div>
+            <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg?v=mobilefix2" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/hero-banner.jpg?v=mobilefix2';}"></div>
             <div class="max-w-5xl mx-auto px-6 pt-6 pb-14">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <button onclick="navigate('register-volunteer')" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
@@ -1009,11 +1078,11 @@
             const logo=$('site-logo-img'),hero=$('home-hero-img');
             if(logo){
                 logo.dataset.fallback='';
-                logo.src=publicSiteConfig?.logo_url||'./assets/site-title.jpg';
+                logo.src=publicSiteConfig?.logo_url==='./assets/site-title.jpg'?'./assets/site-title.jpg?v=mobilefix2':(publicSiteConfig?.logo_url||'./assets/site-title.jpg?v=mobilefix2');
             }
             if(hero){
                 hero.dataset.fallback='';
-                hero.src=publicSiteConfig?.hero_url||'./assets/hero-banner.jpg';
+                hero.src=publicSiteConfig?.hero_url==='./assets/hero-banner.jpg'?'./assets/hero-banner.jpg?v=mobilefix2':(publicSiteConfig?.hero_url||'./assets/hero-banner.jpg?v=mobilefix2');
             }
             document.querySelectorAll('[data-site-text]').forEach(el=>{
                 const key=el.getAttribute('data-site-text');

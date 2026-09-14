@@ -453,6 +453,11 @@
         let matchingEventsCache = [];
         let matchingRegsCache = [];
         let adminUsersCache = [];
+        let adminTab = 'overview';
+        let adminUserSearch = '';
+        let adminEventSearch = '';
+        let adminEventStatus = 'all';
+        let adminSmsFilter = 'all';
         let calendarEventCache = new Map();
         let modalResolver = null;
         let dashboardArea = localStorage.getItem('smachimDashboardArea') || '';
@@ -1082,6 +1087,13 @@
                 ['invalid_admin_password','סיסמת המנהל הנוכחית שגויה.'],
                 ['invalid_admin_new_password','סיסמת מנהל חדשה חייבת לכלול לפחות 12 תווים.'],
                 ['admin_password_unchanged','יש לבחור סיסמת מנהל חדשה ושונה מהסיסמה הנוכחית.'],
+                ['cannot_block_self','לא ניתן לחסום את חשבון המנהל הפעיל.'],
+                ['invalid_reminder_hours','מספר השעות לתזכורת חייב להיות בין 1 ל-168.'],
+                ['sms_missing','הודעת ה-SMS לא נמצאה.'],
+                ['sms_expired','תוקף הודעת ה-SMS כבר פג.'],
+                ['sms_not_retryable','אפשר לשלוח מחדש רק הודעת SMS שנכשלה.'],
+                ['report_missing','הדיווח לא נמצא.'],
+                ['event_missing','האירוע לא נמצא.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
                 ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
@@ -1261,7 +1273,8 @@
                 root.innerHTML=renderAdminPasswordCard(true);
                 return;
             }
-            root.innerHTML=await renderAdminPanel()+renderAdminPasswordCard(false);
+            root.innerHTML=renderAdminPanel();
+            await adminOpenTab(adminTab);
         }
 
         async function handleLogin(){
@@ -2057,14 +2070,341 @@
             input.value='';await refreshEventChat(true);
         }
 
-        function renderAdminUserCards(users){return users.map(u=>'<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(u.full_name)+'</div><div class="text-slate-500" dir="ltr">'+esc(displayPhone(u.phone||''))+'</div><div class="flex justify-between items-center mt-2"><span>'+esc(roleLabel(u.role))+'</span><button onclick="adminToggleBlock(\''+esc(u.id)+'\','+(!u.is_blocked)+')" class="'+(u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-600')+' px-2 py-1 rounded font-bold">'+(u.is_blocked?'פתח חסימה':'חסום')+'</button></div></div>').join('')||'<p class="text-slate-500">אין משתמשים.</p>';}
-        function filterAdminUsers(q){q=String(q||'').trim().toLowerCase();const filtered=!q?adminUsersCache:adminUsersCache.filter(u=>String(u.full_name||'').toLowerCase().includes(q)||String(u.phone||'').includes(q));if($('admin-users-list'))$('admin-users-list').innerHTML=renderAdminUserCards(filtered);}
-        async function renderAdminPanel(){const [{data:users},{data:events},{data:reports},{data:stats}]=await Promise.all([_supabase.from('profiles').select('id,full_name,phone,role,is_blocked,created_at').order('created_at',{ascending:false}).limit(100),_supabase.from('events').select('id,event_name,couple_names,event_date,public_location,status').order('event_date',{ascending:false}).limit(50),_supabase.from('event_reports').select('*').order('created_at',{ascending:false}).limit(50),_supabase.rpc('admin_dashboard_stats')]);adminUsersCache=users||[];const s=stats?.[0]||{};const eventMap=new Map((events||[]).map(e=>[e.id,e]));return '<div class="glass-card p-6 border-2 border-slate-300"><h3 class="text-xl font-bold mb-1">פאנל ניהול</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-2 my-4"><div class="mini-stat"><div class="text-xs text-slate-500">משתמשים</div><b>'+Number(s.users_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">חסומים</div><b>'+Number(s.blocked_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">אירועים פעילים</div><b>'+Number(s.active_events||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">הרשמות</div><b>'+Number(s.registrations_count||0)+'</b></div><div class="mini-stat"><div class="text-xs text-slate-500">דיווחים פתוחים</div><b>'+Number(s.open_reports||0)+'</b></div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div><h4 class="font-bold mb-3">משתמשים</h4><input oninput="filterAdminUsers(this.value)" class="input-clean mb-3" placeholder="חיפוש לפי שם או טלפון"><div id="admin-users-list" class="space-y-2 max-h-96 overflow-auto">'+renderAdminUserCards(adminUsersCache)+'</div></div><div><h4 class="font-bold mb-3">אירועים</h4><div class="space-y-2 max-h-96 overflow-auto">'+((events||[]).map(e=>'<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(e.event_name||e.couple_names)+'</div><div class="text-slate-500">'+formatDate(e.event_date)+' · '+esc(e.public_location)+' · '+esc(eventStatusLabel(e))+'</div>'+(e.status!=='cancelled'&&e.status!=='completed'?'<button onclick="adminCancelEvent(\''+esc(e.id)+'\')" class="mt-2 bg-red-50 text-red-600 px-2 py-1 rounded font-bold">בטל אירוע</button>':'')+'</div>').join('')||'<p class="text-slate-500">אין אירועים.</p>')+'</div></div><div><h4 class="font-bold mb-3">דיווחים</h4><div class="space-y-2 max-h-96 overflow-auto">'+((reports||[]).map(r=>{const ev=eventMap.get(r.event_id);return '<div class="border rounded-lg p-3 text-sm bg-slate-50"><div class="font-bold">'+esc(ev?.event_name||ev?.couple_names||'אירוע')+'</div><div class="text-slate-600">'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-500 mt-1">סטטוס: '+esc(r.status)+'</div>'+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 px-2 py-1 rounded font-bold">טופל</button><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-2 py-1">דחה</button></div>':'')+'</div>';}).join('')||'<p class="text-slate-500">אין דיווחים.</p>')+'</div></div></div></div>';}
+        function adminDateTime(v){
+            if(!v)return '—';
+            try{return new Date(v).toLocaleString('he-IL',{dateStyle:'short',timeStyle:'short'});}catch(_){return String(v);}
+        }
 
-        async function refreshAdminView(){if(adminMode&&currentIsAdmin)await loadAdminArea();else await loadDashboard();}
-        async function adminToggleBlock(profileId,blocked){const ok=await askConfirm(blocked?'חסימת משתמש':'פתיחת חסימה',blocked?'לחסום את המשתמש?':'לפתוח את החסימה?');if(!ok)return;const {error}=await _supabase.rpc('admin_set_blocked',{p_profile_id:profileId,p_blocked:blocked});if(error)showToast(readableError(error),'error');else await refreshAdminView();}
-        async function adminResolveReport(reportId,status){const {error}=await _supabase.rpc('admin_resolve_report',{p_report_id:reportId,p_status:status});if(error)showToast(readableError(error),'error');else await refreshAdminView();}
-        async function adminCancelEvent(eventId){const ok=await askConfirm('ביטול אירוע כמנהל','לבטל את האירוע?','בטל אירוע');if(!ok)return;const {error}=await _supabase.rpc('admin_cancel_event',{p_event_id:eventId});if(error)showToast(readableError(error),'error');else await refreshAdminView();}
+        function adminBool(v){return v?'כן':'לא';}
+        function adminRoleLabel(v){return ({volunteer:'משמח/ת',host:'בעל/ת שמחה',both:'משמח/ת + בעל/ת שמחה'})[v]||v||'—';}
+        function adminGenderLabel(v){return v==='male'?'משמח':v==='female'?'משמחת':'—';}
+        function adminStatusPill(text,kind='neutral'){
+            const cls=kind==='bad'?'bg-red-50 text-red-700 border-red-200':kind==='good'?'bg-green-50 text-green-700 border-green-200':kind==='warn'?'bg-amber-50 text-amber-700 border-amber-200':'bg-slate-50 text-slate-600 border-slate-200';
+            return '<span class="inline-flex items-center px-2 py-1 rounded-full border text-xs font-bold '+cls+'">'+esc(text)+'</span>';
+        }
+
+        function renderAdminPanel(){
+            const tabs=[
+                ['overview','סקירה','fa-gauge-high'],
+                ['analytics','אנליטיקה','fa-chart-column'],
+                ['users','משתמשים','fa-users'],
+                ['events','אירועים','fa-calendar-days'],
+                ['sms','SMS','fa-message'],
+                ['reports','דיווחים','fa-triangle-exclamation'],
+                ['security','אבטחה והגדרות','fa-shield-halved']
+            ];
+            return '<div class="space-y-5">'+
+                '<div class="glass-card p-3"><div class="flex flex-wrap gap-2">'+tabs.map(t=>
+                    '<button id="admin-tab-'+t[0]+'" onclick="adminOpenTab(\''+t[0]+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-solid '+t[2]+' ml-1"></i>'+t[1]+'</button>'
+                ).join('')+'</div></div>'+
+                '<div id="admin-section-root"></div>'+
+                '<div id="admin-detail-panel"></div>'+
+            '</div>';
+        }
+
+        function adminSetActiveTab(name){
+            document.querySelectorAll('[id^="admin-tab-"]').forEach(btn=>{
+                btn.classList.remove('btn-dark');
+                btn.classList.add('btn-soft');
+            });
+            const active=$('admin-tab-'+name);
+            if(active){active.classList.remove('btn-soft');active.classList.add('btn-dark');}
+        }
+
+        async function adminOpenTab(name){
+            adminTab=name||'overview';
+            adminSetActiveTab(adminTab);
+            const root=$('admin-section-root');
+            const detail=$('admin-detail-panel');
+            if(detail)detail.innerHTML='';
+            if(!root)return;
+            root.innerHTML='<div class="glass-card p-8 text-center text-slate-500">טוען נתונים...</div>';
+            try{
+                if(adminTab==='overview') root.innerHTML=await adminRenderOverview();
+                else if(adminTab==='analytics') root.innerHTML=await adminRenderAnalytics();
+                else if(adminTab==='users') root.innerHTML=await adminRenderUsers();
+                else if(adminTab==='events') root.innerHTML=await adminRenderEvents();
+                else if(adminTab==='sms') root.innerHTML=await adminRenderSms();
+                else if(adminTab==='reports') root.innerHTML=await adminRenderReports();
+                else if(adminTab==='security') root.innerHTML=await adminRenderSecurity();
+                else root.innerHTML='';
+            }catch(e){
+                root.innerHTML='<div class="glass-card p-6 text-red-700">'+esc(readableError(e))+'</div>';
+            }
+        }
+
+        function adminMetric(title,value,subtitle=''){
+            return '<div class="mini-stat p-4"><div class="text-xs text-slate-500">'+esc(title)+'</div><div class="text-2xl font-extrabold mt-1">'+esc(value??0)+'</div>'+(subtitle?'<div class="text-xs text-slate-400 mt-1">'+esc(subtitle)+'</div>':'')+'</div>';
+        }
+
+        async function adminRenderOverview(){
+            const [{data:o,error},{data:sms}]=await Promise.all([
+                _supabase.rpc('admin_dashboard_overview'),
+                _supabase.rpc('admin_sms_status')
+            ]);
+            if(error)throw error;
+            const alerts=[];
+            if(Number(o.open_reports||0)>0)alerts.push({text:o.open_reports+' דיווחים ממתינים לטיפול',tab:'reports',bad:true});
+            if(Number(o.sms_failed||0)>0)alerts.push({text:o.sms_failed+' הודעות SMS נכשלו',tab:'sms',bad:true});
+            if(Number(o.events_underfilled||0)>0)alerts.push({text:o.events_underfilled+' אירועים עתידיים עדיין לא מלאים',tab:'events'});
+            if(sms?.settings?.gateway_last_error)alerts.push({text:'תקלה אחרונה ב-SMS: '+sms.settings.gateway_last_error,tab:'sms',bad:true});
+            if(sms?.settings?.sending_enabled===false)alerts.push({text:'שליחת SMS כבויה',tab:'sms',bad:true});
+
+            return '<div class="space-y-5">'+
+                '<div class="glass-card p-6"><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-2xl font-bold">תמונת מצב</h3><p class="text-sm text-slate-500">הנתונים המרכזיים של האתר בזמן אמת.</p></div><button onclick="adminOpenTab(\'overview\')" class="btn-soft px-3 py-2"><i class="fa-solid fa-rotate ml-1"></i>רענן</button></div>'+
+                '<div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 mt-5">'+
+                    adminMetric('משתמשים',o.users_total,'+'+Number(o.new_users_30d||0)+' ב־30 יום')+
+                    adminMetric('משמחים/ות',o.volunteers)+
+                    adminMetric('בעלי שמחה',o.hosts)+
+                    adminMetric('אירועים עתידיים',o.events_upcoming)+
+                    adminMetric('הרשמות מאושרות',o.registrations_approved)+
+                    adminMetric('דיווחים פתוחים',o.open_reports)+
+                    adminMetric('אירועים לא מלאים',o.events_underfilled)+
+                    adminMetric('SMS בהמתנה',o.sms_pending)+
+                    adminMetric('SMS נמסרו',o.sms_delivered)+
+                    adminMetric('SMS נכשלו',o.sms_failed)+
+                    adminMetric('תגובות SMS השבוע',o.sms_inbound_7d)+
+                    adminMetric('מסירה ב־30 יום',o.sms_delivery_rate_30d==null?'—':o.sms_delivery_rate_30d+'%')+
+                '</div></div>'+
+                '<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">'+
+                    '<div class="glass-card p-6"><h3 class="font-bold text-lg mb-4">דורש תשומת לב</h3>'+
+                    (alerts.length?'<div class="space-y-2">'+alerts.map(a=>'<button onclick="adminOpenTab(\''+a.tab+'\')" class="w-full text-right border rounded-xl p-3 '+(a.bad?'border-red-200 bg-red-50 text-red-700':'border-amber-200 bg-amber-50 text-amber-800')+'">'+esc(a.text)+'</button>').join('')+'</div>':'<div class="text-green-700 bg-green-50 border border-green-200 rounded-xl p-4">אין כרגע התראות תפעוליות דחופות.</div>')+
+                    '</div>'+
+                    '<div class="glass-card p-6"><h3 class="font-bold text-lg mb-4">בריאות המערכת</h3><div class="space-y-2 text-sm">'+
+                        '<div class="flex justify-between"><span>שליחת SMS</span><b>'+(sms?.settings?.sending_enabled?'פעילה':'כבויה')+'</b></div>'+
+                        '<div class="flex justify-between"><span>הזמנות SMS</span><b>'+(sms?.settings?.invite_enabled?'פעילות':'כבויות')+'</b></div>'+
+                        '<div class="flex justify-between"><span>תזכורות</span><b>'+(sms?.settings?.reminder_enabled?'פעילות':'כבויות')+'</b></div>'+
+                        '<div class="flex justify-between"><span>רענון Inbox אחרון</span><b>'+esc(adminDateTime(sms?.settings?.last_inbox_refresh_at))+'</b></div>'+
+                        '<div class="flex justify-between"><span>Gateway נראה לאחרונה</span><b>'+esc(adminDateTime(sms?.settings?.last_gateway_seen_at))+'</b></div>'+
+                        '<div class="flex justify-between"><span>סשנים פעילים</span><b>'+Number(o.active_user_sessions||0)+' משתמשים · '+Number(o.active_admin_sessions||0)+' מנהל</b></div>'+
+                    '</div></div>'+
+                '</div>'+
+            '</div>';
+        }
+
+        function adminBreakdownCard(title,rows,labeler=(x)=>x){
+            const a=Array.isArray(rows)?rows:[];
+            const max=Math.max(1,...a.map(x=>Number(x.count||0)));
+            return '<div class="glass-card p-5"><h4 class="font-bold mb-4">'+esc(title)+'</h4><div class="space-y-3">'+
+                (a.length?a.map(x=>'<div><div class="flex justify-between text-sm mb-1"><span>'+esc(labeler(x.key))+'</span><b>'+Number(x.count||0)+'</b></div><div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-slate-700 rounded-full" style="width:'+Math.max(3,Math.round(100*Number(x.count||0)/max))+'%"></div></div></div>').join(''):'<p class="text-sm text-slate-500">אין נתונים.</p>')+
+            '</div></div>';
+        }
+
+        async function adminRenderAnalytics(){
+            const [{data:series,error:sErr},{data:b,error:bErr},{data:o,error:oErr}]=await Promise.all([
+                _supabase.rpc('admin_analytics_series',{p_days:30}),
+                _supabase.rpc('admin_analytics_breakdown'),
+                _supabase.rpc('admin_dashboard_overview')
+            ]);
+            if(sErr)throw sErr;if(bErr)throw bErr;if(oErr)throw oErr;
+            const rows=series||[];
+            const totals=rows.reduce((a,x)=>({users:a.users+Number(x.new_users||0),events:a.events+Number(x.new_events||0),regs:a.regs+Number(x.registrations||0),sms:a.sms+Number(x.sms_created||0),del:a.del+Number(x.sms_delivered||0)}),{users:0,events:0,regs:0,sms:0,del:0});
+            const recent=rows.slice(-14);
+            const max=Math.max(1,...recent.map(x=>Number(x.new_users||0)+Number(x.new_events||0)+Number(x.registrations||0)));
+            return '<div class="space-y-5">'+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אנליטיקה</h3><p class="text-sm text-slate-500">מגמות שימוש ב־30 הימים האחרונים.</p><div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5">'+
+                    adminMetric('משתמשים חדשים',totals.users)+adminMetric('אירועים חדשים',totals.events)+adminMetric('הרשמות',totals.regs)+adminMetric('SMS שנוצרו',totals.sms)+adminMetric('SMS שנמסרו',totals.del)+
+                '</div></div>'+
+                '<div class="glass-card p-6"><h4 class="font-bold mb-4">14 הימים האחרונים</h4><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-slate-500 border-b"><th class="text-right py-2">תאריך</th><th>משתמשים</th><th>אירועים</th><th>הרשמות</th><th>SMS</th><th>נמסרו</th></tr></thead><tbody>'+
+                    recent.map(x=>'<tr class="border-b border-slate-100"><td class="py-2 font-bold">'+esc(formatDate(x.day))+'</td><td class="text-center">'+Number(x.new_users||0)+'</td><td class="text-center">'+Number(x.new_events||0)+'</td><td class="text-center">'+Number(x.registrations||0)+'</td><td class="text-center">'+Number(x.sms_created||0)+'</td><td class="text-center">'+Number(x.sms_delivered||0)+'</td></tr>').join('')+
+                '</tbody></table></div></div>'+
+                '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">'+
+                    adminBreakdownCard('סוגי אירועים',b?.event_types,eventTypeLabel)+
+                    adminBreakdownCard('סוגי חשבונות',b?.user_roles,adminRoleLabel)+
+                    adminBreakdownCard('מגזרים',b?.user_sectors,sectorLabel)+
+                    adminBreakdownCard('סטטוס הרשמות',b?.registration_statuses,x=>({approved:'מאושר',waitlist:'המתנה',cancelled:'בוטל'}[x]||x))+
+                    adminBreakdownCard('סוגי SMS',b?.sms_kinds,x=>x)+
+                    adminBreakdownCard('ערים מובילות',b?.top_cities,x=>x)+
+                '</div>'+
+                '<div class="glass-card p-6"><div class="grid grid-cols-2 md:grid-cols-4 gap-3">'+
+                    adminMetric('משתמשים חסומים',o.blocked_users)+
+                    adminMetric('חשבונות הורה',o.guardian_managed)+
+                    adminMetric('נוכחות שאושרה',o.attendance_confirmed)+
+                    adminMetric('אירועים שבוטלו',o.events_cancelled)+
+                '</div></div>'+
+            '</div>';
+        }
+
+        async function adminRenderUsers(){
+            const {data,error}=await _supabase.rpc('admin_list_users',{p_search:adminUserSearch||'',p_limit:200,p_offset:0});
+            if(error)throw error;
+            adminUsersCache=data||[];
+            return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-end"><div><h3 class="text-2xl font-bold">משתמשים</h3><p class="text-sm text-slate-500">חיפוש, בדיקת פרופיל, חסימה, SMS וניתוק סשנים.</p></div><div class="flex gap-2"><input id="admin-user-search" class="input-clean min-w-56" value="'+esc(adminUserSearch)+'" placeholder="שם, טלפון או עיר"><button onclick="adminSearchUsers()" class="btn-dark px-4">חפש</button></div></div>'+
+                '<div class="mt-5 space-y-3">'+(adminUsersCache.length?adminUsersCache.map(u=>
+                    '<div class="border rounded-xl p-4 bg-white"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold text-lg">'+esc(u.full_name)+'</div><div class="text-sm text-slate-500"><span dir="ltr">'+esc(displayPhone(u.phone||''))+'</span> · '+esc(adminRoleLabel(u.role))+' · '+esc(u.city||'ללא עיר')+'</div><div class="flex flex-wrap gap-2 mt-2">'+(u.is_blocked?adminStatusPill('חסום','bad'):adminStatusPill('פעיל','good'))+(u.guardian_managed?adminStatusPill('מנוהל ע״י הורה','warn'):'')+(u.sms_notifications_enabled?adminStatusPill('SMS פעיל','neutral'):adminStatusPill('SMS כבוי','warn'))+'</div></div>'+
+                    '<div class="flex flex-wrap gap-2 items-start"><button onclick="adminShowUser(\''+esc(u.id)+'\')" class="btn-soft px-3 py-2">פרטים</button><button onclick="adminToggleBlock(\''+esc(u.id)+'\','+(!u.is_blocked)+')" class="'+(u.is_blocked?'bg-green-50 text-green-700':'bg-red-50 text-red-700')+' border rounded-lg px-3 py-2 font-bold text-sm">'+(u.is_blocked?'פתח חסימה':'חסום')+'</button><button onclick="adminSetUserSms(\''+esc(u.id)+'\','+(!u.sms_notifications_enabled)+')" class="btn-soft px-3 py-2">'+(u.sms_notifications_enabled?'כבה SMS':'הפעל SMS')+'</button><button onclick="adminForceLogout(\''+esc(u.id)+'\')" class="btn-soft px-3 py-2">נתק מהמערכת</button></div></div>'+
+                    '<div class="text-xs text-slate-400 mt-3">אירועים שפורסמו: '+Number(u.hosted_events||0)+' · הרשמות: '+Number(u.registrations_count||0)+' · נוצר: '+esc(adminDateTime(u.created_at))+'</div></div>'
+                ).join(''):'<p class="text-slate-500 py-8 text-center">לא נמצאו משתמשים.</p>')+'</div></div>';
+        }
+
+        async function adminSearchUsers(){
+            adminUserSearch=$('admin-user-search')?.value.trim()||'';
+            await adminOpenTab('users');
+        }
+
+        async function adminShowUser(id){
+            const {data,error}=await _supabase.rpc('admin_user_detail',{p_profile_id:id});
+            if(error)return showToast(readableError(error),'error');
+            const p=data?.profile||{},st=data?.stats||{},regs=data?.recent_registrations||[];
+            const detail=$('admin-detail-panel');if(!detail)return;
+            detail.innerHTML='<div class="glass-card p-6 mt-5 border-2 border-slate-300"><div class="flex justify-between gap-3"><div><h3 class="text-xl font-bold">'+esc(p.full_name||'משתמש')+'</h3><p class="text-sm text-slate-500" dir="ltr">'+esc(displayPhone(p.phone||''))+'</p></div><button onclick="adminCloseDetail()" class="btn-soft px-3">סגור</button></div>'+
+                '<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 text-sm">'+
+                    '<div><b>חשבון</b><p class="mt-1">סוג: '+esc(adminRoleLabel(p.role))+'<br>פנייה: '+esc(adminGenderLabel(p.gender))+'<br>מגזר: '+esc(sectorLabel(p.sector))+'<br>שנת לידה: '+esc(p.birth_year||'—')+'</p></div>'+
+                    '<div><b>כתובת והתאמה</b><p class="mt-1">'+esc([p.street,p.house_number,p.city].filter(Boolean).join(' ')||'—')+'<br>רדיוס: '+esc(radiusLabel(p.radius))+'<br>ימים בשבוע: '+esc(p.max_days_per_week??'—')+'</p></div>'+
+                    '<div><b>פעילות</b><p class="mt-1">אירועים שפורסמו: '+Number(st.hosted_events||0)+'<br>הרשמות: '+Number(st.registrations||0)+'<br>מאושרות: '+Number(st.approved||0)+'<br>סשנים פעילים: '+Number(st.active_sessions||0)+'</p></div>'+
+                '</div>'+
+                (p.guardian_managed?'<div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm"><b>חשבון מנוהל ע״י הורה:</b> '+esc(p.guardian_name||'—')+' · אישור: '+esc(adminDateTime(p.guardian_consent_at))+'</div>':'')+
+                '<div class="mt-5"><h4 class="font-bold mb-2">הרשמות אחרונות</h4><div class="space-y-2">'+(regs.length?regs.map(r=>'<div class="border rounded-lg p-3 text-sm"><b>'+esc(r.event_name)+'</b> · '+esc(formatDate(r.event_date))+' · '+esc(r.status)+'</div>').join(''):'<p class="text-sm text-slate-500">אין הרשמות.</p>')+'</div></div>'+
+            '</div>';
+            detail.scrollIntoView({behavior:'smooth',block:'start'});
+        }
+
+        function adminCloseDetail(){const d=$('admin-detail-panel');if(d)d.innerHTML='';}
+
+        async function adminSetUserSms(id,enabled){
+            const ok=await askConfirm(enabled?'הפעלת SMS':'כיבוי SMS',enabled?'לאפשר שוב הודעות SMS למשתמש?':'להפסיק הודעות SMS למשתמש הזה?');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('admin_set_user_sms',{p_profile_id:id,p_enabled:enabled});
+            if(error)return showToast(readableError(error),'error');
+            showToast('ההגדרה עודכנה.','success');await adminOpenTab('users');
+        }
+
+        async function adminForceLogout(id){
+            const ok=await askConfirm('ניתוק משתמש','לנתק את כל הסשנים הרגילים של המשתמש? הוא יצטרך להתחבר מחדש.');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('admin_force_logout_user',{p_profile_id:id});
+            if(error)return showToast(readableError(error),'error');
+            showToast('המשתמש נותק.','success');
+        }
+
+        async function adminRenderEvents(){
+            const {data,error}=await _supabase.rpc('admin_list_events',{p_search:adminEventSearch||'',p_status:adminEventStatus||'all',p_limit:200,p_offset:0});
+            if(error)throw error;
+            const events=data||[];
+            return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-end"><div><h3 class="text-2xl font-bold">אירועים</h3><p class="text-sm text-slate-500">מעקב אחר תפוסה, דיווחים, בעל האירוע והנרשמים.</p></div><div class="flex flex-wrap gap-2"><input id="admin-event-search" class="input-clean min-w-52" value="'+esc(adminEventSearch)+'" placeholder="אירוע, בעל שמחה או עיר"><select id="admin-event-status" class="input-clean bg-white"><option value="all">כל הסטטוסים</option><option value="active">פעיל</option><option value="full">מלא</option><option value="completed">הסתיים</option><option value="cancelled">בוטל</option></select><button onclick="adminSearchEvents()" class="btn-dark px-4">סנן</button></div></div>'+
+                '<div class="mt-5 space-y-3">'+(events.length?events.map(e=>{
+                    const total=Number(e.quota_men||0)+Number(e.quota_women||0),approved=Number(e.approved_men||0)+Number(e.approved_women||0);
+                    return '<div class="border rounded-xl p-4 bg-white"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold text-lg">'+esc(e.event_name)+'</div><div class="text-sm text-slate-500">'+esc(eventTypeLabel(e.event_type))+' · '+esc(formatDate(e.event_date))+' · '+esc(String(e.start_time||'').slice(0,5))+' · '+esc(e.city||'')+'</div><div class="text-sm mt-2">בעל שמחה: <b>'+esc(e.host_name)+'</b> · תפוסה: <b>'+approved+'/'+total+'</b> · המתנה: '+Number(e.waitlist_count||0)+' · דיווחים: '+Number(e.reports_count||0)+'</div></div><div class="flex gap-2 items-start">'+adminStatusPill(eventStatusLabel(e),e.status==='cancelled'?'bad':e.status==='full'?'good':'neutral')+'<button onclick="adminShowEvent(\''+esc(e.id)+'\')" class="btn-soft px-3 py-2">פרטים ונרשמים</button>'+(e.status!=='cancelled'&&e.status!=='completed'?'<button onclick="adminCancelEvent(\''+esc(e.id)+'\')" class="bg-red-50 text-red-700 border border-red-200 rounded-lg px-3 py-2 font-bold text-sm">בטל אירוע</button>':'')+'</div></div></div>';
+                }).join(''):'<p class="text-slate-500 py-8 text-center">לא נמצאו אירועים.</p>')+'</div></div>';
+        }
+
+        async function adminSearchEvents(){
+            adminEventSearch=$('admin-event-search')?.value.trim()||'';
+            adminEventStatus=$('admin-event-status')?.value||'all';
+            await adminOpenTab('events');
+            if($('admin-event-status'))$('admin-event-status').value=adminEventStatus;
+        }
+
+        async function adminShowEvent(id){
+            const {data,error}=await _supabase.rpc('admin_event_detail',{p_event_id:id});
+            if(error)return showToast(readableError(error),'error');
+            const e=data?.event||{},h=data?.host||{},v=data?.venue||{},regs=data?.registrants||[],reports=data?.reports||[];
+            const detail=$('admin-detail-panel');if(!detail)return;
+            detail.innerHTML='<div class="glass-card p-6 mt-5 border-2 border-slate-300"><div class="flex justify-between gap-3"><div><h3 class="text-xl font-bold">'+esc(e.event_name||'אירוע')+'</h3><p class="text-sm text-slate-500">'+esc(eventTypeLabel(e.event_type))+' · '+esc(formatDate(e.event_date))+' · '+esc(String(e.start_time||'').slice(0,5))+'</p></div><button onclick="adminCloseDetail()" class="btn-soft px-3">סגור</button></div>'+
+                '<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 text-sm"><div><b>בעל שמחה</b><p>'+esc(h.name||'—')+'<br><span dir="ltr">'+esc(displayPhone(h.phone||''))+'</span></p></div><div><b>מקום</b><p>'+esc(v.hall_name||'—')+'<br>'+esc([v.street,v.house_number,v.city].filter(Boolean).join(' ')||'—')+'</p></div><div><b>הגדרות</b><p>משמחים: '+Number(e.quota_men||0)+' · משמחות: '+Number(e.quota_women||0)+'<br>גיל: '+esc(ageRangeValue(e.age_min,e.age_max)==='all'?'ללא הגבלה':ageRangeValue(e.age_min,e.age_max))+'<br>הפרדה: '+esc(e.is_separated?'מלאה':'ללא')+'</p></div></div>'+
+                '<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5"><div><h4 class="font-bold mb-2">נרשמים ('+regs.length+')</h4><div class="space-y-2 max-h-96 overflow-auto">'+(regs.length?regs.map(r=>'<div class="border rounded-lg p-3 text-sm"><div class="font-bold">'+esc(r.full_name)+' '+(r.guardian_managed?'(מנוהל ע״י הורה)':'')+'</div><div class="text-slate-500"><span dir="ltr">'+esc(displayPhone(r.phone||''))+'</span> · '+esc(adminGenderLabel(r.gender))+' · '+esc(r.status)+'</div></div>').join(''):'<p class="text-slate-500 text-sm">אין נרשמים.</p>')+'</div></div><div><h4 class="font-bold mb-2">דיווחים ('+reports.length+')</h4><div class="space-y-2 max-h-96 overflow-auto">'+(reports.length?reports.map(r=>'<div class="border rounded-lg p-3 text-sm"><b>'+esc(r.reporter_name||'משתמש')+'</b><div>'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-400">'+esc(r.status)+' · '+esc(adminDateTime(r.created_at))+'</div></div>').join(''):'<p class="text-slate-500 text-sm">אין דיווחים.</p>')+'</div></div></div>'+
+            '</div>';
+            detail.scrollIntoView({behavior:'smooth',block:'start'});
+        }
+
+        async function adminRenderSms(){
+            const [{data:status,error:sErr},{data:rows,error:rErr},{data:inbound,error:iErr}]=await Promise.all([
+                _supabase.rpc('admin_sms_status'),
+                _supabase.rpc('admin_sms_recent',{p_filter:adminSmsFilter||'all',p_limit:100}),
+                _supabase.rpc('admin_sms_inbound_recent',{p_limit:40})
+            ]);
+            if(sErr)throw sErr;if(rErr)throw rErr;if(iErr)throw iErr;
+            const set=status?.settings||{},c=status?.counts||{};
+            return '<div class="space-y-5">'+
+                '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3"><div><h3 class="text-2xl font-bold">SMS</h3><p class="text-sm text-slate-500">מצב השליחה, תקלות, תגובות והגדרות מערכת.</p></div><div class="flex gap-2"><button onclick="adminRunSmsMaintenance()" class="btn-soft px-3 py-2">הרץ תחזוקה</button><button onclick="adminOpenTab(\'sms\')" class="btn-soft px-3 py-2">רענן</button></div></div><div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mt-5">'+adminMetric('בהמתנה',c.pending)+adminMetric('בתהליך',c.sending)+adminMetric('אצל הספק',c.sent)+adminMetric('נמסרו',c.delivered)+adminMetric('בוצעה פעולה',c.acted)+adminMetric('נכשלו',c.failed)+adminMetric('תגובות היום',c.inbound_today)+'</div></div>'+
+                '<div class="glass-card p-6"><h4 class="font-bold text-lg">הגדרות SMS</h4><form onsubmit="event.preventDefault(); adminSaveSmsSettings();" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4"><label class="flex items-center gap-2"><input id="admin-sms-sending" type="checkbox" '+(set.sending_enabled?'checked':'')+'> שליחה כללית</label><label class="flex items-center gap-2"><input id="admin-sms-invites" type="checkbox" '+(set.invite_enabled?'checked':'')+'> הזמנות</label><label class="flex items-center gap-2"><input id="admin-sms-reminders" type="checkbox" '+(set.reminder_enabled?'checked':'')+'> תזכורות</label><label><span class="field-label">שעות לפני תזכורת</span><input id="admin-sms-reminder-hours" type="number" min="1" max="168" class="input-clean" value="'+Number(set.reminder_hours_before||24)+'"></label><button class="btn-dark py-3 md:col-span-4">שמור הגדרות SMS</button></form><div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 text-sm text-slate-500"><div>Gateway נראה: <b>'+esc(adminDateTime(set.last_gateway_seen_at))+'</b></div><div>Inbox רוענן: <b>'+esc(adminDateTime(set.last_inbox_refresh_at))+'</b></div><div>שגיאה אחרונה: <b>'+esc(set.gateway_last_error||'אין')+'</b></div></div></div>'+
+                '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-center"><h4 class="font-bold text-lg">הודעות אחרונות</h4><select id="admin-sms-filter" onchange="adminChangeSmsFilter(this.value)" class="input-clean bg-white max-w-48"><option value="all">הכול</option><option value="pending">בהמתנה</option><option value="delivered">נמסרו</option><option value="failed">נכשלו</option><option value="acted">בוצעה פעולה</option></select></div><div class="overflow-x-auto mt-4"><table class="w-full text-xs"><thead><tr class="border-b text-slate-500"><th class="text-right py-2">זמן</th><th>משתמש</th><th>סוג</th><th>אירוע</th><th>מצב</th><th>ניסיונות</th><th>שגיאה/תגובה</th><th></th></tr></thead><tbody>'+
+                    (rows||[]).map(q=>'<tr class="border-b border-slate-100"><td class="py-2 whitespace-nowrap">'+esc(adminDateTime(q.created_at))+'</td><td>'+esc(q.profile_name||'')+'</td><td>'+esc(q.kind)+'</td><td>'+esc(q.event_name||'')+'</td><td>'+esc((q.status||'')+(q.delivery_state?' / '+q.delivery_state:''))+'</td><td class="text-center">'+Number(q.attempt_count||0)+'</td><td class="max-w-64">'+esc(q.last_error||q.reply_action||q.reply_value||'—')+'</td><td>'+((q.status==='failed'||String(q.delivery_state||'').toLowerCase()==='failed')?'<button onclick="adminRetrySms(\''+esc(q.id)+'\')" class="text-brand-700 font-bold">נסה שוב</button>':'')+'</td></tr>').join('')+
+                '</tbody></table></div></div>'+
+                '<div class="glass-card p-6"><h4 class="font-bold text-lg mb-4">תגובות SMS נכנסות</h4><div class="space-y-2 max-h-96 overflow-auto">'+((inbound||[]).length?(inbound||[]).map(i=>'<div class="border rounded-lg p-3 text-sm"><div class="flex justify-between gap-2"><b>'+esc(i.profile_name||i.phone||'לא מזוהה')+'</b><span class="text-xs text-slate-400">'+esc(adminDateTime(i.received_at))+'</span></div><div class="mt-1">תגובה: <b>'+esc(i.message_body||'')+'</b>'+(i.event_name?' · '+esc(i.event_name):'')+'</div><div class="text-xs text-slate-500 mt-1">'+esc(i.result?JSON.stringify(i.result):'')+'</div></div>').join(''):'<p class="text-slate-500">אין תגובות.</p>')+'</div></div>'+
+            '</div>';
+        }
+
+        async function adminChangeSmsFilter(v){adminSmsFilter=v||'all';await adminOpenTab('sms');if($('admin-sms-filter'))$('admin-sms-filter').value=adminSmsFilter;}
+
+        async function adminSaveSmsSettings(){
+            const hours=Number($('admin-sms-reminder-hours')?.value||24);
+            const {error}=await _supabase.rpc('admin_update_sms_settings',{
+                p_sending_enabled:!!$('admin-sms-sending')?.checked,
+                p_invite_enabled:!!$('admin-sms-invites')?.checked,
+                p_reminder_enabled:!!$('admin-sms-reminders')?.checked,
+                p_reminder_hours_before:hours
+            });
+            if(error)return showToast(readableError(error),'error');
+            showToast('הגדרות ה-SMS נשמרו.','success');await adminOpenTab('sms');
+        }
+
+        async function adminRetrySms(id){
+            const ok=await askConfirm('שליחה חוזרת','לנסות לשלוח מחדש את הודעת ה-SMS שנכשלה?');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('admin_retry_sms',{p_id:id});
+            if(error)return showToast(readableError(error),'error');
+            showToast('ההודעה הוחזרה לתור השליחה.','success');await adminOpenTab('sms');
+        }
+
+        async function adminRunSmsMaintenance(){
+            const {error}=await _supabase.rpc('admin_run_sms_maintenance');
+            if(error)return showToast(readableError(error),'error');
+            showToast('תחזוקת SMS הושלמה.','success');await adminOpenTab('sms');
+        }
+
+        async function adminRenderReports(){
+            const {data,error}=await _supabase.rpc('admin_list_reports',{p_status:'all',p_limit:200});
+            if(error)throw error;
+            const rows=data||[];
+            return '<div class="glass-card p-6"><h3 class="text-2xl font-bold">דיווחים ובטיחות</h3><p class="text-sm text-slate-500">כל הדיווחים מהמשתמשים, עם פרטי האירוע והמדווח.</p><div class="space-y-3 mt-5">'+(rows.length?rows.map(r=>'<div class="border rounded-xl p-4 '+(r.status==='open'?'bg-amber-50 border-amber-200':'bg-white')+'"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold">'+esc(r.event_name)+'</div><div class="text-sm text-slate-600">'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-400 mt-2">מדווח: '+esc(r.reporter_name)+' · <span dir="ltr">'+esc(displayPhone(r.reporter_phone||''))+'</span> · '+esc(adminDateTime(r.created_at))+'</div></div><div>'+adminStatusPill(r.status,r.status==='open'?'warn':'neutral')+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 border border-green-200 rounded-lg px-3 py-2 text-sm font-bold">טופל</button><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-3 py-2">דחה</button></div>':'')+'</div></div></div>').join(''):'<p class="text-slate-500 py-8 text-center">אין דיווחים.</p>')+'</div></div>';
+        }
+
+        async function adminRenderSecurity(){
+            const [{data:s,error:sErr},{data:audit,error:aErr}]=await Promise.all([
+                _supabase.rpc('admin_security_status'),
+                _supabase.rpc('admin_audit_recent',{p_limit:100})
+            ]);
+            if(sErr)throw sErr;if(aErr)throw aErr;
+            const a=s?.admin_account||{};
+            return '<div class="space-y-5">'+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אבטחה והגדרות מנהל</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5">'+adminMetric('סשנים משתמשים',s.active_user_sessions)+adminMetric('סשנים מנהל',s.active_admin_sessions)+adminMetric('סשנים שפג תוקפם',s.expired_sessions)+adminMetric('משתמשים חסומים',s.blocked_users)+adminMetric('ניסיונות מנהל שגויים',a.failed_attempts||0)+'</div><div class="mt-4 text-sm text-slate-500">שם משתמש מנהל: <b>'+esc(a.username||'—')+'</b> · נעילה עד: <b>'+esc(adminDateTime(a.locked_until))+'</b></div><button onclick="adminCleanupSessions()" class="btn-soft px-3 py-2 mt-4">נקה סשנים שפג תוקפם</button></div>'+
+                renderAdminPasswordCard(false)+
+                '<div class="glass-card p-6"><h4 class="font-bold text-lg mb-4">יומן פעולות מנהל</h4><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="border-b text-slate-500"><th class="text-right py-2">זמן</th><th>פעולה</th><th>יעד</th><th>פרטים</th></tr></thead><tbody>'+((audit||[]).map(x=>'<tr class="border-b border-slate-100"><td class="py-2 whitespace-nowrap">'+esc(adminDateTime(x.created_at))+'</td><td>'+esc(x.action)+'</td><td>'+esc((x.target_type||'')+(x.target_id?' / '+x.target_id:''))+'</td><td class="max-w-96">'+esc(x.details?JSON.stringify(x.details):'')+'</td></tr>').join('')||'<tr><td colspan="4" class="py-6 text-slate-500">עדיין אין פעולות ביומן.</td></tr>')+'</tbody></table></div></div>'+
+                '<div class="glass-card p-6"><h4 class="font-bold">בדיקות הרשמה</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm"><div class="border rounded-lg p-3">חשבונות ותיקים ללא אישור פרטיות: <b>'+Number(s.users_missing_privacy_consent||0)+'</b></div><div class="border rounded-lg p-3">חשבונות ותיקים ללא אישור SMS: <b>'+Number(s.users_missing_sms_consent||0)+'</b></div></div></div>'+
+            '</div>';
+        }
+
+        async function adminCleanupSessions(){
+            const {data,error}=await _supabase.rpc('admin_cleanup_expired_sessions');
+            if(error)return showToast(readableError(error),'error');
+            showToast('נוקו '+Number(data||0)+' סשנים שפג תוקפם.','success');await adminOpenTab('security');
+        }
+
+        async function refreshAdminView(){await adminOpenTab(adminTab);}
+
+        async function adminToggleBlock(profileId,blocked){
+            const ok=await askConfirm(blocked?'חסימת משתמש':'פתיחת חסימה',blocked?'לחסום את המשתמש ולנתק את הסשנים הפעילים שלו?':'לפתוח את החסימה?');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('admin_set_blocked',{p_profile_id:profileId,p_blocked:blocked});
+            if(error)return showToast(readableError(error),'error');
+            showToast(blocked?'המשתמש נחסם.':'החסימה הוסרה.','success');
+            await adminOpenTab('users');
+        }
+
+        async function adminResolveReport(reportId,status){
+            const {error}=await _supabase.rpc('admin_resolve_report',{p_report_id:reportId,p_status:status});
+            if(error)return showToast(readableError(error),'error');
+            showToast('הדיווח עודכן.','success');await adminOpenTab('reports');
+        }
+
+        async function adminCancelEvent(eventId){
+            const ok=await askConfirm('ביטול אירוע כמנהל','לבטל את האירוע? הנרשמים יקבלו התראה והודעות פעילות של האירוע יבוטלו.','בטל אירוע');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('admin_cancel_event',{p_event_id:eventId});
+            if(error)return showToast(readableError(error),'error');
+            showToast('האירוע בוטל.','success');await adminOpenTab('events');
+        }
 
         populateBirthYears();
         syncVolunteerGuardianMode();

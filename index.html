@@ -356,6 +356,24 @@
             </div>
         </div>
 
+        <!-- פנייה למנהל -->
+        <div id="view-support" class="screen max-w-2xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <h2 class="text-3xl font-bold text-brand-dark">פנייה למנהל המערכת</h2>
+                <p class="text-sm text-slate-500 mt-2">אפשר לפנות בנושאי חשבון, אירועים, SMS או תקלה באתר. הפרטים ישמשו רק לצורך טיפול בפנייה.</p>
+                <form id="support-form" onsubmit="event.preventDefault(); submitSupportRequest();" class="space-y-4 mt-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">שם</span><input id="support-name" class="input-clean" maxlength="100" required autocomplete="name"></label>
+                        <label><span class="field-label">מספר טלפון לחזרה</span><input id="support-phone" type="tel" class="input-clean" maxlength="20" required dir="ltr" autocomplete="tel"></label>
+                    </div>
+                    <label><span class="field-label">נושא הפנייה</span><select id="support-subject" class="input-clean bg-white" required><option value="חשבון והתחברות">חשבון והתחברות</option><option value="אירוע או הרשמה">אירוע או הרשמה</option><option value="SMS והודעות">SMS והודעות</option><option value="בטיחות או דיווח">בטיחות או דיווח</option><option value="תקלה טכנית">תקלה טכנית</option><option value="אחר">אחר</option></select></label>
+                    <label><span class="field-label">הודעה</span><textarea id="support-message" class="input-clean min-h-36" minlength="5" maxlength="3000" required placeholder="כתוב/י כאן את פרטי הפנייה"></textarea></label>
+                    <div class="text-xs text-slate-500">אין לכלול סיסמאות, קודי אימות או מידע סודי בהודעה.</div>
+                    <button id="support-submit" type="submit" class="w-full btn-dark py-3">שלח פנייה</button>
+                </form>
+            </div>
+        </div>
+
         <!-- מדיניות פרטיות -->
         <div id="view-privacy" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8 space-y-5">
@@ -481,6 +499,7 @@
         <div class="max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
             <button type="button" data-site-text="footer_privacy_label" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
             <button type="button" data-site-text="footer_terms_label" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
+            <button type="button" onclick="openSupport()" class="hover:text-brand-700">פנייה למנהל</button>
         </div>
     </footer>
 
@@ -590,7 +609,7 @@
         }
 
         function clearSensitiveForms() {
-            ['login-form','admin-password-form','reset-password-form','volunteer-form','event-form','edit-event-form','profile-form'].forEach(id=>{
+            ['login-form','admin-password-form','reset-password-form','volunteer-form','event-form','edit-event-form','profile-form','support-form'].forEach(id=>{
                 try { $(id)?.reset(); } catch(_) {}
             });
             ['profile-phone-display','profile-role-display','user-greeting'].forEach(id=>{
@@ -640,7 +659,7 @@
             if(!active) return;
             const current=active.id.replace('view-','');
             if(current===nextView) return;
-            if(['login','reset-password','register-volunteer','add-event'].includes(current)) clearSensitiveForms();
+            if(['login','reset-password','register-volunteer','add-event','support'].includes(current)) clearSensitiveForms();
         }
 
         const $ = (id) => document.getElementById(id);
@@ -1403,6 +1422,10 @@
                 ['configured_option_disabled','האפשרות שנבחרה אינה פעילה כרגע לפי הגדרות האתר.'],
                 ['invalid_site_text','הטקסט אינו תקין או ארוך מדי.'],
                 ['site_text_missing','הטקסט לא נמצא במאגר העריכה.'],
+                ['invalid_support_request','יש להשלים שם, טלפון תקין ותיאור של הפנייה.'],
+                ['support_rate_limited','נשלחו יותר מדי פניות היום. אפשר לנסות שוב מאוחר יותר.'],
+                ['support_request_missing','הפנייה לא נמצאה.'],
+                ['invalid_support_status','סטטוס הפנייה אינו תקין.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
                 ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
@@ -2179,6 +2202,42 @@
             showToast('הילד/ה הוסר/ה מהחשבון.','success');activeFamilyChildId=null;await loadDashboard();
         }
 
+        function openSupport(){
+            navigate('support');
+            if(currentProfile){
+                if($('support-name'))$('support-name').value=currentProfile.full_name||'';
+                if($('support-phone'))$('support-phone').value=displayPhone(currentProfile.phone||'');
+            }
+        }
+
+        async function submitSupportRequest(){
+            setBusy('support-submit',true,'שולח...');
+            try{
+                const name=$('support-name').value.trim();
+                const phone=$('support-phone').value.trim();
+                const subject=$('support-subject').value.trim();
+                const message=$('support-message').value.trim();
+                if(name.length<2||message.length<5)throw new Error('invalid_support_request');
+                const normalized=normalizePhone(phone);
+                if(!isValidPhone(normalized))throw new Error('invalid_phone');
+                const res=await fetch(SUPABASE_URL+'/functions/v1/support-contact',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY},
+                    body:JSON.stringify({name,phone:normalized,subject,message})
+                });
+                const json=await res.json().catch(()=>({}));
+                if(!res.ok)throw new Error(json?.error||'server_error');
+                $('support-form')?.reset();
+                if(currentProfile){
+                    $('support-name').value=currentProfile.full_name||'';
+                    $('support-phone').value=displayPhone(currentProfile.phone||'');
+                }
+                showToast('הפנייה נשלחה למנהל המערכת.','success');
+                navigate('home');
+            }catch(e){showToast(readableError(e),'error');}
+            finally{setBusy('support-submit',false);}
+        }
+
         async function renderNotifications() {
             const {data,error}=await _supabase.from('notifications').select('*').order('created_at',{ascending:false}).limit(8);
             if(error||!data?.length) return '';
@@ -2828,10 +2887,24 @@
         }
 
         async function adminRenderReports(){
-            const {data,error}=await _supabase.rpc('admin_list_reports',{p_status:'all',p_limit:200});
+            const [{data:rows,error},{data:support,error:supportErr}]=await Promise.all([
+                _supabase.rpc('admin_list_reports',{p_status:'all',p_limit:200}),
+                _supabase.rpc('admin_list_support_requests',{p_status:'all',p_limit:200})
+            ]);
             if(error)throw error;
-            const rows=data||[];
-            return '<div class="glass-card p-6"><h3 class="text-2xl font-bold">דיווחים ובטיחות</h3><p class="text-sm text-slate-500">כל הדיווחים מהמשתמשים, עם פרטי האירוע והמדווח.</p><div class="space-y-3 mt-5">'+(rows.length?rows.map(r=>'<div class="border rounded-xl p-4 '+(r.status==='open'?'bg-amber-50 border-amber-200':'bg-white')+'"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold">'+esc(r.event_name)+'</div><div class="text-sm text-slate-600">'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-400 mt-2">מדווח: '+esc(r.reporter_name)+' · <span dir="ltr">'+esc(displayPhone(r.reporter_phone||''))+'</span> · '+esc(adminDateTime(r.created_at))+'</div></div><div>'+adminStatusPill(r.status,r.status==='open'?'warn':'neutral')+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 border border-green-200 rounded-lg px-3 py-2 text-sm font-bold">טופל</button><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-3 py-2">דחה</button></div>':'')+'</div></div></div>').join(''):'<p class="text-slate-500 py-8 text-center">אין דיווחים.</p>')+'</div></div>';
+            if(supportErr)throw supportErr;
+            rows=rows||[];support=support||[];
+            return '<div class="space-y-5">'+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">פניות למנהל</h3><p class="text-sm text-slate-500">פניות כלליות שנשלחו מטופס יצירת הקשר באתר.</p><div class="space-y-3 mt-5">'+(support.length?support.map(r=>'<div class="border rounded-xl p-4 '+(r.status==='open'?'bg-amber-50 border-amber-200':'bg-white')+'"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold">'+esc(r.subject)+'</div><div class="text-sm text-slate-700 mt-1 whitespace-pre-line">'+esc(r.message)+'</div><div class="text-xs text-slate-400 mt-2">'+esc(r.name)+' · <span dir="ltr">'+esc(displayPhone(r.phone||''))+'</span> · '+esc(adminDateTime(r.created_at))+'</div></div><div>'+adminStatusPill(r.status,r.status==='open'?'warn':'neutral')+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveSupport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 border border-green-200 rounded-lg px-3 py-2 text-sm font-bold">טופל</button><button onclick="adminResolveSupport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-3 py-2">דחה</button></div>':'')+'</div></div></div>').join(''):'<p class="text-slate-500 py-8 text-center">אין פניות.</p>')+'</div></div>'+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">דיווחים על אירועים</h3><p class="text-sm text-slate-500">דיווחי בטיחות או בעיות שנשלחו מתוך אירועים.</p><div class="space-y-3 mt-5">'+(rows.length?rows.map(r=>'<div class="border rounded-xl p-4 '+(r.status==='open'?'bg-amber-50 border-amber-200':'bg-white')+'"><div class="flex flex-wrap justify-between gap-3"><div><div class="font-bold">'+esc(r.event_name)+'</div><div class="text-sm text-slate-600">'+esc(r.reason||'ללא פירוט')+'</div><div class="text-xs text-slate-400 mt-2">מדווח: '+esc(r.reporter_name)+' · <span dir="ltr">'+esc(displayPhone(r.reporter_phone||''))+'</span> · '+esc(adminDateTime(r.created_at))+'</div></div><div>'+adminStatusPill(r.status,r.status==='open'?'warn':'neutral')+(r.status==='open'?'<div class="flex gap-2 mt-2"><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'resolved\')" class="bg-green-50 text-green-700 border border-green-200 rounded-lg px-3 py-2 text-sm font-bold">טופל</button><button onclick="adminResolveReport(\''+esc(r.id)+'\',\'dismissed\')" class="btn-soft px-3 py-2">דחה</button></div>':'')+'</div></div></div>').join(''):'<p class="text-slate-500 py-8 text-center">אין דיווחים.</p>')+'</div></div>'+
+            '</div>';
+        }
+
+        async function adminResolveSupport(id,status){
+            const {error}=await _supabase.rpc('admin_resolve_support_request',{p_id:id,p_status:status});
+            if(error)return showToast(readableError(error),'error');
+            showToast('הפנייה עודכנה.','success');
+            await adminOpenTab('reports');
         }
 
         function adminTemplateLabel(kind){

@@ -541,6 +541,10 @@
         let adminSmsFilter = 'all';
         let publicSiteConfig = {content:{},field_config:{}};
         let adminEditorState = null;
+        let adminTextSearch = '';
+        let adminTextRows = [];
+        let textOverrideObserver = null;
+        let textOverrideScheduled = false;
         let adminIdleTimer = null;
         const ADMIN_IDLE_MS = 30 * 60 * 1000;
         let calendarEventCache = new Map();
@@ -912,6 +916,72 @@
             syncEventAgeRangeOptions('edit-');
         }
 
+        function applyTextOverridesToNode(root){
+            const overrides=publicSiteConfig?.text_overrides||{};
+            if(!root||!Object.keys(overrides).length)return;
+            const isInsideAdmin=node=>{
+                const el=node?.nodeType===Node.ELEMENT_NODE?node:node?.parentElement;
+                return !!el?.closest?.('#view-admin');
+            };
+            const applyTextNode=node=>{
+                if(isInsideAdmin(node))return;
+                const raw=node.nodeValue||'';
+                const trimmed=raw.trim();
+                if(!trimmed)return;
+                const replacement=overrides[trimmed];
+                if(typeof replacement!=='string'||replacement===trimmed)return;
+                const start=raw.indexOf(trimmed);
+                if(start>=0)node.nodeValue=raw.slice(0,start)+replacement+raw.slice(start+trimmed.length);
+            };
+            if(root.nodeType===Node.TEXT_NODE){
+                applyTextNode(root);
+                return;
+            }
+            if(root.nodeType!==Node.ELEMENT_NODE&&root.nodeType!==Node.DOCUMENT_FRAGMENT_NODE)return;
+            if(root.nodeType===Node.ELEMENT_NODE&&isInsideAdmin(root))return;
+
+            const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{
+                acceptNode(node){
+                    const p=node.parentElement;
+                    if(!p||p.closest('#view-admin')||['SCRIPT','STYLE','NOSCRIPT'].includes(p.tagName))return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            let n;
+            while((n=walker.nextNode()))applyTextNode(n);
+
+            const nodes=[];
+            if(root.nodeType===Node.ELEMENT_NODE)nodes.push(root);
+            if(root.querySelectorAll)nodes.push(...root.querySelectorAll('[placeholder],[title],[aria-label],[alt]'));
+            for(const el of nodes){
+                if(el.closest?.('#view-admin'))continue;
+                for(const attr of ['placeholder','title','aria-label','alt']){
+                    if(!el.hasAttribute?.(attr))continue;
+                    const value=el.getAttribute(attr)||'';
+                    const replacement=overrides[value.trim()];
+                    if(typeof replacement==='string'&&replacement!==value.trim())el.setAttribute(attr,replacement);
+                }
+            }
+        }
+
+        function scheduleTextOverrideApply(){
+            if(textOverrideScheduled)return;
+            textOverrideScheduled=true;
+            requestAnimationFrame(()=>{
+                textOverrideScheduled=false;
+                applyTextOverridesToNode(document.body);
+            });
+        }
+
+        function ensureTextOverrideObserver(){
+            if(textOverrideObserver||!document.body)return;
+            textOverrideObserver=new MutationObserver(mutations=>{
+                if(!publicSiteConfig?.text_overrides)return;
+                if(mutations.some(m=>m.addedNodes?.length))scheduleTextOverrideApply();
+            });
+            textOverrideObserver.observe(document.body,{childList:true,subtree:true});
+        }
+
         function applyPublicSiteConfig(){
             const logo=$('site-logo-img'),hero=$('home-hero-img');
             if(logo&&publicSiteConfig?.logo_url)logo.src=publicSiteConfig.logo_url;
@@ -922,6 +992,8 @@
                 if(typeof v==='string'&&v.trim())el.textContent=v;
             });
             applyFieldConfig();
+            applyTextOverridesToNode(document.body);
+            ensureTextOverrideObserver();
         }
 
         async function loadPublicSiteConfig(){
@@ -1329,6 +1401,8 @@
                 ['sms_template_missing','תבנית ה-SMS לא נמצאה.'],
                 ['upload_failed','העלאת התמונה נכשלה. נסה שוב.'],
                 ['configured_option_disabled','האפשרות שנבחרה אינה פעילה כרגע לפי הגדרות האתר.'],
+                ['invalid_site_text','הטקסט אינו תקין או ארוך מדי.'],
+                ['site_text_missing','הטקסט לא נמצא במאגר העריכה.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
                 ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
@@ -2817,14 +2891,16 @@
         }
 
         async function adminRenderSettings(){
-            const [{data:site,error:siteErr},{data:sms,error:smsErr},{data:editor,error:editorErr},{data:templates,error:templatesErr}]=await Promise.all([
+            const [{data:site,error:siteErr},{data:sms,error:smsErr},{data:editor,error:editorErr},{data:templates,error:templatesErr},{data:textRows,error:textErr}]=await Promise.all([
                 _supabase.rpc('admin_site_settings'),
                 _supabase.rpc('admin_sms_status'),
                 _supabase.rpc('admin_site_editor_state'),
-                _supabase.rpc('admin_list_sms_templates')
+                _supabase.rpc('admin_list_sms_templates'),
+                _supabase.rpc('admin_list_site_texts',{p_search:adminTextSearch||'',p_limit:200,p_offset:0})
             ]);
-            if(siteErr)throw siteErr;if(smsErr)throw smsErr;if(editorErr)throw editorErr;if(templatesErr)throw templatesErr;
+            if(siteErr)throw siteErr;if(smsErr)throw smsErr;if(editorErr)throw editorErr;if(templatesErr)throw templatesErr;if(textErr)throw textErr;
             adminEditorState=editor||{content:{},field_config:{}};
+            adminTextRows=textRows||[];
             const ss=sms?.settings||{};
             const cfg=adminEditorState.field_config||{};
             const eventTypes=cfg.event_types||[];
@@ -2874,6 +2950,10 @@
                     '</div><div class="border-t mt-6 pt-5"><h4 class="font-bold mb-3">שמות שדות בטפסים</h4><p class="text-sm text-slate-500 mb-4">אפשר לשנות את הכיתוב שמוצג למשתמש בלי לשנות את מבנה הנתונים או את כללי האבטחה.</p>'+adminFieldLabelsEditor()+'</div><button onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3 mt-5">שמור אפשרויות ושדות</button>'+
                 '</div>'+
 
+                '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-end"><div><h3 class="text-2xl font-bold">כל הטקסטים באתר</h3><p class="text-sm text-slate-500">עורך כללי לטקסטים שמופיעים למשתמשים — כפתורים, הסברים, הודעות שגיאה, הודעות מערכת, מדיניות ותנאים. השינוי הוא טקסט בלבד ואינו יכול להפעיל HTML או קוד.</p></div><div class="flex gap-2"><input id="admin-text-search" class="input-clean min-w-64" value="'+esc(adminTextSearch)+'" placeholder="חפש טקסט..."><button onclick="adminSearchSiteTexts()" class="btn-soft px-4">חפש</button></div></div>'+
+                    '<div class="mt-5 text-xs text-slate-400">מוצגים עד 200 פריטים בכל חיפוש. טקסטים שכבר שונו מופיעים ראשונים.</div>'+
+                    '<div class="space-y-3 mt-4 max-h-[50rem] overflow-auto">'+(adminTextRows.length?adminTextRows.map((row,i)=>'<div class="border rounded-xl p-4"><div class="text-xs text-slate-400 mb-2">מקור</div><div class="text-sm bg-slate-50 rounded-lg p-3">'+esc(row.source_text)+'</div><label class="block mt-3"><span class="field-label">הטקסט שיוצג</span><textarea id="admin-site-text-'+i+'" class="input-clean min-h-20">'+esc(row.replacement??row.source_text)+'</textarea></label><div class="flex gap-2 mt-3"><button onclick="adminSaveSiteText('+i+')" class="btn-brand px-3 py-2 text-sm">שמור</button>'+(row.replacement&&row.replacement!==row.source_text?'<button onclick="adminResetSiteText('+i+')" class="btn-soft px-3 py-2 text-sm">שחזר מקורי</button>':'')+'</div></div>').join(''):'<p class="text-slate-500 py-6 text-center">לא נמצאו טקסטים בחיפוש.</p>')+'</div>'+
+                '</div>'+
                 '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3"><div><h3 class="text-2xl font-bold">נוסחי הודעות SMS</h3><p class="text-sm text-slate-500">אפשר לערוך את כל ההודעות. משתנים מותרים: {{event_name}}, {{date}}, {{time}}, {{place}}, {{address}}, {{sector}}, {{separation}}, {{note}}, {{link}}.</p></div><button onclick="adminOpenTab(\'sms\')" class="btn-soft px-4 py-2">הגדרות שליחה</button></div>'+
                     '<div class="space-y-5 mt-5">'+(templates||[]).map(t=>'<div class="border rounded-xl p-4"><div class="flex flex-wrap justify-between gap-2 items-center"><div><b>'+esc(adminTemplateLabel(t.kind))+'</b><div class="text-xs text-slate-400 font-mono">'+esc(t.kind)+'</div></div><div class="flex gap-2"><button onclick="adminSaveSmsTemplate(\''+esc(t.kind)+'\')" class="btn-brand px-3 py-2 text-sm">שמור נוסח</button><button onclick="adminResetSmsTemplate(\''+esc(t.kind)+'\')" class="btn-soft px-3 py-2 text-sm">שחזר ברירת מחדל</button></div></div><textarea id="admin-sms-template-'+esc(t.kind)+'" class="input-clean min-h-48 mt-3" dir="rtl">'+esc(t.template_text||'')+'</textarea></div>').join('')+'</div>'+
                 '</div>'+
@@ -2981,6 +3061,35 @@
             });
             if(error)return showToast(readableError(error),'error');
             showToast('תוכן האתר והאפשרויות עודכנו.','success');
+            await loadPublicSiteConfig();
+            await adminOpenTab('settings');
+        }
+
+        async function adminSearchSiteTexts(){
+            adminTextSearch=$('admin-text-search')?.value.trim()||'';
+            await adminOpenTab('settings');
+        }
+
+        async function adminSaveSiteText(index){
+            const row=adminTextRows[index];
+            if(!row)return;
+            const replacement=$('admin-site-text-'+index)?.value??row.source_text;
+            const {error}=await _supabase.rpc('admin_update_site_text',{
+                p_source_text:row.source_text,
+                p_replacement:replacement
+            });
+            if(error)return showToast(readableError(error),'error');
+            showToast('הטקסט עודכן.','success');
+            await loadPublicSiteConfig();
+            await adminOpenTab('settings');
+        }
+
+        async function adminResetSiteText(index){
+            const row=adminTextRows[index];
+            if(!row)return;
+            const {error}=await _supabase.rpc('admin_reset_site_text',{p_source_text:row.source_text});
+            if(error)return showToast(readableError(error),'error');
+            showToast('הטקסט שוחזר למקור.','success');
             await loadPublicSiteConfig();
             await adminOpenTab('settings');
         }

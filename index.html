@@ -158,14 +158,6 @@
                 <h2 class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h2>
                 <p class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
                 <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="off">
-                    <label class="flex items-start gap-3 p-4 bg-brand-50 border border-brand-100 rounded-xl cursor-pointer">
-                        <input type="checkbox" id="vol-guardian-mode" class="mt-1 w-5 h-5" onchange="syncVolunteerGuardianMode()">
-                        <span><b>אני הורה/אפוטרופוס ורושם/ת נער/ה בגיל 12–17</b><span class="block text-xs text-slate-600 mt-1">במקרה כזה החשבון, קוד האימות והודעות ה-SMS מנוהלים על ידי ההורה. משמחים מתחת לגיל 18 מותאמים רק לבר מצווה ולבת מצווה.</span></span>
-                    </label>
-                    <div id="vol-guardian-block" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                        <label><span class="field-label">שם ההורה / האפוטרופוס</span><input type="text" id="vol-guardian-name" class="input-clean bg-white"></label>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-guardian-consent" class="mt-1"><span>אני ההורה/האפוטרופוס של הנער/ה ומאשר/ת את ההרשמה וההשתתפות באירועים דרך המערכת.</span></label>
-                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span id="vol-name-label" class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
                         <label><span id="vol-phone-label" class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
@@ -388,6 +380,74 @@
             </div>
         </div>
 
+        <!-- הוספת / עריכת ילד לחשבון משפחתי -->
+        <div id="view-family-child-form" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <div class="flex justify-between gap-3 items-start">
+                    <div><h2 id="family-form-title" class="text-2xl font-bold text-brand-dark">הוספת ילד/ה לחשבון</h2><p class="text-sm text-slate-500 mt-1">הילד/ה מנוהל/ת מתוך החשבון שלך. אין צורך במספר טלפון, סיסמה או חשבון נפרד.</p></div>
+                    <button type="button" onclick="loadDashboard()" class="btn-soft px-3 py-2">חזרה</button>
+                </div>
+                <form id="family-child-form" onsubmit="event.preventDefault(); saveFamilyChild();" class="space-y-5 mt-6">
+                    <input type="hidden" id="family-child-id">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label><span class="field-label">שם הילד/ה</span><input id="family-child-name" class="input-clean" required></label>
+                        <label><span class="field-label">איך לפנות?</span><select id="family-child-gender" class="input-clean bg-white" required onchange="syncFamilyChildEventDefault()"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
+                        <label><span class="field-label">שנת לידה</span><select id="family-child-birth-year" class="input-clean bg-white family-birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
+                    </div>
+                    <label><span class="field-label">מגזר</span><select id="family-child-sector" class="input-clean bg-white" required><option value="">בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
+                    <div>
+                        <span class="field-label">באילו אירועים הילד/ה מעוניין/ת לשמח?</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="family-event-type" value="bar_mitzvah"> בר מצווה</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-event-type" value="bat_mitzvah"> בת מצווה</label>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="field-label">כתובת מגורים</span>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <input id="family-child-city" class="input-clean" placeholder="עיר" required>
+                            <input id="family-child-street" class="input-clean" placeholder="רחוב" required>
+                            <input id="family-child-house-number" class="input-clean" placeholder="מספר" required>
+                        </div>
+                        <div class="field-help">הכתובת משמשת רק לחישוב מרחק ותיבדק במפה לפני השמירה.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label><span class="field-label">מרחק מקסימלי</span><select id="family-child-radius" class="input-clean bg-white"><option value="10">עד 10 ק״מ</option><option value="20">עד 20 ק״מ</option><option value="50">עד 50 ק״מ</option><option value="100">עד 100 ק״מ</option><option value="999">כל הארץ</option></select></label>
+                        <label><span class="field-label">תחבורה</span><select id="family-child-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">כל אמצעי</option></select></label>
+                        <label class="flex items-center gap-2 mt-6"><input type="checkbox" id="family-child-separation"> רק אירועים בהפרדה מלאה</label>
+                    </div>
+                    <div>
+                        <span class="field-label">ימים זמינים</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="0" checked> ראשון</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="1" checked> שני</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="2" checked> שלישי</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="3" checked> רביעי</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="4" checked> חמישי</label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">זמין/ה החל מ־</span><input id="family-child-from" type="time" class="input-clean"></label>
+                        <label><span class="field-label">זמין/ה עד</span><input id="family-child-until" type="time" class="input-clean"></label>
+                    </div>
+                    <label id="family-guardian-consent-wrap" class="flex items-start gap-3 bg-brand-50 border border-brand-100 rounded-xl p-4">
+                        <input type="checkbox" id="family-guardian-consent" class="mt-1">
+                        <span class="text-sm">אני ההורה/האפוטרופוס של הילד/ה ומאשר/ת לנהל עבורו/ה את ההשתתפות באירועים ולקבל עבורו/ה הודעות SMS.</span>
+                    </label>
+                    <button id="family-child-submit" type="submit" class="w-full btn-brand py-3">שמור ילד/ה</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- אזור ילד/ה בחשבון המשפחתי -->
+        <div id="view-family-child-area" class="screen max-w-6xl mx-auto px-6 py-10">
+            <div class="flex flex-wrap justify-between gap-3 items-center mb-6">
+                <div><h2 id="family-child-area-title" class="text-3xl font-bold text-brand-dark">ילד/ה</h2><p class="text-sm text-slate-500">ניהול ההתנדבויות מתוך חשבון ההורה.</p></div>
+                <div class="flex gap-2"><button id="family-child-edit-button" class="btn-soft px-4 py-2">עריכת פרטים</button><button onclick="loadDashboard()" class="btn-dark px-4 py-2">חזרה לאזור האישי</button></div>
+            </div>
+            <div id="family-child-area-content" class="space-y-6"></div>
+        </div>
+
                 <!-- אזור אישי -->
         <div id="view-dashboard" class="screen max-w-6xl mx-auto px-6 py-10">
             <div class="flex flex-wrap gap-3 justify-between items-center mb-8">
@@ -452,6 +512,8 @@
         let privateEventCache = new Map();
         let matchingEventsCache = [];
         let matchingRegsCache = [];
+        let familyChildrenCache = [];
+        let activeFamilyChildId = null;
         let adminUsersCache = [];
         let adminTab = 'overview';
         let adminUserSearch = '';
@@ -743,45 +805,28 @@
         }
 
         function syncVolunteerGuardianMode() {
-            const managed=!!$('vol-guardian-mode')?.checked;
-            const block=$('vol-guardian-block');
-            if(block) block.classList.toggle('hidden',!managed);
-            if($('vol-guardian-name')) $('vol-guardian-name').required=managed;
-            if($('vol-guardian-consent')) $('vol-guardian-consent').required=managed;
-            if($('vol-name-label')) $('vol-name-label').textContent=managed?'שם הנער/ה':'שם מלא';
-            if($('vol-phone-label')) $('vol-phone-label').textContent=managed?'טלפון ההורה/אפוטרופוס — שם המשתמש':'מספר טלפון — שם המשתמש';
-            if($('vol-event-type-heading')) $('vol-event-type-heading').textContent=managed?'באילו אירועי בר/בת מצווה הנער/ה מעוניין/ת לשמח?':'באילו סוגי אירועים תרצה/י לשמח?';
-
             const now=new Date().getFullYear();
             const birth=$('vol-birth-year');
-            if(birth){
-                [...birth.options].forEach(o=>{
-                    if(!o.value)return;
-                    const age=now-Number(o.value);
-                    const allowed=managed?(age>=12&&age<18):(age>=18);
-                    o.disabled=!allowed;
-                    o.hidden=!allowed;
-                });
-                if(birth.value){
-                    const age=now-Number(birth.value);
-                    if((managed&&!(age>=12&&age<18))||(!managed&&age<18)) birth.value='';
-                }
-            }
+            if(!birth)return;
+            [...birth.options].forEach(o=>{
+                if(!o.value)return;
+                const age=now-Number(o.value);
+                const allowed=age>=18;
+                o.disabled=!allowed;
+                o.hidden=!allowed;
+            });
+            if(birth.value&&now-Number(birth.value)<18) birth.value='';
+        }
 
-            const all=document.querySelector('input[name="vol-event-type-pref"][value="all"]');
-            const wedding=document.querySelector('input[name="vol-event-type-pref"][value="wedding"]');
-            const engagement=document.querySelector('input[name="vol-event-type-pref"][value="engagement"]');
-            const bar=document.querySelector('input[name="vol-event-type-pref"][value="bar_mitzvah"]');
-            const bat=document.querySelector('input[name="vol-event-type-pref"][value="bat_mitzvah"]');
-            [all,wedding,engagement].forEach(x=>{if(x){x.disabled=managed;if(managed)x.checked=false;}});
-            if(managed){
-                if(bar)bar.checked=true;
-                if(bat)bat.checked=true;
-            }else{
-                if(bar)bar.checked=false;
-                if(bat)bat.checked=false;
-                if(wedding)wedding.checked=true;
-            }
+        function populateFamilyBirthYears(){
+            const now=new Date().getFullYear();
+            document.querySelectorAll('.family-birth-year-select').forEach(sel=>{
+                if(sel.options.length>2)return;
+                for(let age=12;age<=17;age++){
+                    const y=now-age;
+                    const o=document.createElement('option');o.value=String(y);o.textContent=String(y);sel.appendChild(o);
+                }
+            });
         }
 
         function checkedValues(name) {
@@ -1054,6 +1099,9 @@
                 ['invalid_event_type','סוג האירוע אינו תקין.'],
                 ['invalid_event_type_preferences','יש לבחור לפחות סוג אירוע אחד שבו תרצה/י לשמח.'],
                 ['minimum_volunteer_age','הגיל המינימלי למשמח/ת הוא 12.'],
+                ['adult_account_required','חשבון רגיל למשמח/ת מיועד מגיל 18. ילד/ה בגיל 12–17 ניתן להוסיף מתוך האזור האישי של ההורה.'],
+                ['family_child_must_be_added_from_account','ילד/ה בגיל 12–17 יש להוסיף מתוך חשבון ההורה באזור האישי.'],
+                ['family_child_age_required','אפשר להוסיף לחשבון ילד/ה בגיל 12–17 בלבד.'],
                 ['guardian_required','למשמח/ת מתחת לגיל 18 נדרש רישום ואישור של הורה או אפוטרופוס.'],
                 ['minor_event_types_only','משמחים מתחת לגיל 18 יכולים להירשם רק לאירועי בר מצווה ובת מצווה.'],
                 ['minor_age_range_only_mitzvah','טווח גיל 12–18 זמין רק בבר מצווה ובבת מצווה.'],
@@ -1191,9 +1239,6 @@
                 const availableUntil=$('vol-available-until').value||null;
                 const transport=$('vol-transport').value;
                 const separation=$('vol-separation').checked;
-                const guardianManaged=!!$('vol-guardian-mode')?.checked;
-                const guardianName=$('vol-guardian-name')?.value.trim()||'';
-                const guardianConsent=!!$('vol-guardian-consent')?.checked;
                 const legalConsent=!!$('vol-legal-consent')?.checked;
                 const smsConsent=!!$('vol-sms-consent')?.checked;
 
@@ -1203,15 +1248,13 @@
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
                 const calculatedAge=new Date().getFullYear()-birthYear;
-                if(calculatedAge<12) throw new Error('minimum_volunteer_age');
-                if(calculatedAge<18&&(!guardianManaged||guardianName.length<2||!guardianConsent)) throw new Error('guardian_required');
-                if(calculatedAge<18&&eventTypePrefs.some(x=>!['bar_mitzvah','bat_mitzvah'].includes(x))) throw new Error('minor_event_types_only');
+                if(calculatedAge<18) throw new Error('adult_account_required');
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 if(!city||!street||!number) throw new Error('address_incomplete');
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v6',{
+                const {data:token,error}=await _supabase.rpc('username_register_v7',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
                     p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
@@ -1219,7 +1262,7 @@
                     p_availability_days:days,p_availability_from:availableFrom,p_availability_until:availableUntil,
                     p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng,
                     p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true,
-                    p_guardian_managed:guardianManaged,p_guardian_name:guardianName||null,p_guardian_consent:guardianConsent
+                    p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false
                 });
                 if(error) throw error;
                 applySessionToken(token); await loadProfile(); updateHeaderActions();
@@ -1533,7 +1576,7 @@
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v6',{
+                const {data:token,error}=await _supabase.rpc('username_register_v7',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_volunteer_event_type_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
@@ -1677,6 +1720,7 @@
                 renderProfileOverview()+renderDashboardSwitcher()+
                 '<div id="dash-stats" class="dashboard-skeleton">טוען סיכום...</div>'+
                 '<div id="dash-completeness"></div>'+
+                '<div id="dash-family" class="dashboard-skeleton">טוען משפחה...</div>'+
                 (mode==='volunteer'?'<div id="dash-criteria"></div>':'')+
                 '<div id="dash-notifications" class="dashboard-skeleton">טוען התראות...</div>'+
                 '<div id="dash-main-a" class="dashboard-skeleton">טוען נתונים...</div>'+
@@ -1687,7 +1731,8 @@
 
             const tasks=[
                 renderQuickStats().then(x=>setDashHtml('dash-stats',x)),
-                renderNotifications().then(x=>setDashHtml('dash-notifications',x))
+                renderNotifications().then(x=>setDashHtml('dash-notifications',x)),
+                renderFamilySection().then(x=>setDashHtml('dash-family',x))
             ];
             setDashHtml('dash-completeness',renderProfileCompleteness());
 
@@ -1711,6 +1756,169 @@
             });
             tasks.push(adminPromise);
             await Promise.allSettled(tasks);
+        }
+
+        async function renderFamilySection(){
+            const {data,error}=await _supabase.rpc('get_family_children');
+            if(error)return '<div class="glass-card p-5"><h3 class="font-bold">המשפחה שלי</h3><p class="text-sm text-slate-500 mt-1">לא הצלחנו לטעון כרגע.</p></div>';
+            familyChildrenCache=data||[];
+            return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="text-xl font-bold">המשפחה שלי</h3><p class="text-sm text-slate-500">אפשר להוסיף ילד/ה בגיל 12–17 לחשבון רק אם תרצה/י. הילד/ה לא מקבל/ת חשבון נפרד.</p></div><button onclick="openFamilyChildForm()" class="btn-soft px-4 py-2"><i class="fa-solid fa-user-plus ml-1"></i> הוסף ילד/ה</button></div>'+
+                (familyChildrenCache.length?'<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5">'+familyChildrenCache.map(c=>'<div class="border rounded-xl p-4 bg-slate-50"><div class="flex justify-between gap-3"><div><div class="font-bold text-lg">'+esc(c.full_name)+'</div><div class="text-sm text-slate-500">'+esc(adminGenderLabel(c.gender))+' · גיל '+(new Date().getFullYear()-Number(c.birth_year||0))+' · '+esc(eventTypeListLabel(c.volunteer_event_type_preferences))+'</div><div class="text-xs text-slate-400 mt-1">הרשמות פעילות: '+Number(c.active_registrations||0)+'</div></div><button onclick="openFamilyChildArea(\''+esc(c.id)+'\')" class="btn-brand px-3 py-2 text-sm">ניהול</button></div></div>').join('')+'</div>':'<div class="mt-4 text-sm text-slate-500">לא נוספו ילדים לחשבון. אין צורך להגדיר דבר אם האפשרות הזאת לא רלוונטית לך.</div>')+
+            '</div>';
+        }
+
+        function syncFamilyChildEventDefault(){
+            const current=checkedValues('family-event-type');
+            if(current.length)return;
+            const gender=$('family-child-gender')?.value;
+            setCheckedValues('family-event-type',gender==='female'?['bat_mitzvah']:gender==='male'?['bar_mitzvah']:[]);
+        }
+
+        function fillFamilyChildForm(child=null){
+            populateFamilyBirthYears();
+            $('family-child-id').value=child?.id||'';
+            $('family-form-title').textContent=child?'עריכת '+child.full_name:'הוספת ילד/ה לחשבון';
+            $('family-child-name').value=child?.full_name||'';
+            $('family-child-gender').value=child?.gender||'';
+            $('family-child-birth-year').value=child?.birth_year||'';
+            $('family-child-sector').value=child?.sector||(currentProfile?.sector&&currentProfile.sector!=='all'?currentProfile.sector:'');
+            $('family-child-city').value=child?.city||currentProfile?.city||'';
+            $('family-child-street').value=child?.street||currentProfile?.street||'';
+            $('family-child-house-number').value=child?.house_number||currentProfile?.house_number||'';
+            $('family-child-radius').value=radiusChoiceValue(child?.radius||currentProfile?.radius||10);
+            $('family-child-transport').value=child?.transport_mode||currentProfile?.transport_mode||'car';
+            $('family-child-separation').checked=child?!!child.strict_separation:!!currentProfile?.strict_separation;
+            setCheckedValues('family-available-day',child?.availability_days||currentProfile?.availability_days||[0,1,2,3,4]);
+            $('family-child-from').value=child?.availability_from?.slice(0,5)||currentProfile?.availability_from?.slice(0,5)||'';
+            $('family-child-until').value=child?.availability_until?.slice(0,5)||currentProfile?.availability_until?.slice(0,5)||'';
+            setCheckedValues('family-event-type',child?.volunteer_event_type_preferences||[]);
+            if(!child)syncFamilyChildEventDefault();
+            const consent=$('family-guardian-consent-wrap');
+            if(consent)consent.classList.toggle('hidden',!!child);
+            $('family-guardian-consent').checked=!!child;
+        }
+
+        async function openFamilyChildForm(childId=null){
+            if(!currentProfile)await loadProfile();
+            const child=childId?familyChildrenCache.find(x=>x.id===childId):null;
+            if(childId&&!child){
+                const {data}=await _supabase.rpc('get_family_children');
+                familyChildrenCache=data||[];
+            }
+            fillFamilyChildForm(childId?familyChildrenCache.find(x=>x.id===childId):null);
+            navigate('family-child-form');
+        }
+
+        async function saveFamilyChild(){
+            setBusy('family-child-submit',true,'שומר...');
+            try{
+                const id=$('family-child-id').value||null;
+                const name=$('family-child-name').value.trim();
+                const gender=$('family-child-gender').value;
+                const birthYear=Number($('family-child-birth-year').value);
+                const sector=$('family-child-sector').value;
+                const eventTypes=checkedValues('family-event-type');
+                const city=$('family-child-city').value.trim();
+                const street=$('family-child-street').value.trim();
+                const number=$('family-child-house-number').value.trim();
+                const radius=Number($('family-child-radius').value);
+                const days=checkedNumbers('family-available-day');
+                const from=$('family-child-from').value||null;
+                const until=$('family-child-until').value||null;
+                const transport=$('family-child-transport').value;
+                const separation=!!$('family-child-separation').checked;
+                const age=new Date().getFullYear()-birthYear;
+                if(age<12||age>=18)throw new Error('family_child_age_required');
+                if(!eventTypes.length)throw new Error('minor_event_types_only');
+                if(!days.length)throw new Error('יש לבחור לפחות יום זמינות אחד.');
+                if(!city||!street||!number)throw new Error('address_incomplete');
+                if(!id&&!$('family-guardian-consent').checked)throw new Error('guardian_required');
+                const coords=await verifyTypedAddress(city,street,number);
+                let result;
+                if(id){
+                    result=await _supabase.rpc('update_family_child',{
+                        p_child_id:id,p_full_name:name,p_gender:gender,p_birth_year:birthYear,p_sector:sector,
+                        p_event_type_preferences:eventTypes,p_city:city,p_street:street,p_house_number:number,
+                        p_radius:radius,p_availability_days:days,p_availability_from:from,p_availability_until:until,
+                        p_transport_mode:transport,p_strict_separation:separation,p_lat:coords.lat,p_lng:coords.lng
+                    });
+                }else{
+                    result=await _supabase.rpc('add_family_child',{
+                        p_full_name:name,p_gender:gender,p_birth_year:birthYear,p_sector:sector,
+                        p_event_type_preferences:eventTypes,p_city:city,p_street:street,p_house_number:number,
+                        p_radius:radius,p_availability_days:days,p_availability_from:from,p_availability_until:until,
+                        p_transport_mode:transport,p_strict_separation:separation,p_lat:coords.lat,p_lng:coords.lng,
+                        p_guardian_consent:true
+                    });
+                }
+                if(result.error)throw result.error;
+                showToast(id?'פרטי הילד/ה עודכנו.':'הילד/ה נוסף/ה לחשבון.','success');
+                await loadDashboard();
+            }catch(e){showToast(String(e?.message||'').includes('לפחות יום')?String(e.message):readableError(e),'error');}
+            finally{setBusy('family-child-submit',false);}
+        }
+
+        async function openFamilyChildArea(childId){
+            activeFamilyChildId=childId;
+            let child=familyChildrenCache.find(x=>x.id===childId);
+            if(!child){
+                const {data,error}=await _supabase.rpc('get_family_children');
+                if(error)return showToast(readableError(error),'error');
+                familyChildrenCache=data||[];
+                child=familyChildrenCache.find(x=>x.id===childId);
+            }
+            if(!child)return showToast('לא מצאתי את הילד/ה בחשבון.','error');
+            $('family-child-area-title').textContent=child.full_name;
+            $('family-child-edit-button').onclick=()=>openFamilyChildForm(child.id);
+            navigate('family-child-area');
+            const box=$('family-child-area-content');
+            box.innerHTML='<div class="dashboard-skeleton">טוען אירועים...</div>';
+            const [{data:regs,error:rErr},{data:matches,error:mErr}]=await Promise.all([
+                _supabase.rpc('get_family_child_registrations',{p_child_id:child.id}),
+                _supabase.rpc('get_family_child_matching_events',{p_child_id:child.id})
+            ]);
+            if(rErr||mErr){box.innerHTML='<div class="glass-card p-6 text-red-700">לא הצלחנו לטעון את נתוני הילד/ה כרגע.</div>';return;}
+            const today=new Date().toISOString().slice(0,10);
+            const activeRegs=(regs||[]).filter(r=>r.event_date>=today&&r.event_status!=='cancelled');
+            box.innerHTML=
+                '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3"><div><h3 class="text-xl font-bold">ההתנדבויות של '+esc(child.full_name)+'</h3><p class="text-sm text-slate-500">כל הפעולות מנוהלות מהחשבון שלך וה-SMS נשלח לטלפון שלך.</p></div><button onclick="deleteFamilyChild(\''+esc(child.id)+'\')" class="bg-red-50 text-red-700 border border-red-200 rounded-lg px-3 py-2 text-sm font-bold">הסר מהחשבון</button></div><div class="space-y-3 mt-4">'+
+                (activeRegs.length?activeRegs.map(r=>'<div class="border rounded-xl p-4 bg-slate-50"><div class="flex flex-wrap justify-between gap-3"><div><b>'+esc(r.event_name)+'</b><div class="text-sm text-slate-500">'+esc(eventTypeLabel(r.event_type))+' · '+esc(formatDate(r.event_date))+' · '+esc(timeRange(r.start_time,r.close_time))+'</div><div class="text-sm text-brand-700 mt-1">📍 '+esc((r.hall_name?r.hall_name+' · ':'')+(r.hall_address||fullAddress(r.city,r.street,r.house_number)))+'</div></div><div class="flex flex-wrap gap-2"><button onclick="openEventChat(\''+esc(r.event_id)+'\')" class="btn-soft px-3 py-2 text-xs">צ׳אט</button>'+(!r.attendance_confirmed_at?'<button onclick="confirmFamilyChildAttendance(\''+esc(child.id)+'\',\''+esc(r.event_id)+'\')" class="btn-brand px-3 py-2 text-xs">אישור הגעה</button>':'')+'<button onclick="cancelFamilyChildRegistration(\''+esc(child.id)+'\',\''+esc(r.event_id)+'\')" class="bg-red-50 text-red-700 rounded-lg px-3 py-2 text-xs font-bold">ביטול</button></div></div></div>').join(''):'<p class="text-slate-500">אין כרגע הרשמות פעילות.</p>')+
+                '</div></div>'+
+                '<div class="glass-card p-6"><h3 class="text-xl font-bold">אירועים שמתאימים ל'+esc(child.full_name)+'</h3><p class="text-sm text-slate-500 mt-1">מוצגים רק אירועי בר/בת מצווה שעומדים בכל הקריטריונים שהוגדרו.</p><div class="space-y-3 mt-4">'+
+                ((matches||[]).length?(matches||[]).map(e=>'<div class="border rounded-xl p-4 bg-slate-50"><div class="flex flex-wrap justify-between gap-3"><div><b>'+esc(e.event_name)+'</b><div class="text-sm text-slate-500">'+esc(eventTypeLabel(e.event_type))+' · '+esc(formatDate(e.event_date))+' · '+esc(timeRange(e.start_time,e.close_time))+' · '+esc(e.distance_km)+' ק״מ</div><div class="text-sm text-brand-700 mt-1">📍 '+esc((e.hall_name?e.hall_name+' · ':'')+e.hall_address)+'</div></div><button onclick="registerFamilyChildForEvent(\''+esc(child.id)+'\',\''+esc(e.id)+'\')" class="btn-brand px-4 py-2 text-sm">רשום/י לאירוע</button></div></div>').join(''):'<p class="text-slate-500">אין כרגע אירועים מתאימים.</p>')+
+                '</div></div>';
+        }
+
+        async function registerFamilyChildForEvent(childId,eventId){
+            const child=familyChildrenCache.find(x=>x.id===childId);
+            const ok=await askConfirm('רישום לאירוע','לרשום את '+(child?.full_name||'הילד/ה')+' לאירוע?','כן, רשום/י');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('register_family_child_for_event',{p_child_id:childId,p_event_id:eventId});
+            if(error)return showToast(readableError(error),'error');
+            showToast('ההרשמה בוצעה.','success');await openFamilyChildArea(childId);
+        }
+
+        async function cancelFamilyChildRegistration(childId,eventId){
+            const ok=await askConfirm('ביטול הרשמה','לבטל את הרשמת הילד/ה לאירוע?','בטל הרשמה');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('cancel_family_child_registration',{p_child_id:childId,p_event_id:eventId});
+            if(error)return showToast(readableError(error),'error');
+            showToast('ההרשמה בוטלה.','success');await openFamilyChildArea(childId);
+        }
+
+        async function confirmFamilyChildAttendance(childId,eventId){
+            const {error}=await _supabase.rpc('confirm_family_child_attendance',{p_child_id:childId,p_event_id:eventId});
+            if(error)return showToast(readableError(error),'error');
+            showToast('ההגעה אושרה.','success');await openFamilyChildArea(childId);
+        }
+
+        async function deleteFamilyChild(childId){
+            const child=familyChildrenCache.find(x=>x.id===childId);
+            const ok=await askConfirm('הסרת ילד/ה מהחשבון','להסיר את '+(child?.full_name||'הילד/ה')+' מהחשבון? הרשמות פעילות יבוטלו.','הסר');
+            if(!ok)return;
+            const {error}=await _supabase.rpc('delete_family_child',{p_child_id:childId});
+            if(error)return showToast(readableError(error),'error');
+            showToast('הילד/ה הוסר/ה מהחשבון.','success');activeFamilyChildId=null;await loadDashboard();
         }
 
         async function renderNotifications() {
@@ -2447,6 +2655,7 @@
         }
 
         populateBirthYears();
+        populateFamilyBirthYears();
         syncVolunteerGuardianMode();
         syncEventAgeRangeOptions('');
         syncEventAgeRangeOptions('edit-');

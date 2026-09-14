@@ -258,16 +258,11 @@
                         <span class="field-label">האולם</span>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                             <input id="ev-hall-name" class="input-clean" placeholder="שם האולם">
-                            <div id="ev-city-select-wrap"><select id="ev-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div>
-                            <div id="ev-street-select-wrap"><select id="ev-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div>
-                            <input id="ev-house-number" class="input-clean" placeholder="מספר">
+                            <input id="ev-city" class="input-clean" placeholder="עיר" required>
+                            <input id="ev-street" class="input-clean" placeholder="רחוב" required>
+                            <input id="ev-house-number" class="input-clean" placeholder="מספר" required>
                         </div>
-                        <div id="ev-address-manual-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                            <input id="ev-city-manual" class="input-clean" placeholder="עיר — הקלדה ידנית">
-                            <input id="ev-street-manual" class="input-clean" placeholder="רחוב — הקלדה ידנית">
-                        </div>
-                        <button type="button" onclick="toggleManualAddress('ev')" class="mt-2 text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="ev-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button>
-                        <div class="field-help">הכתובת המדויקת תוצג למשמח כבר לפני ההרשמה, יחד עם מפה ומרחק.</div>
+                        <div class="field-help">יש להקליד עיר, רחוב ומספר. הכתובת תיבדק במפה לפני פרסום האירוע.</div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">מגזר האירוע</span><select id="ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי / לא משנה</option></select></label>
@@ -316,9 +311,8 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">תאריך</span><input type="date" id="edit-ev-date" class="input-clean" required><div class="field-help">לא ניתן לבחור שישי או שבת.</div></label><label><span class="field-label">התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
                     <label><span class="field-label">סגירת הרשמה</span><input type="datetime-local" id="edit-ev-registration-deadline" class="input-clean" required></label>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><input id="edit-ev-hall-name" class="input-clean" placeholder="שם האולם"><div id="edit-ev-city-select-wrap"><select id="edit-ev-city" class="input-clean bg-white" required><option value="">טוען רשימת ערים...</option></select></div><div id="edit-ev-street-select-wrap"><select id="edit-ev-street" class="input-clean bg-white" required disabled><option value="">בחר קודם עיר</option></select></div><input id="edit-ev-house-number" class="input-clean" placeholder="מספר"></div>
-                    <div id="edit-ev-address-manual-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mt-3"><input id="edit-ev-city-manual" class="input-clean" placeholder="עיר — הקלדה ידנית"><input id="edit-ev-street-manual" class="input-clean" placeholder="רחוב — הקלדה ידנית"></div>
-                    <button type="button" onclick="toggleManualAddress('edit-ev')" class="text-sm font-bold text-brand-700 hover:underline"><i class="fa-solid fa-pen ml-1"></i><span id="edit-ev-address-manual-label">לא מצאתי עיר או רחוב — הקלדה ידנית</span></button>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><input id="edit-ev-hall-name" class="input-clean" placeholder="שם האולם"><input id="edit-ev-city" class="input-clean" placeholder="עיר" required><input id="edit-ev-street" class="input-clean" placeholder="רחוב" required><input id="edit-ev-house-number" class="input-clean" placeholder="מספר" required></div>
+                    <div class="field-help">הכתובת תיבדק במפה לפני שמירת השינויים.</div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מגזר האירוע</span><select id="edit-ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label><label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold">הפרדה מלאה</span></label></div>
                     <div><span class="field-label">מגזרי משמחים מתאימים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="all"> כולם</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="secular"> חילוני</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת משמחים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת משמחות</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
@@ -922,12 +916,7 @@
             const city=$(cityId);if(city)city.addEventListener('change',()=>loadStreets(city.value,streetId));
         }
 
-        async function initializeAddressLists(){
-            await Promise.all([
-                ensureCities('ev-city'),
-                ensureCities('edit-ev-city')
-            ]);
-        }
+        async function initializeAddressLists(){}
 
         function registrationLabel(v) {
             return ({approved:'מאושר', waitlist:'רשימת המתנה', cancelled:'בוטל'})[v] || v;
@@ -979,7 +968,7 @@
                 ['invalid_event_times','שעת הסיום חייבת להיות מאוחרת משעת ההתחלה.'],
                 ['duplicate_event','נראה שכבר פרסמת את האירוע הזה.'],
                 ['invalid_event_name','יש להזין שם לאירוע.'],
-                ['invalid_location','יש להשלים עיר, רחוב וכתובת אולם.'],
+                ['invalid_location','יש להשלים עיר, רחוב ומספר בכתובת האולם.'],
                 ['event_location_missing','לא הצלחנו לזהות את כתובת האולם במפה.'],
                 ['gender_change_with_active_registrations','לא ניתן לשנות בין משמח למשמחת כל עוד יש הרשמות פעילות לאירועים עתידיים.'],
                 ['report_reason_required','יש לכתוב סיבה קצרה לדיווח.'],
@@ -1156,7 +1145,6 @@
                 fields.forEach(id=>{const el=$(id);if(el)el.required=true;});
             }
             $('ev-date').min=new Date().toISOString().slice(0,10);
-            await ensureCities('ev-city',$('ev-city').value);
             await restoreEventDraft();
             navigate('add-event');
         }
@@ -1188,16 +1176,7 @@
                 const map={event_name:'ev-name',event_type:'ev-type',event_date:'ev-date',registration_deadline:'ev-registration-deadline',
                     hall_name:'ev-hall-name',city:'ev-city',street:'ev-street',house_number:'ev-house-number',start_time:'ev-start',
                     close_time:'ev-close',sector_pref:'ev-sector',quota_men:'ev-men',quota_women:'ev-women',age_min:'ev-age-min',age_max:'ev-age-max',note:'ev-note'};
-                Object.entries(map).forEach(([k,id])=>{if(!['city','street'].includes(k)&&d[k]!==undefined&&$(id))$(id).value=d[k];});
-                if(d.address_manual){
-                    await toggleManualAddress('ev',true);
-                    $('ev-city-manual').value=d.city||'';
-                    $('ev-street-manual').value=d.street||'';
-                }else{
-                    await toggleManualAddress('ev',false);
-                    if(d.city)$('ev-city').value=d.city;
-                    if(d.city)await loadStreets(d.city,'ev-street',d.street||'');
-                }
+                Object.entries(map).forEach(([k,id])=>{if(d[k]!==undefined&&$(id))$(id).value=d[k];});
                 if($('ev-separation')) $('ev-separation').checked=!!d.is_separated;
                 setCheckedValues('ev-accepted-sector',d.accepted_sectors||['all']);
                 if($('draft-indicator')) $('draft-indicator').textContent='שוחזרה טיוטה';
@@ -1260,16 +1239,14 @@
             if(isFridayOrSaturday(ev.event_date)) throw new Error('weekend_event_forbidden');
             if(!ev.start_time||!ev.close_time||ev.close_time<=ev.start_time) throw new Error('invalid_event_times');
             if(!ev.registration_deadline) throw new Error('invalid_registration_deadline');
-            if(!ev.city||!ev.street) throw new Error('invalid_location');
+            if(!ev.city||!ev.street||!ev.house_number) throw new Error('invalid_location');
             if(ev.quota_men<0||ev.quota_women<0) throw new Error('invalid_quota');
             if(ev.age_min!=null&&ev.age_max!=null&&ev.age_min>ev.age_max) throw new Error('invalid_age_range');
         }
 
         async function createEventRpc(ev) {
             validateEventPayload(ev);
-            const address=fullAddress(ev.city,ev.street,ev.house_number);
-            const coords=await geocodeAddress(address);
-            if(coords.lat==null) throw new Error('event_location_missing');
+            const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
 
             const {data:eventId,error}=await _supabase.rpc('create_event_v2',{
                 p_event_name:ev.event_name,p_event_type:ev.event_type,p_event_date:ev.event_date,
@@ -1289,8 +1266,7 @@
             try{
                 const ev=collectEventForm(''); validateEventPayload(ev);
                 box.textContent='בודק התאמות...';
-                const coords=await geocodeAddress(fullAddress(ev.city,ev.street,ev.house_number));
-                if(coords.lat==null) throw new Error('event_location_missing');
+                const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
                 const {data,error}=await _supabase.rpc('preview_event_match_count_v3',{
                     p_event_type:ev.event_type,p_event_date:ev.event_date,p_start_time:ev.start_time,p_close_time:ev.close_time,
                     p_sector_pref:ev.sector_pref,p_accepted_volunteer_sectors:ev.accepted_sectors,
@@ -1719,9 +1695,8 @@
             $('edit-ev-date').value=e.event_date||''; $('edit-ev-date').min=new Date().toISOString().slice(0,10);
             $('edit-ev-registration-deadline').value=toDateTimeLocal(e.registration_deadline);
             $('edit-ev-hall-name').value=e.hall_name||'';
-            await toggleManualAddress('edit-ev',false);
-            await ensureCities('edit-ev-city',e.city||'');
-            await loadStreets(e.city||'','edit-ev-street',e.street||'');
+            $('edit-ev-city').value=e.city||'';
+            $('edit-ev-street').value=e.street||'';
             $('edit-ev-house-number').value=e.house_number||'';
             $('edit-ev-start').value=e.start_time?.slice(0,5)||''; $('edit-ev-close').value=e.close_time?.slice(0,5)||'';
             $('edit-ev-sector').value=e.sector_pref||'all'; $('edit-ev-separation').checked=!!e.is_separated;
@@ -1735,8 +1710,7 @@
             setBusy('edit-event-submit',true,'שומר...');
             try{
                 const ev=collectEventForm('edit-');validateEventPayload(ev);
-                const coords=await geocodeAddress(fullAddress(ev.city,ev.street,ev.house_number));
-                if(coords.lat==null) throw new Error('event_location_missing');
+                const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
                 const {error}=await _supabase.rpc('update_event_v2',{
                     p_event_id:$('edit-event-id').value,p_event_name:ev.event_name,p_event_type:ev.event_type,
                     p_event_date:ev.event_date,p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
@@ -1867,8 +1841,6 @@
         bindAllChoice('edit-ev-accepted-sector');
         bindAllChoice('profile-sector-pref');
         bindAllChoice('profile-event-type-pref');
-        wireAddressSelect('ev-city','ev-street');
-        wireAddressSelect('edit-ev-city','edit-ev-street');
         $('ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
         $('edit-ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
         initializeAddressLists();

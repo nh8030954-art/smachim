@@ -149,23 +149,78 @@
         .chat-bubble.mine { background:#ccfbf1; margin-right:auto; }
         .chat-bubble.other { background:#fff; border:1px solid #e2e8f0; margin-left:auto; }
         .dashboard-skeleton { min-height:70px; display:flex; align-items:center; color:#64748b; }
+
+        /* Accessibility layer — WCAG 2.2 AA oriented, without changing the visual language */
+        .sr-only {
+            position:absolute !important; width:1px !important; height:1px !important;
+            padding:0 !important; margin:-1px !important; overflow:hidden !important;
+            clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important;
+        }
+        .skip-link {
+            position:fixed; top:.5rem; right:.5rem; z-index:9999;
+            transform:translateY(-160%); background:#0f172a; color:#fff;
+            padding:.75rem 1rem; border-radius:.55rem; font-weight:700;
+            box-shadow:0 8px 24px rgba(15,23,42,.25);
+        }
+        .skip-link:focus { transform:translateY(0); }
+        :where(button,a,input,select,textarea,summary,[tabindex]):focus-visible {
+            outline:3px solid #0f766e !important;
+            outline-offset:3px !important;
+            box-shadow:none !important;
+        }
+        .input-clean:focus-visible {
+            border-color:#0f766e !important;
+            outline:3px solid #0f766e !important;
+            outline-offset:2px !important;
+        }
+        .btn-brand { background:#0f766e; }
+        .btn-brand:hover { background:#115e59; }
+        .text-brand-600 { color:#0f766e !important; }
+        .text-slate-400 { color:#64748b !important; }
+        [aria-invalid="true"] {
+            border-color:#b91c1c !important;
+            outline:2px solid #b91c1c !important;
+            outline-offset:1px;
+        }
+        [role="dialog"] { overscroll-behavior:contain; }
+        .route-map:focus-visible { outline:3px solid #0f766e !important; outline-offset:3px; }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior:auto !important; }
+            *,*::before,*::after {
+                animation-duration:.01ms !important;
+                animation-iteration-count:1 !important;
+                transition-duration:.01ms !important;
+                scroll-behavior:auto !important;
+            }
+        }
+        @media (forced-colors: active) {
+            .btn-brand,.btn-dark,.btn-soft,.choice-chip,.glass-card,.status-pill {
+                border:1px solid ButtonText;
+            }
+            :where(button,a,input,select,textarea,summary,[tabindex]):focus-visible {
+                outline:3px solid Highlight !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
-    <header class="site-header sticky top-0 z-50">
+    <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
+    <div id="a11y-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <div id="a11y-alert-region" class="sr-only" role="alert" aria-live="assertive" aria-atomic="true"></div>
+    <header class="site-header sticky top-0 z-50" role="banner">
         <div class="site-header-inner max-w-7xl mx-auto px-6">
-            <div id="header-actions" class="site-header-actions">
+            <nav id="header-actions" class="site-header-actions" aria-label="ניווט ראשי">
                 <button onclick="navigate('home')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600 transition">
                     <i class="fa-solid fa-house ml-1"></i> דף הבית
                 </button>
-            </div>
+            </nav>
             <button type="button" class="site-title-wrap" onclick="navigate('home')" aria-label="שמחים בשמחתם - דף הבית">
-                <img id="site-logo-img" src="./assets/site-title.jpg?v=mobilefix3" alt="שמחים בשמחתם" width="2048" height="938" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/site-title.jpg?v=mobilefix3';}">
+                <img id="site-logo-img" src="./assets/site-title.jpg?v=mobilefix3" alt="" aria-hidden="true" width="2048" height="938" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/site-title.jpg?v=mobilefix3';}">
             </button>
         </div>
     </header>
 
-    <main class="flex-grow w-full">
+    <main id="main-content" class="flex-grow w-full" tabindex="-1">
         <!-- דף הבית -->
         <div id="view-home" class="screen active">
             <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg?v=mobilefix3" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/hero-banner.jpg?v=mobilefix3';}"></div>
@@ -564,23 +619,23 @@
             </div>
             <div id="dashboard-content" class="space-y-8"></div>
         </div>
-        <div id="toast-container" class="fixed top-20 left-4 z-[90] flex flex-col gap-2"></div>
-        <div id="chat-modal" class="hidden fixed inset-0 z-[105] modal-shell p-4 items-center justify-center">
+        <div id="toast-container" class="fixed top-20 left-4 z-[90] flex flex-col gap-2" aria-label="הודעות מערכת"></div>
+        <div id="chat-modal" class="hidden fixed inset-0 z-[105] modal-shell p-4 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="chat-title" aria-describedby="chat-description">
             <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl h-[78vh] p-5 flex flex-col">
                 <div class="flex items-center justify-between gap-3 border-b pb-3">
-                    <div><h3 id="chat-title" class="text-xl font-bold text-brand-dark">צ׳אט האירוע</h3><p class="text-xs text-slate-500">בעל השמחה והמשמחים הרשומים בלבד</p></div>
-                    <button type="button" onclick="closeEventChat()" class="btn-soft px-3 py-2"><i class="fa-solid fa-xmark"></i></button>
+                    <div><h3 id="chat-title" class="text-xl font-bold text-brand-dark">צ׳אט האירוע</h3><p id="chat-description" class="text-xs text-slate-500">בעל השמחה והמשמחים הרשומים בלבד</p></div>
+                    <button type="button" onclick="closeEventChat()" class="btn-soft px-3 py-2" aria-label="סגור צ׳אט"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                 </div>
-                <div id="chat-messages" class="chat-messages flex-1 overflow-y-auto p-3 my-4 space-y-2"></div>
+                <div id="chat-messages" class="chat-messages flex-1 overflow-y-auto p-3 my-4 space-y-2" role="log" aria-label="הודעות בצ׳אט" aria-relevant="additions text" tabindex="0"></div>
                 <form onsubmit="event.preventDefault(); sendChatMessage();" class="flex gap-2">
-                    <textarea id="chat-input" maxlength="1000" class="input-clean min-h-12 max-h-28" placeholder="כתוב הודעה..."></textarea>
+                    <label for="chat-input" class="sr-only">כתוב הודעה לצ׳אט האירוע</label><textarea id="chat-input" maxlength="1000" class="input-clean min-h-12 max-h-28" placeholder="כתוב הודעה..." aria-describedby="chat-description"></textarea>
                     <button id="chat-send" type="submit" class="btn-brand px-5">שלח</button>
                 </form>
             </div>
         </div>
-        <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><input id="modal-input" class="input-clean mt-4 hidden" type="text"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
+        <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><label for="modal-input" id="modal-input-label" class="sr-only">הקלדת תשובה</label><input id="modal-input" class="input-clean mt-4 hidden" type="text" aria-labelledby="modal-input-label"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
     </main>
-    <footer class="border-t border-slate-200 bg-white py-5 px-6">
+    <footer class="border-t border-slate-200 bg-white py-5 px-6" role="contentinfo">
         <div class="max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
             <button type="button" data-site-text="footer_privacy_label" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
             <button type="button" data-site-text="footer_terms_label" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
@@ -751,39 +806,243 @@
             .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
             .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 
-        function navigate(view) {
-            clearGuestFormWhenLeaving(view);
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            const target = $('view-' + view);
-            if (target) target.classList.add('active');
-            window.scrollTo(0, 0);
+        let lastFocusedBeforeAppModal = null;
+        let lastFocusedBeforeChat = null;
+
+        function announceA11y(message, urgent=false) {
+            const region=$(urgent?'a11y-alert-region':'a11y-live-region');
+            if(!region)return;
+            region.textContent='';
+            window.setTimeout(()=>{region.textContent=String(message||'');},20);
         }
 
-        function setBusy(buttonId, busy, busyText='טוען...') {
-            const btn = $(buttonId);
-            if (!btn) return;
-            if (busy) {
-                btn.dataset.oldText = btn.innerHTML;
-                btn.disabled = true;
-                btn.textContent = busyText;
-            } else {
-                btn.disabled = false;
-                if (btn.dataset.oldText) btn.innerHTML = btn.dataset.oldText;
+        function focusableElements(container) {
+            if(!container)return[];
+            return [...container.querySelectorAll(
+                'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])'
+            )].filter(el=>!el.hidden&&el.offsetParent!==null&&!el.closest('[aria-hidden="true"]'));
+        }
+
+        function setDialogBackgroundInert(dialog,on) {
+            document.querySelectorAll('header, footer, main > *').forEach(el=>{
+                if(el===dialog)return;
+                if(on){
+                    if(!el.hasAttribute('data-a11y-was-inert')) el.setAttribute('data-a11y-was-inert',el.inert?'1':'0');
+                    el.inert=true;
+                }else if(el.hasAttribute('data-a11y-was-inert')){
+                    el.inert=el.getAttribute('data-a11y-was-inert')==='1';
+                    el.removeAttribute('data-a11y-was-inert');
+                }
+            });
+        }
+
+        function trapFocusInDialog(event,dialog,onEscape) {
+            if(!dialog||dialog.classList.contains('hidden'))return;
+            if(event.key==='Escape'){
+                event.preventDefault();
+                onEscape?.();
+                return;
+            }
+            if(event.key!=='Tab')return;
+            const items=focusableElements(dialog);
+            if(!items.length){event.preventDefault();dialog.focus?.();return;}
+            const first=items[0],last=items[items.length-1];
+            if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+            else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+        }
+
+        function fieldAccessibleName(el) {
+            if(el.getAttribute('aria-label')||el.getAttribute('aria-labelledby'))return true;
+            if(el.id&&document.querySelector('label[for="'+CSS.escape(el.id)+'"]'))return true;
+            if(el.closest('label'))return true;
+            return false;
+        }
+
+        function enhanceAccessibility(root=document) {
+            const scope=root?.querySelectorAll?root:document;
+
+            scope.querySelectorAll?.('i.fa-solid,i.fa-regular,i.fa-brands').forEach(icon=>{
+                icon.setAttribute('aria-hidden','true');
+                icon.setAttribute('focusable','false');
+            });
+
+            scope.querySelectorAll?.('input,select,textarea').forEach(el=>{
+                if(el.type==='hidden')return;
+                if(el.required)el.setAttribute('aria-required','true');
+                if(!el.hasAttribute('aria-invalid'))el.setAttribute('aria-invalid','false');
+                if(!fieldAccessibleName(el)){
+                    const label=el.getAttribute('placeholder')||el.getAttribute('name')||'שדה';
+                    el.setAttribute('aria-label',label);
+                }
+                const label=el.closest('label');
+                const help=label?.querySelector('.field-help');
+                if(help){
+                    if(!help.id)help.id='help-'+(el.id||Math.random().toString(36).slice(2));
+                    const prev=(el.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean);
+                    if(!prev.includes(help.id))el.setAttribute('aria-describedby',[...prev,help.id].join(' '));
+                }
+            });
+
+            scope.querySelectorAll?.('.choice-grid').forEach((group,index)=>{
+                if(group.hasAttribute('role'))return;
+                const parent=group.parentElement;
+                const heading=parent?.querySelector(':scope > .field-label');
+                if(heading){
+                    if(!heading.id)heading.id='choice-heading-'+index+'-'+Math.random().toString(36).slice(2,7);
+                    group.setAttribute('role','group');
+                    group.setAttribute('aria-labelledby',heading.id);
+                }
+            });
+
+            scope.querySelectorAll?.('button').forEach(btn=>{
+                if(btn.getAttribute('aria-label')||btn.textContent.trim())return;
+                const icon=btn.querySelector('i');
+                const cls=icon?.className||'';
+                const map=[
+                    ['fa-flag','דווח על אירוע'],['fa-xmark','סגור'],['fa-gear','הגדרות'],
+                    ['fa-trash','מחק'],['fa-pen','ערוך'],['fa-edit','ערוך'],['fa-chevron','פתח או סגור']
+                ];
+                const found=map.find(([key])=>cls.includes(key));
+                btn.setAttribute('aria-label',found?.[1]||'פעולה');
+            });
+
+            scope.querySelectorAll?.('a[target="_blank"]').forEach(a=>{
+                if(!a.getAttribute('aria-label')){
+                    const text=a.textContent.trim()||'קישור';
+                    a.setAttribute('aria-label',text+' — נפתח בחלון חדש');
+                }
+            });
+
+            scope.querySelectorAll?.('table').forEach(table=>{
+                if(table.getAttribute('aria-label')||table.getAttribute('aria-labelledby'))return;
+                const heading=table.closest('section,div')?.querySelector('h2,h3,h4');
+                if(heading){
+                    if(!heading.id)heading.id='table-heading-'+Math.random().toString(36).slice(2,7);
+                    table.setAttribute('aria-labelledby',heading.id);
+                }
+            });
+            scope.querySelectorAll?.('th').forEach(th=>{if(!th.hasAttribute('scope'))th.setAttribute('scope','col');});
+
+            scope.querySelectorAll?.('.route-map').forEach(map=>{
+                map.setAttribute('role','region');
+                if(!map.getAttribute('aria-label'))map.setAttribute('aria-label','מפת מסלול בין מקום המגורים לאולם האירוע');
+                map.setAttribute('tabindex','0');
+            });
+        }
+
+        function initAccessibility() {
+            document.querySelectorAll('.screen').forEach(el=>el.setAttribute('aria-hidden',el.classList.contains('active')?'false':'true'));
+            enhanceAccessibility(document);
+
+            document.addEventListener('invalid',event=>{
+                const el=event.target;
+                if(!(el instanceof HTMLElement))return;
+                el.setAttribute('aria-invalid','true');
+                const name=el.getAttribute('aria-label')||el.closest('label')?.innerText?.trim()||el.getAttribute('placeholder')||'שדה';
+                announceA11y('יש לתקן את השדה: '+name,true);
+            },true);
+            document.addEventListener('input',event=>{
+                const el=event.target;
+                if(el instanceof HTMLElement&&el.matches('input,select,textarea'))el.setAttribute('aria-invalid','false');
+            },true);
+            document.addEventListener('change',event=>{
+                const el=event.target;
+                if(el instanceof HTMLElement&&el.matches('input,select,textarea'))el.setAttribute('aria-invalid','false');
+            },true);
+
+            document.addEventListener('keydown',event=>{
+                const chat=$('chat-modal'),app=$('app-modal');
+                if(chat&&!chat.classList.contains('hidden'))return trapFocusInDialog(event,chat,closeEventChat);
+                if(app&&!app.classList.contains('hidden'))return trapFocusInDialog(event,app,()=>resolveAppModal(false));
+            });
+
+            const observer=new MutationObserver(records=>{
+                records.forEach(record=>record.addedNodes.forEach(node=>{
+                    if(node.nodeType===1)enhanceAccessibility(node);
+                }));
+            });
+            observer.observe(document.body,{childList:true,subtree:true});
+        }
+
+        function navigate(view) {
+            clearGuestFormWhenLeaving(view);
+            document.querySelectorAll('.screen').forEach(el=>{
+                el.classList.remove('active');
+                el.setAttribute('aria-hidden','true');
+            });
+            const target=$('view-'+view);
+            if(target){
+                target.classList.add('active');
+                target.setAttribute('aria-hidden','false');
+                enhanceAccessibility(target);
+                const heading=target.querySelector('h1,h2');
+                const focusTarget=heading||target;
+                if(!focusTarget.hasAttribute('tabindex'))focusTarget.setAttribute('tabindex','-1');
+                window.scrollTo({top:0,left:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'auto'});
+                window.setTimeout(()=>focusTarget.focus({preventScroll:true}),30);
+                document.title=(heading?.textContent?.trim()?heading.textContent.trim()+' | ':'')+'שמחים בשמחתם';
+                announceA11y('נפתח: '+(heading?.textContent?.trim()||'דף הבית'));
             }
         }
 
-        function showToast(message, type='info') {
-            const box=$('toast-container'); if(!box) return;
+        function setBusy(buttonId,busy,busyText='טוען...') {
+            const btn=$(buttonId);
+            if(!btn)return;
+            btn.setAttribute('aria-busy',busy?'true':'false');
+            if(busy){
+                btn.dataset.oldText=btn.innerHTML;
+                btn.disabled=true;
+                btn.textContent=busyText;
+                announceA11y(busyText);
+            }else{
+                btn.disabled=false;
+                if(btn.dataset.oldText)btn.innerHTML=btn.dataset.oldText;
+            }
+        }
+
+        function showToast(message,type='info') {
+            const box=$('toast-container');if(!box)return;
             const el=document.createElement('div');
             const accent=type==='error'?'border-red-200 text-red-700':type==='success'?'border-emerald-200 text-emerald-800':type==='warning'?'border-amber-200 text-amber-800':'border-slate-200 text-slate-700';
-            el.className='toast-card '+accent; el.textContent=message; box.appendChild(el);
+            el.className='toast-card '+accent;
+            el.textContent=message;
+            el.setAttribute('role',type==='error'?'alert':'status');
+            el.setAttribute('aria-live',type==='error'?'assertive':'polite');
+            box.appendChild(el);
+            announceA11y(message,type==='error');
             setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(-4px)';el.style.transition='.25s';},4200);
             setTimeout(()=>el.remove(),4550);
         }
         function openAppModal({title,message='',confirmText='אישור',cancelText='ביטול',input=false,placeholder=''}) {
-            return new Promise(resolve=>{ modalResolver=resolve; $('modal-title').textContent=title; $('modal-message').textContent=message; $('modal-confirm').textContent=confirmText; $('modal-cancel').textContent=cancelText; const inp=$('modal-input'); inp.classList.toggle('hidden',!input); inp.value=''; inp.placeholder=placeholder; const modal=$('app-modal'); modal.classList.remove('hidden'); modal.classList.add('flex'); if(input)setTimeout(()=>inp.focus(),50); });
+            return new Promise(resolve=>{
+                modalResolver=resolve;
+                lastFocusedBeforeAppModal=document.activeElement instanceof HTMLElement?document.activeElement:null;
+                $('modal-title').textContent=title;
+                $('modal-message').textContent=message;
+                $('modal-confirm').textContent=confirmText;
+                $('modal-cancel').textContent=cancelText;
+                const inp=$('modal-input');
+                inp.classList.toggle('hidden',!input);
+                inp.value='';
+                inp.placeholder=placeholder;
+                $('modal-input-label').textContent=placeholder||title||'הקלדת תשובה';
+                const modal=$('app-modal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setDialogBackgroundInert(modal,true);
+                window.setTimeout(()=>{(input?inp:$('modal-confirm')).focus();},50);
+            });
         }
-        function resolveAppModal(ok) { const modal=$('app-modal'); const inputVisible=!$('modal-input').classList.contains('hidden'); const value=inputVisible?$('modal-input').value.trim():true; modal.classList.add('hidden');modal.classList.remove('flex'); if(modalResolver){const r=modalResolver;modalResolver=null;r(ok?value:null);} }
+        function resolveAppModal(ok) {
+            const modal=$('app-modal');
+            const inputVisible=!$('modal-input').classList.contains('hidden');
+            const value=inputVisible?$('modal-input').value.trim():true;
+            modal.classList.add('hidden');modal.classList.remove('flex');
+            setDialogBackgroundInert(modal,false);
+            const restore=lastFocusedBeforeAppModal;lastFocusedBeforeAppModal=null;
+            if(modalResolver){const r=modalResolver;modalResolver=null;r(ok?value:null);}
+            window.setTimeout(()=>restore?.focus?.(),30);
+        }
         const askConfirm=(title,message,confirmText='אישור')=>openAppModal({title,message,confirmText});
         const askText=(title,message,placeholder='')=>openAppModal({title,message,confirmText:'שלח',input:true,placeholder});
         function roleLabel(role){return ({volunteer:'משמח/ת',host:'בעל/ת שמחה',both:'משמח/ת + בעל/ת שמחה'})[role]||'משתמש';}
@@ -797,7 +1056,7 @@
         function mapButtons(address){if(!address)return'';const q=encodeURIComponent(address);return '<div class="flex flex-wrap gap-2 mt-2"><a target="_blank" rel="noopener" href="https://waze.com/ul?q='+q+'&navigate=yes" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-brands fa-waze ml-1"></i> Waze</a><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+q+'" class="btn-soft px-3 py-1.5 text-xs"><i class="fa-solid fa-map-location-dot ml-1"></i> Google Maps</a></div>';}
         function icsEscape(v){return String(v||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
         function downloadCalendar(eventId){const e=calendarEventCache.get(eventId);if(!e)return showToast('לא מצאתי את פרטי האירוע ליומן.','error');const d=String(e.event_date||'').replaceAll('-','');const start=String(e.start_time||'00:00').slice(0,5).replace(':','')+'00';const end=String(e.close_time||e.start_time||'00:00').slice(0,5).replace(':','')+'00';const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Smachim//HE','BEGIN:VEVENT','UID:'+eventId+'@smachim','DTSTART;TZID=Asia/Jerusalem:'+d+'T'+start,'DTEND;TZID=Asia/Jerusalem:'+d+'T'+end,'SUMMARY:'+icsEscape('שמחים בשמחתם - '+(e.event_name||e.couple_names||'אירוע')),'LOCATION:'+icsEscape(e.exact_address||e.public_location||''),'DESCRIPTION:'+icsEscape('אירוע דרך שמחים בשמחתם'),'END:VEVENT','END:VCALENDAR'].join('\r\n');const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='event.ics';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-        function updateHeaderActions(){const box=$('header-actions');if(!box)return;if(sessionToken&&currentProfile&&currentIsAdmin&&adminMode){box.innerHTML='<div class="flex gap-4 items-center"><button onclick="navigate(\'home\')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600"><i class="fa-solid fa-house ml-1"></i> דף הבית</button><button onclick="loadAdminArea()" class="text-sm font-bold text-brand-700 hover:text-brand-900"><i class="fa-solid fa-shield-halved ml-1"></i> ניהול</button></div>';return;}box.innerHTML=sessionToken&&currentProfile?'<div class="flex gap-4 items-center"><button onclick="navigate(\'home\')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600"><i class="fa-solid fa-house ml-1"></i> דף הבית</button><button onclick="loadDashboard()" class="text-sm font-bold text-brand-700 hover:text-brand-900"><i class="fa-solid fa-user ml-1"></i> אזור אישי</button></div>':'<button onclick="navigate(\'home\')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600 transition"><i class="fa-solid fa-house ml-1"></i> דף הבית</button>';}
+        function updateHeaderActions(){const box=$('header-actions');if(!box)return;if(sessionToken&&currentProfile&&currentIsAdmin&&adminMode){box.innerHTML='<div class="flex gap-4 items-center"><button onclick="navigate(\'home\')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600"><i class="fa-solid fa-house ml-1"></i> דף הבית</button><button onclick="loadAdminArea()" class="text-sm font-bold text-brand-700 hover:text-brand-900"><i class="fa-solid fa-shield-halved ml-1"></i> ניהול</button></div>';enhanceAccessibility(box);return;}box.innerHTML=sessionToken&&currentProfile?'<div class="flex gap-4 items-center"><button onclick="navigate(\'home\')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600"><i class="fa-solid fa-house ml-1"></i> דף הבית</button><button onclick="loadDashboard()" class="text-sm font-bold text-brand-700 hover:text-brand-900"><i class="fa-solid fa-user ml-1"></i> אזור אישי</button></div>':'<button onclick="navigate(\'home\')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600 transition"><i class="fa-solid fa-house ml-1"></i> דף הבית</button>';enhanceAccessibility(box);}
 
         async function callPublicEdge(name,payload){
             const res=await fetch(SUPABASE_URL+'/functions/v1/'+name,{
@@ -2495,9 +2754,9 @@
                 const exact=(ev.hall_name?ev.hall_name+' · ':'')+(ev.hall_address||fullAddress(ev.city,ev.street,ev.house_number));
                 const hasExact=ev.exact_lat!=null&&ev.exact_lng!=null;
                 const locationSection=hasExact
-                    ? '<div class="mt-4 border-t pt-4"><div id="route-map-'+esc(ev.id)+'" data-event-map="'+esc(ev.id)+'" class="route-map"></div><div id="route-stats-'+esc(ev.id)+'" class="text-sm text-slate-600 mt-3"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מחשב מסלול...</div>'+externalNavButtons(ev)+'</div>'
+                    ? '<div class="mt-4 border-t pt-4"><div id="route-map-'+esc(ev.id)+'" data-event-map="'+esc(ev.id)+'" class="route-map" role="region" tabindex="0" aria-label="מפת מסלול לאירוע '+esc(ev.event_name)+'"></div><div id="route-stats-'+esc(ev.id)+'" class="text-sm text-slate-600 mt-3" role="status" aria-live="polite"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מחשב מסלול...</div>'+externalNavButtons(ev)+'</div>'
                     : '<div class="mt-4 border-t pt-4 text-sm text-slate-500"><i class="fa-solid fa-location-dot ml-1"></i>הכתובת המדויקת והניווט יוצגו לאחר הרשמה לאירוע.</div>';
-                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(ev.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(relativeDateLabel(ev.event_date))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(ev.event_type))+'</span></div><p class="text-sm text-slate-500 mt-1">בעל השמחה: <b>'+esc(ev.host_name)+'</b></p><p class="text-sm text-slate-600 mt-1">📅 '+dayName(ev.event_date)+' · '+formatDate(ev.event_date)+' · ⏰ '+esc(timeRange(ev.start_time,ev.close_time))+'</p><p class="text-sm font-bold text-brand-700 mt-1">📍 '+esc(exact)+'</p><p class="text-xs text-slate-600 mt-2"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>הרשמה עד:</b> '+esc(formatDateTime(ev.registration_deadline))+'</p><p class="text-xs text-brand-700 font-semibold mt-1"><i class="fa-solid fa-circle-check ml-1"></i>התאמה מלאה: מגזר אירוע '+esc(sectorLabel(ev.sector_pref))+' · מגזרי משמחים '+esc(sectorListLabel(ev.accepted_volunteer_sectors))+' · '+(ev.is_separated?'הפרדה מלאה':'ללא הפרדה')+' · גיל '+esc(ageRange)+'</p><p class="text-xs text-slate-500 mt-1">נותרו '+available+' מקומות במכסה שלך · משמחים '+ev.men_registered+'/'+ev.quota_men+' · משמחות '+ev.women_registered+'/'+ev.quota_women+'</p>'+(ev.volunteer_note?'<div class="mt-2 bg-white border rounded-lg p-2 text-sm"><b>הערת בעל השמחה:</b> '+esc(ev.volunteer_note)+'</div>':'')+'</div><div class="flex flex-wrap gap-2 shrink-0"><button onclick="rsvpEvent(\''+esc(ev.id)+'\')" class="btn-brand px-4 py-2 text-sm">הירשם לשמח</button><button onclick="reportEvent(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm"><i class="fa-regular fa-flag"></i></button></div></div>'+locationSection+'</div>';
+                return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(ev.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(relativeDateLabel(ev.event_date))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(ev.event_type))+'</span></div><p class="text-sm text-slate-500 mt-1">בעל השמחה: <b>'+esc(ev.host_name)+'</b></p><p class="text-sm text-slate-600 mt-1">📅 '+dayName(ev.event_date)+' · '+formatDate(ev.event_date)+' · ⏰ '+esc(timeRange(ev.start_time,ev.close_time))+'</p><p class="text-sm font-bold text-brand-700 mt-1">📍 '+esc(exact)+'</p><p class="text-xs text-slate-600 mt-2"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>הרשמה עד:</b> '+esc(formatDateTime(ev.registration_deadline))+'</p><p class="text-xs text-brand-700 font-semibold mt-1"><i class="fa-solid fa-circle-check ml-1"></i>התאמה מלאה: מגזר אירוע '+esc(sectorLabel(ev.sector_pref))+' · מגזרי משמחים '+esc(sectorListLabel(ev.accepted_volunteer_sectors))+' · '+(ev.is_separated?'הפרדה מלאה':'ללא הפרדה')+' · גיל '+esc(ageRange)+'</p><p class="text-xs text-slate-500 mt-1">נותרו '+available+' מקומות במכסה שלך · משמחים '+ev.men_registered+'/'+ev.quota_men+' · משמחות '+ev.women_registered+'/'+ev.quota_women+'</p>'+(ev.volunteer_note?'<div class="mt-2 bg-white border rounded-lg p-2 text-sm"><b>הערת בעל השמחה:</b> '+esc(ev.volunteer_note)+'</div>':'')+'</div><div class="flex flex-wrap gap-2 shrink-0"><button onclick="rsvpEvent(\''+esc(ev.id)+'\')" class="btn-brand px-4 py-2 text-sm">הירשם לשמח</button><button onclick="reportEvent(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm" aria-label="דווח על האירוע '+esc(ev.event_name)+'"><i class="fa-regular fa-flag" aria-hidden="true"></i></button></div></div>'+locationSection+'</div>';
             }).join('');
         }
 
@@ -2621,7 +2880,8 @@
 
         async function openProfileSettings(){
             if(!currentProfile) return;
-            populateBirthYears();
+            initAccessibility();
+        populateBirthYears();
             $('profile-phone-display').textContent=displayPhone(currentProfile.phone);
             $('profile-role-display').textContent='סוג חשבון: '+roleLabel(currentProfile.role);
             const guardianNote=$('profile-guardian-note');
@@ -2688,32 +2948,42 @@
 
         async function openEventChat(eventId,eventName=''){
             activeChatEventId=eventId;activeChatEventName=eventName||resolveEventName(eventId);
+            lastFocusedBeforeChat=document.activeElement instanceof HTMLElement?document.activeElement:null;
             $('chat-title').textContent='צ׳אט · '+activeChatEventName;
-            const modal=$('chat-modal');modal.classList.remove('hidden');modal.classList.add('flex');
+            const modal=$('chat-modal');
+            modal.classList.remove('hidden');modal.classList.add('flex');
+            setDialogBackgroundInert(modal,true);
             await refreshEventChat(true);
-            if(chatPollTimer) clearInterval(chatPollTimer);
+            if(chatPollTimer)clearInterval(chatPollTimer);
             chatPollTimer=setInterval(()=>refreshEventChat(false),5000);
             setTimeout(()=>$('chat-input')?.focus(),80);
+            announceA11y('נפתח צ׳אט האירוע '+activeChatEventName);
         }
 
         function closeEventChat(){
             if(chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null;}
             activeChatEventId=null;
-            const modal=$('chat-modal');modal.classList.add('hidden');modal.classList.remove('flex');
+            const modal=$('chat-modal');
+            modal.classList.add('hidden');modal.classList.remove('flex');
+            setDialogBackgroundInert(modal,false);
+            const restore=lastFocusedBeforeChat;lastFocusedBeforeChat=null;
+            setTimeout(()=>restore?.focus?.(),30);
         }
 
         async function refreshEventChat(forceBottom=false){
-            if(!activeChatEventId) return;
-            const box=$('chat-messages'); if(!box) return;
+            if(!activeChatEventId)return;
+            const box=$('chat-messages');if(!box)return;
+            box.setAttribute('aria-busy','true');
             const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
             const {data,error}=await _supabase.rpc('get_event_chat',{p_event_id:activeChatEventId,p_limit:150});
-            if(error){box.innerHTML='<div class="text-sm text-red-600">'+esc(readableError(error))+'</div>';return;}
+            if(error){box.innerHTML='<div class="text-sm text-red-600" role="alert">'+esc(readableError(error))+'</div>';box.setAttribute('aria-busy','false');return;}
             const rows=[...(data||[])].reverse();
             box.innerHTML=rows.length?rows.map(m=>{
                 const mine=m.sender_id===currentProfile.id;
                 return '<div class="chat-bubble '+(mine?'mine':'other')+'"><div class="text-xs font-bold '+(m.sender_role==='host'?'text-brand-700':'text-slate-600')+'">'+esc(m.sender_name)+(m.sender_role==='host'?' · בעל השמחה':'')+'</div><div class="text-sm whitespace-pre-wrap">'+esc(m.body)+'</div><div class="text-[11px] text-slate-400 mt-1">'+new Date(m.created_at).toLocaleString('he-IL',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})+'</div></div>';
             }).join(''):'<div class="text-center text-sm text-slate-500 py-10">עדיין אין הודעות. אפשר להיות הראשונים לכתוב.</div>';
-            if(forceBottom||nearBottom) box.scrollTop=box.scrollHeight;
+            box.setAttribute('aria-busy','false');
+            if(forceBottom||nearBottom)box.scrollTop=box.scrollHeight;
         }
 
         async function sendChatMessage(){

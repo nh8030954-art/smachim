@@ -26,9 +26,9 @@ jobs:
           PARENT="$(git rev-parse HEAD^)"
           SHORT="$(git rev-parse --short "$PARENT")"
           STAMP="$(date -u +'%Y-%m-%d-%H%M%S')"
-          FILE="versions/\${STAMP}-\${SHORT}.html"
+          FILE="versions/${STAMP}-${SHORT}.html"
           mkdir -p versions
-          git show "\${PARENT}:index.html" > "$FILE"
+          git show "${PARENT}:index.html" > "$FILE"
 
           python3 - "$FILE" "$PARENT" "$STAMP" <<'PY'
           import json, pathlib, sys
@@ -49,7 +49,7 @@ jobs:
           }
           if not any(v.get("path") == file_path for v in versions):
               versions.insert(0, entry)
-          manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+          manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
           PY
 
       - name: Commit snapshot

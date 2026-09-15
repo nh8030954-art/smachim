@@ -1,0 +1,65 @@
+name: Snapshot previous site version
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Save previous index.html
+        shell: bash
+        run: |
+          set -euo pipefail
+          PARENT="$(git rev-parse HEAD^)"
+          SHORT="$(git rev-parse --short "$PARENT")"
+          STAMP="$(date -u +'%Y-%m-%d-%H%M%S')"
+          FILE="versions/\${STAMP}-\${SHORT}.html"
+          mkdir -p versions
+          git show "\${PARENT}:index.html" > "$FILE"
+
+          python3 - "$FILE" "$PARENT" "$STAMP" <<'PY'
+          import json, pathlib, sys
+          file_path, parent, stamp = sys.argv[1:4]
+          manifest_path = pathlib.Path("versions/manifest.json")
+          if manifest_path.exists():
+              data = json.loads(manifest_path.read_text(encoding="utf-8"))
+          else:
+              data = {"versions": []}
+          versions = data.setdefault("versions", [])
+          entry = {
+              "id": pathlib.Path(file_path).stem,
+              "label": f"גיבוי אוטומטי לפני שינוי {stamp}",
+              "date": stamp[:10],
+              "commit": parent,
+              "path": file_path,
+              "note": "נוצר אוטומטית לפני שינוי index.html."
+          }
+          if not any(v.get("path") == file_path for v in versions):
+              versions.insert(0, entry)
+          manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+          PY
+
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          if git diff --quiet -- versions; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add versions
+          git commit -m "Snapshot previous site version"
+          git push

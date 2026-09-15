@@ -1,0 +1,12 @@
+{
+  "versions": [
+    {
+      "id": "2026-09-15-before-wcag-points",
+      "label": "לפני שדרוג נגישות, גרסאות ונקודות",
+      "date": "2026-09-15",
+      "commit": "6261f86975226476d39c643227a519b4e1299019",
+      "path": "versions/2026-09-15-before-wcag-points.html",
+      "note": "גיבוי מלא של index.html לפני מקצה השינויים הנוכחי."
+    }
+  ]
+}

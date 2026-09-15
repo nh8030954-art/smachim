@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "id": "2026-09-15-194953-c13fadc",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-15-194953",
+      "date": "2026-09-15",
+      "commit": "c13fadc7e2ddaeb879d5d5e87ed2885cf6f12744",
+      "path": "versions/2026-09-15-194953-c13fadc.html",
+      "archive": "versions/2026-09-15-194953-c13fadc-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-15-before-wcag-points",
       "label": "לפני שדרוג נגישות, גרסאות ונקודות",
       "date": "2026-09-15",

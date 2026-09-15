@@ -282,9 +282,52 @@
         html.a11y-reduce-motion *::after {
             animation:none !important; transition:none !important; scroll-behavior:auto !important;
         }
+        .site-footer { flex-shrink:0; }
+        .site-footer-links button { min-height:44px; padding:.5rem .75rem; border-radius:.55rem; }
+        @media (pointer:coarse) {
+            .btn-brand,.btn-dark,.btn-soft,a.btn-brand,a.btn-dark,a.btn-soft {
+                min-height:44px;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+            }
+        }
         @media (max-width:640px) {
-            .a11y-fab { left:.7rem; bottom:.7rem; width:54px; height:54px; }
-            .a11y-panel { left:.7rem; bottom:4.9rem; width:calc(100vw - 1.4rem); max-height:70vh; }
+            #view-home > .max-w-5xl { padding-bottom:1.5rem !important; }
+            .site-footer {
+                padding:.7rem .7rem calc(.7rem + env(safe-area-inset-bottom, 0px)) !important;
+            }
+            .site-footer-links {
+                display:grid !important;
+                grid-template-columns:repeat(2,minmax(0,1fr));
+                gap:.35rem !important;
+                width:100%;
+                max-width:32rem;
+                margin:0 auto;
+                font-size:.8rem !important;
+                line-height:1.25;
+            }
+            .site-footer-links button {
+                width:100%;
+                min-height:40px;
+                padding:.45rem .35rem;
+                background:#f8fafc;
+                border:1px solid #e2e8f0;
+                text-align:center;
+            }
+            .site-footer-links button:last-child { grid-column:1 / -1; }
+            .a11y-fab {
+                left:.7rem;
+                bottom:calc(6.25rem + env(safe-area-inset-bottom, 0px));
+                width:54px;
+                height:54px;
+            }
+            .a11y-panel {
+                left:.7rem;
+                bottom:calc(10.5rem + env(safe-area-inset-bottom, 0px));
+                width:calc(100vw - 1.4rem);
+                max-height:68vh;
+            }
         }
     </style>
 </head>
@@ -588,7 +631,7 @@
                         <label><span class="field-label">שם</span><input id="support-name" class="input-clean" maxlength="100" required autocomplete="name"></label>
                         <label><span class="field-label">מספר טלפון לחזרה</span><input id="support-phone" type="tel" class="input-clean" maxlength="20" required dir="ltr" autocomplete="tel"></label>
                     </div>
-                    <label><span class="field-label">נושא הפנייה</span><select id="support-subject" class="input-clean bg-white" required><option value="חשבון והתחברות">חשבון והתחברות</option><option value="אירוע או הרשמה">אירוע או הרשמה</option><option value="SMS והודעות">SMS והודעות</option><option value="בטיחות או דיווח">בטיחות או דיווח</option><option value="תקלה טכנית">תקלה טכנית</option><option value="אחר">אחר</option></select></label>
+                    <label><span class="field-label">נושא הפנייה</span><select id="support-subject" class="input-clean bg-white" required><option value="חשבון והתחברות">חשבון והתחברות</option><option value="אירוע או הרשמה">אירוע או הרשמה</option><option value="SMS והודעות">SMS והודעות</option><option value="נגישות">נגישות</option><option value="בטיחות או דיווח">בטיחות או דיווח</option><option value="תקלה טכנית">תקלה טכנית</option><option value="אחר">אחר</option></select></label>
                     <label><span class="field-label">הודעה</span><textarea id="support-message" class="input-clean min-h-36" minlength="5" maxlength="3000" required placeholder="כתוב/י כאן את פרטי הפנייה"></textarea></label>
                     <div class="text-xs text-slate-500">אין לכלול סיסמאות, קודי אימות או מידע סודי בהודעה.</div>
                     <button id="support-submit" type="submit" class="w-full btn-dark py-3">שלח פנייה</button>
@@ -630,7 +673,7 @@
         <div id="view-accessibility" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8 space-y-5">
                 <h1 class="text-3xl font-bold text-brand-dark">הצהרת נגישות</h1>
-                <p class="text-slate-600">אנו פועלים כדי שהאתר יהיה נגיש, ברור ונוח לשימוש עבור אנשים עם מוגבלויות, ומכוונים לעקרונות WCAG 2.2 ברמת AA.</p>
+                <p class="text-slate-600">אנו פועלים כדי שהאתר יהיה נגיש, ברור ונוח לשימוש עבור אנשים עם מוגבלויות. יעד הנגישות שלנו הוא התאמה לת״י 5568 חלק 1 ברמת AA, ובנוסף אנו משתמשים ב־WCAG 2.2 ברמת AA כיעד טכני משלים ומחמיר יותר.</p>
                 <div>
                     <h2 class="font-bold text-lg">התאמות שבוצעו באתר</h2>
                     <ul class="list-disc pr-6 mt-2 space-y-1 text-sm text-slate-600">
@@ -646,9 +689,9 @@
                 <div>
                     <h2 class="font-bold text-lg">נתקלת בבעיית נגישות?</h2>
                     <p class="text-sm text-slate-600 mt-1">אם משהו באתר אינו נגיש עבורך, אפשר לפנות אלינו דרך טופס הפנייה. נשמח לקבל תיאור של הפעולה שניסית לבצע, סוג המכשיר או טכנולוגיית העזר שבה השתמשת והבעיה שנתקלת בה.</p>
-                    <button type="button" onclick="openSupport()" class="btn-brand px-4 py-2 mt-3">פנייה בנושא נגישות</button>
+                    <button type="button" onclick="openSupport('נגישות')" class="btn-brand px-4 py-2 mt-3">פנייה בנושא נגישות</button>
                 </div>
-                <p class="text-xs text-slate-500">בדיקה פנימית אחרונה: 15.09.2026. האתר מכוון לעמידה ב־WCAG 2.2 ברמת AA. ההצהרה מתארת התאמות שבוצעו ואינה מהווה אישור חיצוני או תעודת עמידה משפטית; בדיקות ידניות עם טכנולוגיות מסייעות ממשיכות להיות חלק מתהליך התחזוקה.</p>
+                <p class="text-xs text-slate-500">בדיקה פנימית אחרונה: 15.09.2026. הבדיקה כוללת מבנה סמנטי, מקלדת, פוקוס, הודעות לקוראי מסך, הגדלת טקסט, Reflow, ניגודיות, טפסים, מודאלים, קישורים חיצוניים ומובייל. ההצהרה אינה אישור חיצוני או תעודת עמידה משפטית; בדיקת עמידה מלאה מחייבת גם בדיקות ידניות עם קוראי מסך וטכנולוגיות מסייעות אמיתיות.</p>
                 <button type="button" onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
             </div>
         </div>
@@ -803,8 +846,8 @@
         <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
     </button>
 
-    <footer class="border-t border-slate-200 bg-white py-5 px-6" role="contentinfo">
-        <div class="max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
+    <footer class="site-footer border-t border-slate-200 bg-white py-5 px-6" role="contentinfo" aria-label="קישורים ומידע">
+        <div class="site-footer-links max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
             <button type="button" data-site-text="footer_privacy_label" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
             <button type="button" data-site-text="footer_terms_label" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
             <button type="button" onclick="toggleAccessibilityPanel(true)" class="hover:text-brand-700">הגדרות נגישות</button>
@@ -1303,7 +1346,7 @@
             setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(-4px)';el.style.transition='.25s';},4200);
             setTimeout(()=>el.remove(),4550);
         }
-        function openAppModal({title,message='',confirmText='אישור',cancelText='ביטול',input=false,placeholder=''}) {
+        function openAppModal({title,message='',confirmText='אישור',cancelText='ביטול',input=false,placeholder='',inputMode='text',autocomplete='off',maxLength=0,pattern=''}) {
             return new Promise(resolve=>{
                 modalResolver=resolve;
                 lastFocusedBeforeAppModal=document.activeElement instanceof HTMLElement?document.activeElement:null;
@@ -1315,6 +1358,11 @@
                 inp.classList.toggle('hidden',!input);
                 inp.value='';
                 inp.placeholder=placeholder;
+                inp.inputMode=inputMode||'text';
+                inp.autocomplete=autocomplete||'off';
+                if(maxLength>0) inp.maxLength=maxLength; else inp.removeAttribute('maxlength');
+                if(pattern) inp.setAttribute('pattern',pattern); else inp.removeAttribute('pattern');
+                inp.setAttribute('enterkeyhint','done');
                 $('modal-input-label').textContent=placeholder||title||'הקלדת תשובה';
                 const modal=$('app-modal');
                 modal.classList.remove('hidden');
@@ -1367,7 +1415,17 @@
             await callPublicEdge('phone-auth',{action:'request',phone,purpose});
             showToast('שלחנו קוד אימות ב-SMS.','success');
             for(let attempt=0;attempt<5;attempt++){
-                const code=await askText('אימות מספר טלפון','הקלד/י את הקוד בן 6 הספרות שנשלח ב-SMS.','123456');
+                const code=await openAppModal({
+                    title:'אימות מספר טלפון',
+                    message:'הקלד/י את הקוד בן 6 הספרות שנשלח ב-SMS.',
+                    confirmText:'אימות',
+                    input:true,
+                    placeholder:'123456',
+                    inputMode:'numeric',
+                    autocomplete:'one-time-code',
+                    maxLength:6,
+                    pattern:'[0-9]*'
+                });
                 if(code===null) throw new Error('verification_cancelled');
                 try{
                     const result=await callPublicEdge('phone-auth',{action:'verify',phone,purpose,code:String(code).trim()});
@@ -2181,7 +2239,7 @@
 
         async function initSession(){
             LEGACY_PERSONAL_STORAGE_KEYS.forEach(key=>{try{localStorage.removeItem(key);}catch(_){}});
-            if(!sessionToken){clearRuntimeUserData();updateHeaderActions();return;}
+            if(!sessionToken){clearAllPersonalBrowserStorage();clearSensitiveForms();clearRuntimeUserData();updateHeaderActions();return;}
             const profile=await loadProfile();
             if(!profile){
                 applySessionToken('');
@@ -2625,7 +2683,7 @@
         function renderDashboardSwitcher() {
             if (currentProfile?.role!=='both') return '';
             const mode=resolveDashboardArea();
-            return '<div class="flex justify-center"><div class="area-switch" aria-label="מעבר בין אזורי החשבון"><button class="'+(mode==='volunteer'?'active':'')+'" onclick="switchDashboardArea(\'volunteer\')"><i class="fa-solid fa-hand-holding-heart ml-1"></i> אזור משמח</button><button class="'+(mode==='host'?'active':'')+'" onclick="switchDashboardArea(\'host\')"><i class="fa-solid fa-calendar-days ml-1"></i> אזור בעל שמחה</button></div></div>';
+            return '<div class="flex justify-center"><div class="area-switch" role="group" aria-label="מעבר בין אזורי החשבון"><button aria-pressed="'+(mode==='volunteer'?'true':'false')+'" class="'+(mode==='volunteer'?'active':'')+'" onclick="switchDashboardArea(\'volunteer\')"><i class="fa-solid fa-hand-holding-heart ml-1"></i> אזור משמח</button><button aria-pressed="'+(mode==='host'?'true':'false')+'" class="'+(mode==='host'?'active':'')+'" onclick="switchDashboardArea(\'host\')"><i class="fa-solid fa-calendar-days ml-1"></i> אזור בעל שמחה</button></div></div>';
         }
 
         async function switchDashboardArea(mode) {
@@ -2950,11 +3008,15 @@
             showToast('הילד/ה הוסר/ה מהחשבון.','success');activeFamilyChildId=null;await loadDashboard();
         }
 
-        function openSupport(){
+        function openSupport(subject=''){
             navigate('support');
             if(currentProfile){
                 if($('support-name'))$('support-name').value=currentProfile.full_name||'';
                 if($('support-phone'))$('support-phone').value=displayPhone(currentProfile.phone||'');
+            }
+            if(subject&&$('support-subject')){
+                $('support-subject').value=subject;
+                announceA11y('נושא הפנייה נקבע ל'+subject);
             }
         }
 

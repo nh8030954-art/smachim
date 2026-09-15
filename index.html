@@ -183,6 +183,7 @@
             outline-offset:1px;
         }
         [role="dialog"] { overscroll-behavior:contain; }
+        .input-clean::placeholder { color:#64748b; opacity:1; }
         .route-map:focus-visible { outline:3px solid #0f766e !important; outline-offset:3px; }
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior:auto !important; }
@@ -223,6 +224,7 @@
     <main id="main-content" class="flex-grow w-full" tabindex="-1">
         <!-- דף הבית -->
         <div id="view-home" class="screen active">
+            <h1 class="sr-only">שמחים בשמחתם — חיבור בין בעלי שמחה למשמחים</h1>
             <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg?v=mobilefix3" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/hero-banner.jpg?v=mobilefix3';}"></div>
             <div class="max-w-5xl mx-auto px-6 pt-6 pb-14">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -248,7 +250,7 @@
         <!-- התחברות -->
         <div id="view-login" class="screen max-w-md mx-auto px-6 py-20">
             <div class="glass-card p-8 text-center">
-                <h2 data-site-text="login_title" class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h2>
+                <h1 data-site-text="login_title" class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h1>
                 <p data-site-text="login_subtitle" class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות מספר טלפון וסיסמה.</p>
                 <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6" autocomplete="off">
                     <input type="text" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="username">
@@ -262,7 +264,7 @@
         <!-- פאנל מנהל -->
         <div id="view-admin" class="screen max-w-7xl mx-auto px-4 md:px-6 py-10">
             <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
-                <div><h2 class="text-3xl font-bold text-brand-dark">ניהול שמחים בשמחתם</h2><p class="text-sm text-slate-500 mt-1">אזור מנהל נפרד מחשבונות המשתמשים.</p></div>
+                <div><h1 class="text-3xl font-bold text-brand-dark">ניהול שמחים בשמחתם</h1><p class="text-sm text-slate-500 mt-1">אזור מנהל נפרד מחשבונות המשתמשים.</p></div>
                 <button type="button" onclick="handleLogout()" class="btn-soft px-4 py-2">יציאה מניהול</button>
             </div>
             <div id="admin-area-root"></div>
@@ -271,7 +273,7 @@
         <!-- איפוס סיסמה -->
         <div id="view-reset-password" class="screen max-w-md mx-auto px-6 py-16">
             <div class="glass-card p-8">
-                <h2 class="text-2xl font-bold text-brand-dark">איפוס סיסמה</h2>
+                <h1 class="text-2xl font-bold text-brand-dark">איפוס סיסמה</h1>
                 <p class="text-sm text-slate-500 mt-2">נשלח קוד אימות ב-SMS למספר הרשום בחשבון.</p>
                 <form id="reset-password-form" onsubmit="event.preventDefault(); handlePasswordReset();" class="space-y-4 mt-6">
                     <input type="tel" id="reset-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" inputmode="tel" required>
@@ -286,7 +288,7 @@
         <!-- הרשמה למשמח -->
         <div id="view-register-volunteer" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
-                <h2 data-site-text="volunteer_registration_title" class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h2>
+                <h1 data-site-text="volunteer_registration_title" class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h1>
                 <p data-site-text="volunteer_registration_subtitle" class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
                 <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="off">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -364,7 +366,7 @@
         <div id="view-add-event" class="screen max-w-4xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <div class="flex flex-wrap justify-between gap-3 items-center border-b pb-4 mb-6">
-                    <div><h2 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h2><p class="text-sm text-slate-500 mt-1">טיוטת האירוע נשמרת אוטומטית בדפדפן.</p></div>
+                    <div><h1 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h1><p class="text-sm text-slate-500 mt-1">טיוטת האירוע נשמרת אוטומטית בדפדפן.</p></div>
                     <span id="draft-indicator" class="text-xs font-bold text-slate-400"></span>
                 </div>
                 <form id="event-form" onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6" autocomplete="off">
@@ -446,7 +448,7 @@
                 <!-- עריכת אירוע -->
         <div id="view-edit-event" class="screen max-w-4xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
-                <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">עריכת אירוע</h2>
+                <h1 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">עריכת אירוע</h1>
                 <form id="edit-event-form" onsubmit="event.preventDefault(); saveEditEvent();" class="space-y-6">
                     <input type="hidden" id="edit-event-id">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -470,7 +472,7 @@
                 <!-- הגדרות פרופיל -->
         <div id="view-profile-settings" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
-                <h2 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הגדרות משמח</h2>
+                <h1 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הגדרות משמח</h1>
                 <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div><div id="profile-guardian-note" class="hidden mt-3 text-sm text-slate-600 bg-white border rounded-lg p-3"></div></div>
                 <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-6">
                     <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
@@ -495,7 +497,7 @@
         <!-- פנייה למנהל -->
         <div id="view-support" class="screen max-w-2xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
-                <h2 class="text-3xl font-bold text-brand-dark">פנייה למנהל המערכת</h2>
+                <h1 class="text-3xl font-bold text-brand-dark">פנייה למנהל המערכת</h1>
                 <p class="text-sm text-slate-500 mt-2">אפשר לפנות בנושאי חשבון, אירועים, SMS או תקלה באתר. הפרטים ישמשו רק לצורך טיפול בפנייה.</p>
                 <form id="support-form" onsubmit="event.preventDefault(); submitSupportRequest();" class="space-y-4 mt-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -513,7 +515,7 @@
         <!-- מדיניות פרטיות -->
         <div id="view-privacy" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8 space-y-5">
-                <h2 class="text-3xl font-bold text-brand-dark">מדיניות פרטיות</h2>
+                <h1 class="text-3xl font-bold text-brand-dark">מדיניות פרטיות</h1>
                 <p class="text-slate-600">שמחים בשמחתם משתמשת במידע לצורך הפעלת השירות, התאמת משמחים לאירועים, אבטחת החשבון, טיפול בפניות ותקשורת תפעולית.</p>
                 <div><h3 class="font-bold">איזה מידע נשמר?</h3><p class="text-sm text-slate-600 mt-1">נשמרים פרטי חשבון ופרופיל כגון שם, מספר טלפון, שנת לידה, מגזר והעדפות, כתובת וקואורדינטות לצורך חישוב מרחק, הרשמות לאירועים, הודעות ותגובות תפעוליות. אם הורה/אפוטרופוס מוסיף ילד/ה בגיל 12–17 לחשבון, נשמרים גם פרטי הילד/ה הדרושים להתאמה ולניהול ההשתתפות. פנייה למנהל כוללת את השם, הטלפון ותוכן הפנייה.</p></div>
                 <div><h3 class="font-bold">מי רואה את המידע?</h3><p class="text-sm text-slate-600 mt-1">בעלי אירועים רואים רק מידע הנדרש לניהול הנרשמים. כתובת המגורים של משמח/ת אינה מוצגת לבעל האירוע. פרטי אירוע רגישים נחשפים בהתאם לצורך; כברירת מחדל הכתובת המדויקת והניווט ניתנים לאחר הרשמה ולא בשלב ההתאמה. ספקי התשתית מקבלים רק מידע הנדרש להפעלת השירות.</p></div>
@@ -528,7 +530,7 @@
         <!-- תנאי שימוש -->
         <div id="view-terms" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8 space-y-5">
-                <h2 class="text-3xl font-bold text-brand-dark">תנאי שימוש</h2>
+                <h1 class="text-3xl font-bold text-brand-dark">תנאי שימוש</h1>
                 <p class="text-slate-600">השירות מחבר בין בעלי שמחה לבין אנשים המעוניינים לשמח באירועים. השימוש באתר כפוף לכללים הבאים.</p>
                 <div><h3 class="font-bold">פרטים נכונים</h3><p class="text-sm text-slate-600 mt-1">יש למסור פרטים אמיתיים ועדכניים. בעל אירוע אחראי לנכונות פרטי האירוע והמשמח/ת אחראי/ת לעדכן אם אינו/ה יכול/ה להגיע.</p></div>
                 <div><h3 class="font-bold">גיל וחשבון משפחתי</h3><p class="text-sm text-slate-600 mt-1">חשבון משמח/ת עצמאי מיועד מגיל 18. ילד/ה בגיל 12–17 יכול/ה להשתתף רק כשהורה/אפוטרופוס מוסיף ומנהל אותו/ה מתוך חשבונו ומאשר את ההשתתפות. ההתאמה של בני 12–17 מוגבלת לאירועי בר מצווה ובת מצווה.</p></div>
@@ -540,11 +542,37 @@
             </div>
         </div>
 
+        <!-- הצהרת נגישות -->
+        <div id="view-accessibility" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8 space-y-5">
+                <h1 class="text-3xl font-bold text-brand-dark">הצהרת נגישות</h1>
+                <p class="text-slate-600">אנו פועלים כדי שהאתר יהיה נגיש, ברור ונוח לשימוש עבור אנשים עם מוגבלויות, ומכוונים לעקרונות WCAG 2.2 ברמת AA.</p>
+                <div>
+                    <h2 class="font-bold text-lg">התאמות שבוצעו באתר</h2>
+                    <ul class="list-disc pr-6 mt-2 space-y-1 text-sm text-slate-600">
+                        <li>ניווט מלא באמצעות מקלדת, קישור דילוג לתוכן וסימון פוקוס ברור.</li>
+                        <li>מבנה כותרות, אזורי ניווט ושמות נגישים לטפסים ולכפתורים.</li>
+                        <li>הודעות מערכת, שגיאות ומצבי טעינה שמועברים גם לקוראי מסך.</li>
+                        <li>מודאלים וצ׳אט עם ניהול פוקוס ותמיכה במקש Escape.</li>
+                        <li>ניגודיות טקסט משופרת, תמיכה בהגדלה, Reflow, מצב ניגודיות מאולצת והפחתת תנועה.</li>
+                        <li>חלופה טקסטואלית למידע שמופיע במפה, כולל כתובת, מרחק ונתוני מסלול.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h2 class="font-bold text-lg">נתקלת בבעיית נגישות?</h2>
+                    <p class="text-sm text-slate-600 mt-1">אם משהו באתר אינו נגיש עבורך, אפשר לפנות אלינו דרך טופס הפנייה. נשמח לקבל תיאור של הפעולה שניסית לבצע, סוג המכשיר או טכנולוגיית העזר שבה השתמשת והבעיה שנתקלת בה.</p>
+                    <button type="button" onclick="openSupport()" class="btn-brand px-4 py-2 mt-3">פנייה בנושא נגישות</button>
+                </div>
+                <p class="text-xs text-slate-500">הצהרה זו מתארת את התאמות הנגישות באתר ואינה מהווה אישור חיצוני או תעודת עמידה משפטית.</p>
+                <button type="button" onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
+            </div>
+        </div>
+
         <!-- הוספת / עריכת ילד לחשבון משפחתי -->
         <div id="view-family-child-form" class="screen max-w-3xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <div class="flex justify-between gap-3 items-start">
-                    <div><h2 id="family-form-title" class="text-2xl font-bold text-brand-dark">הוספת ילד/ה לחשבון</h2><p class="text-sm text-slate-500 mt-1">הילד/ה מנוהל/ת מתוך החשבון שלך. אין צורך במספר טלפון, סיסמה או חשבון נפרד.</p></div>
+                    <div><h1 id="family-form-title" class="text-2xl font-bold text-brand-dark">הוספת ילד/ה לחשבון</h1><p class="text-sm text-slate-500 mt-1">הילד/ה מנוהל/ת מתוך החשבון שלך. אין צורך במספר טלפון, סיסמה או חשבון נפרד.</p></div>
                     <button type="button" onclick="loadDashboard()" class="btn-soft px-3 py-2">חזרה</button>
                 </div>
                 <form id="family-child-form" onsubmit="event.preventDefault(); saveFamilyChild();" class="space-y-5 mt-6">
@@ -602,7 +630,7 @@
         <!-- אזור ילד/ה בחשבון המשפחתי -->
         <div id="view-family-child-area" class="screen max-w-6xl mx-auto px-6 py-10">
             <div class="flex flex-wrap justify-between gap-3 items-center mb-6">
-                <div><h2 id="family-child-area-title" class="text-3xl font-bold text-brand-dark">ילד/ה</h2><p class="text-sm text-slate-500">ניהול ההתנדבויות מתוך חשבון ההורה.</p></div>
+                <div><h1 id="family-child-area-title" class="text-3xl font-bold text-brand-dark">ילד/ה</h1><p class="text-sm text-slate-500">ניהול ההתנדבויות מתוך חשבון ההורה.</p></div>
                 <div class="flex gap-2"><button id="family-child-edit-button" class="btn-soft px-4 py-2">עריכת פרטים</button><button onclick="loadDashboard()" class="btn-dark px-4 py-2">חזרה לאזור האישי</button></div>
             </div>
             <div id="family-child-area-content" class="space-y-6"></div>
@@ -611,7 +639,7 @@
                 <!-- אזור אישי -->
         <div id="view-dashboard" class="screen max-w-6xl mx-auto px-6 py-10">
             <div class="flex flex-wrap gap-3 justify-between items-center mb-8">
-                <h2 id="user-greeting" class="text-3xl font-bold text-brand-dark">אזור אישי</h2>
+                <h1 id="user-greeting" class="text-3xl font-bold text-brand-dark">אזור אישי</h1>
                 <div class="flex gap-2">
                     <button onclick="openProfileSettings()" class="btn-soft px-4 py-2 text-sm"><i class="fa-solid fa-gear ml-1"></i> הגדרות</button>
                     <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold text-sm">התנתק</button>
@@ -626,7 +654,7 @@
                     <div><h3 id="chat-title" class="text-xl font-bold text-brand-dark">צ׳אט האירוע</h3><p id="chat-description" class="text-xs text-slate-500">בעל השמחה והמשמחים הרשומים בלבד</p></div>
                     <button type="button" onclick="closeEventChat()" class="btn-soft px-3 py-2" aria-label="סגור צ׳אט"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                 </div>
-                <div id="chat-messages" class="chat-messages flex-1 overflow-y-auto p-3 my-4 space-y-2" role="log" aria-label="הודעות בצ׳אט" aria-relevant="additions text" tabindex="0"></div>
+                <div id="chat-messages" class="chat-messages flex-1 overflow-y-auto p-3 my-4 space-y-2" role="log" aria-label="הודעות בצ׳אט" aria-live="polite" aria-atomic="false" aria-relevant="additions text" tabindex="0"></div>
                 <form onsubmit="event.preventDefault(); sendChatMessage();" class="flex gap-2">
                     <label for="chat-input" class="sr-only">כתוב הודעה לצ׳אט האירוע</label><textarea id="chat-input" maxlength="1000" class="input-clean min-h-12 max-h-28" placeholder="כתוב הודעה..." aria-describedby="chat-description"></textarea>
                     <button id="chat-send" type="submit" class="btn-brand px-5">שלח</button>
@@ -639,6 +667,7 @@
         <div class="max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
             <button type="button" data-site-text="footer_privacy_label" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
             <button type="button" data-site-text="footer_terms_label" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
+            <button type="button" onclick="navigate('accessibility')" class="hover:text-brand-700">הצהרת נגישות</button>
             <button type="button" onclick="openSupport()" class="hover:text-brand-700">פנייה למנהל</button>
         </div>
     </footer>
@@ -808,6 +837,7 @@
 
         let lastFocusedBeforeAppModal = null;
         let lastFocusedBeforeChat = null;
+        let accessibilityInitialized = false;
 
         function announceA11y(message, urgent=false) {
             const region=$(urgent?'a11y-alert-region':'a11y-live-region');
@@ -871,7 +901,11 @@
                 if(el.required)el.setAttribute('aria-required','true');
                 if(!el.hasAttribute('aria-invalid'))el.setAttribute('aria-invalid','false');
                 if(!fieldAccessibleName(el)){
-                    const label=el.getAttribute('placeholder')||el.getAttribute('name')||'שדה';
+                    const named={
+                        'admin-logo-file':'בחירת קובץ לוגו',
+                        'admin-hero-file':'בחירת קובץ תמונת דף הבית'
+                    };
+                    const label=named[el.id]||el.getAttribute('placeholder')||el.getAttribute('name')||'שדה';
                     el.setAttribute('aria-label',label);
                 }
                 const label=el.closest('label');
@@ -895,6 +929,10 @@
             });
 
             scope.querySelectorAll?.('button').forEach(btn=>{
+                if(!btn.hasAttribute('type')){
+                    const insideForm=!!btn.closest('form');
+                    btn.type=(insideForm&&!btn.hasAttribute('onclick'))?'submit':'button';
+                }
                 if(btn.getAttribute('aria-label')||btn.textContent.trim())return;
                 const icon=btn.querySelector('i');
                 const cls=icon?.className||'';
@@ -931,6 +969,11 @@
         }
 
         function initAccessibility() {
+            if(accessibilityInitialized){
+                enhanceAccessibility(document);
+                return;
+            }
+            accessibilityInitialized=true;
             document.querySelectorAll('.screen').forEach(el=>el.setAttribute('aria-hidden',el.classList.contains('active')?'false':'true'));
             enhanceAccessibility(document);
 
@@ -2754,7 +2797,7 @@
                 const exact=(ev.hall_name?ev.hall_name+' · ':'')+(ev.hall_address||fullAddress(ev.city,ev.street,ev.house_number));
                 const hasExact=ev.exact_lat!=null&&ev.exact_lng!=null;
                 const locationSection=hasExact
-                    ? '<div class="mt-4 border-t pt-4"><div id="route-map-'+esc(ev.id)+'" data-event-map="'+esc(ev.id)+'" class="route-map" role="region" tabindex="0" aria-label="מפת מסלול לאירוע '+esc(ev.event_name)+'"></div><div id="route-stats-'+esc(ev.id)+'" class="text-sm text-slate-600 mt-3" role="status" aria-live="polite"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מחשב מסלול...</div>'+externalNavButtons(ev)+'</div>'
+                    ? '<div class="mt-4 border-t pt-4"><div id="route-map-'+esc(ev.id)+'" data-event-map="'+esc(ev.id)+'" class="route-map" role="region" tabindex="0" aria-label="מפת מסלול לאירוע '+esc(ev.event_name)+'" aria-describedby="route-stats-'+esc(ev.id)+'"></div><div id="route-stats-'+esc(ev.id)+'" class="text-sm text-slate-600 mt-3" role="status" aria-live="polite"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מחשב מסלול...</div>'+externalNavButtons(ev)+'</div>'
                     : '<div class="mt-4 border-t pt-4 text-sm text-slate-500"><i class="fa-solid fa-location-dot ml-1"></i>הכתובת המדויקת והניווט יוצגו לאחר הרשמה לאירוע.</div>';
                 return '<div class="border p-4 rounded-xl bg-slate-50"><div class="flex flex-col md:flex-row gap-4 md:justify-between md:items-start"><div class="min-w-0"><div class="flex gap-2 items-center flex-wrap"><h4 class="font-bold text-lg">'+esc(ev.event_name)+'</h4><span class="status-pill bg-white border text-slate-600">'+esc(relativeDateLabel(ev.event_date))+'</span><span class="status-pill bg-brand-50 text-brand-700">'+esc(eventTypeLabel(ev.event_type))+'</span></div><p class="text-sm text-slate-500 mt-1">בעל השמחה: <b>'+esc(ev.host_name)+'</b></p><p class="text-sm text-slate-600 mt-1">📅 '+dayName(ev.event_date)+' · '+formatDate(ev.event_date)+' · ⏰ '+esc(timeRange(ev.start_time,ev.close_time))+'</p><p class="text-sm font-bold text-brand-700 mt-1">📍 '+esc(exact)+'</p><p class="text-xs text-slate-600 mt-2"><b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>הרשמה עד:</b> '+esc(formatDateTime(ev.registration_deadline))+'</p><p class="text-xs text-brand-700 font-semibold mt-1"><i class="fa-solid fa-circle-check ml-1"></i>התאמה מלאה: מגזר אירוע '+esc(sectorLabel(ev.sector_pref))+' · מגזרי משמחים '+esc(sectorListLabel(ev.accepted_volunteer_sectors))+' · '+(ev.is_separated?'הפרדה מלאה':'ללא הפרדה')+' · גיל '+esc(ageRange)+'</p><p class="text-xs text-slate-500 mt-1">נותרו '+available+' מקומות במכסה שלך · משמחים '+ev.men_registered+'/'+ev.quota_men+' · משמחות '+ev.women_registered+'/'+ev.quota_women+'</p>'+(ev.volunteer_note?'<div class="mt-2 bg-white border rounded-lg p-2 text-sm"><b>הערת בעל השמחה:</b> '+esc(ev.volunteer_note)+'</div>':'')+'</div><div class="flex flex-wrap gap-2 shrink-0"><button onclick="rsvpEvent(\''+esc(ev.id)+'\')" class="btn-brand px-4 py-2 text-sm">הירשם לשמח</button><button onclick="reportEvent(\''+esc(ev.id)+'\')" class="btn-soft px-3 py-2 text-sm" aria-label="דווח על האירוע '+esc(ev.event_name)+'"><i class="fa-regular fa-flag" aria-hidden="true"></i></button></div></div>'+locationSection+'</div>';
             }).join('');
@@ -2880,8 +2923,7 @@
 
         async function openProfileSettings(){
             if(!currentProfile) return;
-            initAccessibility();
-        populateBirthYears();
+            populateBirthYears();
             $('profile-phone-display').textContent=displayPhone(currentProfile.phone);
             $('profile-role-display').textContent='סוג חשבון: '+roleLabel(currentProfile.role);
             const guardianNote=$('profile-guardian-note');
@@ -3163,7 +3205,7 @@
                 '<div class="flex justify-between gap-3 items-start"><div><h3 class="text-xl font-bold">הוספת משתמש חדש</h3><p class="text-sm text-slate-500">החשבון נוצר ישירות על ידי מנהל. למשמח/ת נדרשים גם פרטי התאמה מלאים.</p></div><button onclick="adminToggleNewUserForm(false)" class="btn-soft px-3 py-2">סגור</button></div>'+
                 '<form id="admin-new-user-form" onsubmit="event.preventDefault(); adminCreateUser();" class="space-y-4 mt-5">'+
                     '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">שם מלא</span><input id="admin-new-name" class="input-clean" minlength="2" maxlength="100" required></label><label><span class="field-label">טלפון</span><input id="admin-new-phone" type="tel" class="input-clean" dir="ltr" placeholder="05XXXXXXXX" required></label></div>'+
-                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">סיסמה זמנית</span><input id="admin-new-password" type="password" class="input-clean" minlength="8" maxlength="72" required autocomplete="new-password"></label><label><span class="field-label">סוג חשבון</span><select id="admin-new-role" class="input-clean bg-white" onchange="adminSyncNewUserRole()" required><option value="host">בעל שמחה</option><option value="volunteer">משמח/ת</option><option value="both">בעל שמחה + משמח/ת</option></select></label></div>'+
+                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">סיסמה זמנית</span><input id="admin-user-new-password" type="password" class="input-clean" minlength="8" maxlength="72" required autocomplete="new-password"></label><label><span class="field-label">סוג חשבון</span><select id="admin-new-role" class="input-clean bg-white" onchange="adminSyncNewUserRole()" required><option value="host">בעל שמחה</option><option value="volunteer">משמח/ת</option><option value="both">בעל שמחה + משמח/ת</option></select></label></div>'+
                     '<div id="admin-new-volunteer-fields" class="hidden space-y-4">'+
                         '<div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">איך לפנות?</span><select id="admin-new-gender" class="input-clean bg-white"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="admin-new-birth-year" class="input-clean bg-white"><option value="">בחר/י</option>'+years.join('')+'</select></label><label><span class="field-label">מגזר</span><select id="admin-new-sector" class="input-clean bg-white"><option value="">בחר/י</option>'+sectors.map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join('')+'</select></label></div>'+
                         '<div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><input id="admin-new-city" class="input-clean" placeholder="עיר"><input id="admin-new-street" class="input-clean" placeholder="רחוב"><input id="admin-new-house" class="input-clean" placeholder="מספר"></div></div>'+
@@ -3208,7 +3250,7 @@
             try{
                 const name=$('admin-new-name').value.trim();
                 const phone=normalizePhone($('admin-new-phone').value);
-                const password=$('admin-new-password').value;
+                const password=$('admin-user-new-password').value;
                 const role=$('admin-new-role').value;
                 const volunteer=role==='volunteer'||role==='both';
                 const gender=volunteer?$('admin-new-gender').value:null;
@@ -3488,8 +3530,8 @@
                 '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3"><div><h3 class="text-2xl font-bold">לוגו ותמונת דף הבית</h3><p class="text-sm text-slate-500">הקבצים עולים לאחסון מאובטח דרך השרת. מפתח השירות של Supabase לא נשלח לדפדפן.</p></div><button onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3">שמור תוכן ועיצוב</button></div>'+
                     '<input type="hidden" id="admin-logo-url" value="'+esc(adminEditorState.logo_url||'')+'"><input type="hidden" id="admin-hero-url" value="'+esc(adminEditorState.hero_url||'')+'">'+
                     '<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">'+
-                        '<div class="border rounded-xl p-4"><b>לוגו</b><div class="bg-slate-50 rounded-lg mt-3 p-3"><img id="admin-logo-preview" src="'+esc(adminEditorState.logo_url||'')+'" class="max-h-36 mx-auto object-contain"></div><input id="admin-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-clean mt-3"><button onclick="adminUploadAsset(\'logo\')" class="btn-soft px-4 py-2 mt-2">העלה לוגו</button></div>'+
-                        '<div class="border rounded-xl p-4"><b>תמונת דף הבית</b><div class="bg-slate-50 rounded-lg mt-3 p-3"><img id="admin-hero-preview" src="'+esc(adminEditorState.hero_url||'')+'" class="max-h-36 mx-auto object-contain"></div><input id="admin-hero-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-clean mt-3"><button onclick="adminUploadAsset(\'hero\')" class="btn-soft px-4 py-2 mt-2">העלה תמונה</button></div>'+
+                        '<div class="border rounded-xl p-4"><b>לוגו</b><div class="bg-slate-50 rounded-lg mt-3 p-3"><img id="admin-logo-preview" src="'+esc(adminEditorState.logo_url||'')+'" alt="תצוגה מקדימה של לוגו האתר" class="max-h-36 mx-auto object-contain"></div><input id="admin-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-clean mt-3"><button onclick="adminUploadAsset(\'logo\')" class="btn-soft px-4 py-2 mt-2">העלה לוגו</button></div>'+
+                        '<div class="border rounded-xl p-4"><b>תמונת דף הבית</b><div class="bg-slate-50 rounded-lg mt-3 p-3"><img id="admin-hero-preview" src="'+esc(adminEditorState.hero_url||'')+'" alt="תצוגה מקדימה של תמונת דף הבית" class="max-h-36 mx-auto object-contain"></div><input id="admin-hero-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-clean mt-3"><button onclick="adminUploadAsset(\'hero\')" class="btn-soft px-4 py-2 mt-2">העלה תמונה</button></div>'+
                     '</div><p class="text-xs text-slate-400 mt-3">עד 5MB. JPG, PNG, WebP או GIF. העלאה לבדה אינה מפרסמת את השינוי עד ללחיצה על “שמור תוכן ועיצוב”.</p>'+
                 '</div>'+
 
@@ -3736,6 +3778,7 @@
             showToast('האירוע בוטל.','success');await adminOpenTab('events');
         }
 
+        initAccessibility();
         populateBirthYears();
         populateFamilyBirthYears();
         syncVolunteerGuardianMode();

@@ -544,8 +544,9 @@
                     </div>
                     <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"><input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700 text-sm">הצג לי רק אירועים בהפרדה מלאה</span></label>
                     <div class="space-y-2">
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-terms-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש המלאים</button> (גרסה 2026-09-16-v2).</span></label>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-privacy-consent" class="mt-1" required><span>קראתי את <button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות המלאה</button>, כולל הודעת איסוף המידע, ואני מסכים/ה לאיסוף ולעיבוד המידע כמפורט בה (גרסה 2026-09-16-v2).</span></label>
+                        <div data-site-text="volunteer_consent_heading" class="font-bold text-sm text-slate-700">אישורים והסכמות</div>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-terms-consent" class="mt-1" required><span><span data-site-text="volunteer_terms_consent_label">קראתי ואני מסכים/ה ל</span><button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש המלאים</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-privacy-consent" class="mt-1" required><span><span data-site-text="volunteer_privacy_consent_label">קראתי את מדיניות הפרטיות ואני מסכים/ה לאיסוף ולעיבוד המידע כמפורט בה. לקריאת </span><button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות המלאה</button>.</span></label>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל הודעות SMS תפעוליות לצורך אימות החשבון, הזמנות לאירועים, אישורים, שינויים ותזכורות.</span></label>
                     </div>
                     <button id="vol-submit" type="submit" class="w-full btn-brand py-4">השלם הרשמה</button>
@@ -580,8 +581,9 @@
                             <label><span data-field-label="host_password" class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="12" maxlength="72" autocomplete="new-password" required></label>
                             <label><span data-field-label="host_password_confirm" class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="12" maxlength="72" autocomplete="new-password" required></label>
                         </div>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-terms-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש המלאים</button> (גרסה 2026-09-16-v2).</span></label>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-privacy-consent" class="mt-1" required><span>קראתי את <button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות המלאה</button>, כולל הודעת איסוף המידע, ואני מסכים/ה לאיסוף ולעיבוד המידע כמפורט בה (גרסה 2026-09-16-v2).</span></label>
+                        <div data-site-text="host_consent_heading" class="font-bold text-sm text-slate-700">אישורים והסכמות לפתיחת חשבון</div>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-terms-consent" class="mt-1" required><span><span data-site-text="host_terms_consent_label">קראתי ואני מסכים/ה ל</span><button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש המלאים</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-privacy-consent" class="mt-1" required><span><span data-site-text="host_privacy_consent_label">קראתי את מדיניות הפרטיות ואני מסכים/ה לאיסוף ולעיבוד המידע כמפורט בה. לקריאת </span><button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות המלאה</button>.</span></label>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל SMS תפעולי לצורך אימות החשבון וניהול האירוע.</span></label>
                         </div>
                     </div>
@@ -711,6 +713,8 @@
                     <h1 class="text-3xl font-bold text-brand-dark">מדיניות פרטיות</h1>
                     <p class="text-xs text-slate-500 mt-2">עודכן לאחרונה: 16.09.2026 · גרסה 2026-09-16-v2</p>
                 </div>
+                <div id="privacy-admin-document" class="hidden whitespace-pre-wrap text-sm text-slate-600 leading-7"></div>
+                <div id="privacy-default-document" class="space-y-6">
                 <div class="bg-brand-50 border border-brand-100 rounded-xl p-4 text-sm text-slate-700 space-y-2">
                     <p><b>הודעה בעת איסוף מידע אישי:</b> מסירת המידע והרישום לשירות הם מרצונך ובהסכמתך; אין חובה חוקית כללית להירשם. אם לא תמסור/י את שדות החובה או לא תסכים/י לעיבוד הנדרש, לא יהיה ניתן לפתוח חשבון או לספק את פונקציות ההתאמה והניהול המחייבות חשבון.</p>
                     <p><b>בעל השליטה במידע ומפעיל השירות:</b> מפעיל מיזם “שמחים בשמחתם”. לפניות בנושא פרטיות, עיון, תיקון, מחיקה או חזרה מהסכמה ניתן להשתמש בכפתור “פנייה למנהל” באתר. <b>פרטי הזיהוי המשפטיים המלאים של המפעיל ופרטי התקשרות חיצוניים חייבים להופיע כאן לפני השקה ציבורית מלאה; הם אינם מומצאים אוטומטית על ידי האתר.</b></p>
@@ -756,6 +760,7 @@
                 <section><h2 class="font-bold text-lg">15. אבטחת מידע</h2><p class="text-sm text-slate-600 mt-1">המערכת מפעילה בקרות גישה, אימות טלפון, סשנים מוגבלים, הצפנה בתעבורה, גיבוב סיסמאות, הגבלות קצב, הפרדת הרשאות ותיעוד פעולות מנהל. עם זאת, אין מערכת מקוונת החסינה לחלוטין מסיכונים, ולכן אין אפשרות להבטיח אבטחה מוחלטת.</p></section>
                 <section><h2 class="font-bold text-lg">16. שינוי המדיניות</h2><p class="text-sm text-slate-600 mt-1">המדיניות עשויה להתעדכן עם שינוי השירות, הטכנולוגיה או הדין. כל גרסה מקבלת מספר גרסה ותאריך. כאשר שינוי מהותי מחייב הסכמה מחודשת, המערכת תוכל לבקש אישור נוסף לפני המשך שימוש רלוונטי.</p></section>
                 <section><h2 class="font-bold text-lg">17. יצירת קשר</h2><p class="text-sm text-slate-600 mt-1">לשאלות פרטיות, זכויות מידע או דיווח על בעיה, ניתן לבחור “פנייה למנהל” בתחתית האתר.</p></section>
+                </div>
                 <button type="button" data-onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
             </article>
         </div>
@@ -767,6 +772,8 @@
                     <h1 class="text-3xl font-bold text-brand-dark">תנאי שימוש</h1>
                     <p class="text-xs text-slate-500 mt-2">עודכן לאחרונה: 16.09.2026 · גרסה 2026-09-16-v2</p>
                 </div>
+                <div id="terms-admin-document" class="hidden whitespace-pre-wrap text-sm text-slate-600 leading-7"></div>
+                <div id="terms-default-document" class="space-y-6">
                 <section><h2 class="font-bold text-lg">1. קבלת התנאים</h2><p class="text-sm text-slate-600 mt-1">פתיחת חשבון מחייבת סימון מפורש שקראת והסכמת לתנאי שימוש אלה ולמדיניות הפרטיות. ההסכמה נשמרת במערכת עם מועד וגרסת המסמכים שאושרו. אם אינך מסכים/ה, אין ליצור חשבון או להשתמש בפונקציות המחייבות הרשמה.</p></section>
                 <section><h2 class="font-bold text-lg">2. מטרת השירות</h2><p class="text-sm text-slate-600 mt-1">“שמחים בשמחתם” הוא שירות תיאום והתאמה בין בעלי שמחה לבין אנשים המעוניינים לשמח באירועים. האתר מספק פלטפורמה טכנולוגית ואינו צד לאירוע עצמו, להסעות, להתקשרות פרטית בין המשתמשים או להתנהגות המשתתפים מחוץ למערכת.</p></section>
                 <section><h2 class="font-bold text-lg">3. גיל וכשירות</h2><p class="text-sm text-slate-600 mt-1">חשבון עצמאי מיועד לבני 18 ומעלה. בני 12–17 רשאים להשתתף רק אם האפשרות מופעלת באתר ובאמצעות חשבון משפחתי של הורה/אפוטרופוס שמנהל את ההרשמות ומאשר את ההשתתפות. אין לפתוח חשבון עצמאי עבור קטין תוך הצגת גיל כוזב.</p></section>
@@ -787,6 +794,7 @@
                 <section><h2 class="font-bold text-lg">18. מעמד המשתמשים</h2><p class="text-sm text-slate-600 mt-1">השימוש בשירות אינו יוצר יחסי עבודה, שליחות, שותפות או ייצוג בין המפעיל לבין משמח/ת או בעל/ת שמחה, ואינו הופך את המפעיל לצד להסכמות פרטיות בין משתמשים מחוץ למערכת.</p></section>
                 <section><h2 class="font-bold text-lg">19. מחיקת חשבון וסיום שימוש</h2><p class="text-sm text-slate-600 mt-1">משתמש רשאי להפסיק להשתמש בשירות ולבקש מחיקת חשבון בהתאם לאפשרויות המערכת ולמדיניות הפרטיות. ייתכן שמידע מסוים יישמר לתקופה מוגבלת כאשר הדבר נדרש לפי דין, לאבטחה, לבירור מחלוקת או להגנה על זכויות.</p></section>
                 <section><h2 class="font-bold text-lg">20. דין ויצירת קשר</h2><p class="text-sm text-slate-600 mt-1">על השימוש באתר יחולו דיני מדינת ישראל. לפניות בנוגע לתנאים, לדיווחים או לשירות ניתן להשתמש ב“פנייה למנהל” בתחתית האתר.</p></section>
+                </div>
                 <button type="button" data-onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
             </article>
         </div>

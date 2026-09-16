@@ -855,7 +855,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         function configuredEventTypes(){
             return configuredItems('event_types',[
                 {value:'wedding',label:'חתונה',enabled:true},
-                {value:'engagement',label:'אירוסין',enabled:true},
+                {value:'engagement',label:'אירוסין',enabled:false},
                 {value:'bar_mitzvah',label:'בר מצווה',enabled:true},
                 {value:'bat_mitzvah',label:'בת מצווה',enabled:true}
             ]);
@@ -894,7 +894,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const el=$(id);if(!el)return;
             const current=keep?String(el.value||''):'';
             const rows=(items||[]).filter(x=>x.enabled!==false);
-            el.innerHTML=(placeholder?'<option value="" disabled>'+esc(placeholder)+'</option>':'')+
+            el.innerHTML=(placeholder?'<option value="" disabled selected>'+esc(placeholder)+'</option>':'')+
                 (includeAll?'<option value="all">'+esc(allLabel)+'</option>':'')+
                 rows.map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join('');
             if(current&&[...el.options].some(o=>o.value===current))el.value=current;
@@ -938,7 +938,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
             rebuildSelect('ev-type',eventTypes);
             rebuildSelect('edit-ev-type',eventTypes);
-            rebuildSelect('vol-sector',sectors,{placeholder:'בחר'});
+            rebuildSelect('vol-sector',sectors,{placeholder:'בחר',keep:false});
             rebuildSelect('profile-sector',sectors,{placeholder:'בחר'});
             rebuildSelect('family-child-sector',sectors,{placeholder:'בחר'});
             ['ev-sector','edit-ev-sector'].forEach(id=>rebuildSelect(id,sectors,{includeAll:true}));
@@ -1127,7 +1127,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         function eventTypeListLabel(values) {
             const a=values||[];
-            if(a.includes('all')) return 'כל סוגי האירועים';
+            if(a.includes('all')) return 'כל סוגי האירועים הפעילים';
             return a.map(eventTypeLabel).join(', ')||'לא הוגדר';
         }
 
@@ -1223,6 +1223,19 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(!value) return '';
             const s=String(value).replace(' ','T');
             return s.slice(0,16);
+        }
+
+        function localDateTimeInputValue(date){
+            const d=date instanceof Date?date:new Date(date);
+            const pad=n=>String(n).padStart(2,'0');
+            return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+        }
+
+        function currentDeadlineMinimum(){
+            const d=new Date();
+            d.setSeconds(0,0);
+            d.setMinutes(d.getMinutes()+1);
+            return localDateTimeInputValue(d);
         }
 
         function debounce(fn,wait=300) {
@@ -1425,12 +1438,84 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(!input)return;
             const city=String(input.value||'').trim();
             if(!city){fillDatalist(listId,[]);return;}
-            try{
-                fillDatalist(listId,await loadStreetList(city));
-            }catch(e){
-                console.warn('street datalist failed',e);
-                fillDatalist(listId,[]);
-            }
+            try{fillDatalist(listId,await loadStreetList(city));}
+            catch(e){console.warn('street datalist failed',e);fillDatalist(listId,[]);}
+        }
+
+        function normalizeAddressLookup(value){
+            return String(value||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('he');
+        }
+
+        function exactAddressMatch(items,value){
+            const q=normalizeAddressLookup(value);
+            if(!q)return '';
+            return (items||[]).find(x=>normalizeAddressLookup(x)===q)||'';
+        }
+
+        function ensureAddressSuggestionUi(input){
+            if(!input)return null;
+            if(input._addressSuggestionUi)return input._addressSuggestionUi;
+            const parent=input.parentNode;
+            const wrap=document.createElement('div');
+            wrap.className='address-autocomplete-wrap';
+            parent.insertBefore(wrap,input);
+            wrap.appendChild(input);
+
+            const panel=document.createElement('div');
+            panel.className='address-suggestion-panel hidden';
+            panel.id=input.id+'-suggestions';
+            panel.setAttribute('role','listbox');
+
+            const status=document.createElement('div');
+            status.className='address-status';
+            status.setAttribute('role','status');
+            status.setAttribute('aria-live','polite');
+
+            wrap.appendChild(panel);
+            wrap.appendChild(status);
+            input.setAttribute('aria-autocomplete','list');
+            input.setAttribute('aria-controls',panel.id);
+            input.setAttribute('aria-expanded','false');
+
+            const ui={wrap,panel,status};
+            input._addressSuggestionUi=ui;
+            return ui;
+        }
+
+        function setAddressStatus(input,text,state=''){
+            const ui=ensureAddressSuggestionUi(input);
+            if(!ui)return;
+            ui.status.textContent=text||'';
+            ui.status.dataset.state=state||'';
+        }
+
+        function hideAddressSuggestions(input){
+            const ui=ensureAddressSuggestionUi(input);
+            if(!ui)return;
+            ui.panel.classList.add('hidden');
+            input.setAttribute('aria-expanded','false');
+        }
+
+        function showAddressSuggestions(input,items,onSelect){
+            const ui=ensureAddressSuggestionUi(input);
+            if(!ui)return;
+            ui.panel.innerHTML='';
+            if(!items?.length){hideAddressSuggestions(input);return;}
+            items.forEach(item=>{
+                const button=document.createElement('button');
+                button.type='button';
+                button.className='address-suggestion-item';
+                button.setAttribute('role','option');
+                button.textContent=item;
+                button.addEventListener('mousedown',e=>e.preventDefault());
+                button.addEventListener('click',()=>{
+                    onSelect(item);
+                    hideAddressSuggestions(input);
+                });
+                ui.panel.appendChild(button);
+            });
+            ui.panel.classList.remove('hidden');
+            input.setAttribute('aria-expanded','true');
         }
 
         function tryShowPicker(input){
@@ -1453,58 +1538,196 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         function wireCitySuggestions(inputId){
             const input=$(inputId);
-            if(!input)return;
+            if(!input||input.dataset.citySuggestionsWired==='1')return;
+            input.dataset.citySuggestionsWired='1';
+            ensureAddressSuggestionUi(input);
+
             const refresh=debounce(async()=>{
+                const query=String(input.value||'').trim();
+                if(!query){
+                    hideAddressSuggestions(input);
+                    input.dataset.addressRecognized='0';
+                    setAddressStatus(input,'התחל/י להקליד שם עיר.','');
+                    input.dispatchEvent(new CustomEvent('address-city-state',{detail:{exact:''}}));
+                    return;
+                }
+
+                setAddressStatus(input,'טוען יישובים...','loading');
                 try{
                     const items=await loadCityList();
-                    const matches=filterAddressItems(items,input.value,60);
-                    fillDatalist('israel-cities-list',matches);
-                    if(String(input.value||'').trim().length>=2&&matches.length)tryShowPicker(input);
-                }catch(e){console.warn('city suggestions failed',e);}
+                    const exact=exactAddressMatch(items,query);
+                    const matches=filterAddressItems(items,query,60);
+                    input.dataset.addressRecognized=exact?'1':'0';
+
+                    showAddressSuggestions(input,matches,item=>{
+                        input.value=item;
+                        input.dataset.addressRecognized='1';
+                        setAddressStatus(input,'✓ העיר זוהתה','ok');
+                        input.dispatchEvent(new Event('change',{bubbles:true}));
+                        input.dispatchEvent(new CustomEvent('address-city-state',{detail:{exact:item}}));
+                    });
+
+                    if(exact){
+                        setAddressStatus(input,'✓ העיר זוהתה','ok');
+                    }else if(matches.length){
+                        setAddressStatus(input,'נמצאו '+matches.length+' הצעות — בחר/י מהרשימה, או המשך/י בהקלדה ידנית.','info');
+                    }else{
+                        setAddressStatus(input,'העיר לא נמצאה ברשימה. אפשר להמשיך בהקלדה ידנית; הכתובת תיבדק במפה לפני השמירה.','manual');
+                    }
+                    input.dispatchEvent(new CustomEvent('address-city-state',{detail:{exact}}));
+                }catch(e){
+                    console.warn('city suggestions failed',e);
+                    input.dataset.addressRecognized='0';
+                    hideAddressSuggestions(input);
+                    setAddressStatus(input,'לא הצלחנו לטעון הצעות כרגע. אפשר להמשיך בהקלדה ידנית; הכתובת תיבדק במפה.','error');
+                    input.dispatchEvent(new CustomEvent('address-city-state',{detail:{exact:''}}));
+                }
             },120);
+
             input.addEventListener('input',refresh);
             input.addEventListener('focus',refresh);
+            input.addEventListener('blur',()=>setTimeout(()=>hideAddressSuggestions(input),160));
         }
 
         function wireAddressDatalist(cityInputId,streetInputId,listId){
             const cityInput=$(cityInputId),streetInput=$(streetInputId);
-            if(!cityInput||!streetInput)return;
-            const loadForCity=debounce(()=>refreshStreetDatalist(cityInputId,listId),180);
-            cityInput.addEventListener('input',loadForCity);
-            cityInput.addEventListener('change',()=>refreshStreetDatalist(cityInputId,listId));
-            cityInput.addEventListener('blur',()=>refreshStreetDatalist(cityInputId,listId));
+            if(!cityInput||!streetInput||streetInput.dataset.streetSuggestionsWired==='1')return;
+            streetInput.dataset.streetSuggestionsWired='1';
+            ensureAddressSuggestionUi(streetInput);
+            streetInput.disabled=!String(cityInput.value||'').trim();
+            if(streetInput.disabled)setAddressStatus(streetInput,'בחר/י או הקלד/י עיר תחילה.','');
+
+            const syncCity=debounce(async()=>{
+                const typed=String(cityInput.value||'').trim();
+                if(!typed){
+                    streetInput.disabled=true;
+                    streetInput.dataset.canonicalCity='';
+                    fillDatalist(listId,[]);
+                    hideAddressSuggestions(streetInput);
+                    setAddressStatus(streetInput,'בחר/י או הקלד/י עיר תחילה.','');
+                    return;
+                }
+
+                setAddressStatus(streetInput,'בודק את העיר...','loading');
+                try{
+                    const cities=await loadCityList();
+                    const exact=exactAddressMatch(cities,typed);
+                    if(!exact){
+                        streetInput.disabled=false;
+                        streetInput.dataset.canonicalCity='';
+                        fillDatalist(listId,[]);
+                        hideAddressSuggestions(streetInput);
+                        setAddressStatus(streetInput,'עיר בהקלדה ידנית — אפשר להקליד גם את הרחוב ידנית.','manual');
+                        return;
+                    }
+
+                    streetInput.disabled=false;
+                    streetInput.dataset.canonicalCity=exact;
+                    setAddressStatus(streetInput,'טוען רחובות ב'+exact+'...','loading');
+                    const items=await loadStreetList(exact);
+                    fillDatalist(listId,items);
+                    if(streetInput.value){
+                        streetInput.dispatchEvent(new Event('input',{bubbles:true}));
+                    }else{
+                        setAddressStatus(streetInput,'נטענו '+items.length+' רחובות. התחל/י להקליד רחוב.','ok');
+                    }
+                }catch(e){
+                    console.warn('street city sync failed',e);
+                    streetInput.disabled=false;
+                    streetInput.dataset.canonicalCity='';
+                    setAddressStatus(streetInput,'לא הצלחנו לטעון רחובות כרגע. אפשר להקליד ידנית; הכתובת תיבדק במפה.','error');
+                }
+            },120);
 
             const suggestStreet=debounce(async()=>{
-                const city=String(cityInput.value||'').trim();
-                if(!city)return;
+                const query=String(streetInput.value||'').trim();
+                const city=String(streetInput.dataset.canonicalCity||'');
+                if(!String(cityInput.value||'').trim()){
+                    streetInput.disabled=true;
+                    hideAddressSuggestions(streetInput);
+                    setAddressStatus(streetInput,'בחר/י או הקלד/י עיר תחילה.','');
+                    return;
+                }
+                if(!city){
+                    streetInput.disabled=false;
+                    hideAddressSuggestions(streetInput);
+                    setAddressStatus(streetInput,'כתובת ידנית — הרחוב ייבדק במפה לפני השמירה.','manual');
+                    return;
+                }
+
+                setAddressStatus(streetInput,'טוען הצעות רחוב...','loading');
                 try{
                     const items=await loadStreetList(city);
-                    const matches=filterAddressItems(items,streetInput.value,60);
-                    fillDatalist(listId,matches);
-                    if(String(streetInput.value||'').trim().length>=1&&matches.length)tryShowPicker(streetInput);
-                }catch(e){console.warn('street suggestions failed',e);}
+                    const exact=exactAddressMatch(items,query);
+                    const matches=filterAddressItems(items,query,60);
+                    showAddressSuggestions(streetInput,matches,item=>{
+                        streetInput.value=item;
+                        setAddressStatus(streetInput,'✓ הרחוב זוהה','ok');
+                        streetInput.dispatchEvent(new Event('change',{bubbles:true}));
+                    });
+
+                    if(!query){
+                        setAddressStatus(streetInput,'נטענו '+items.length+' רחובות. התחל/י להקליד.','ok');
+                    }else if(exact){
+                        setAddressStatus(streetInput,'✓ הרחוב זוהה','ok');
+                    }else if(matches.length){
+                        setAddressStatus(streetInput,'נמצאו '+matches.length+' הצעות — בחר/י מהרשימה, או המשך/י ידנית.','info');
+                    }else{
+                        setAddressStatus(streetInput,'הרחוב לא נמצא ברשימה. אפשר להמשיך ידנית; הכתובת תיבדק במפה.','manual');
+                    }
+                }catch(e){
+                    console.warn('street suggestions failed',e);
+                    hideAddressSuggestions(streetInput);
+                    setAddressStatus(streetInput,'לא הצלחנו לטעון הצעות רחוב כרגע. אפשר להמשיך ידנית.','error');
+                }
             },120);
+
+            cityInput.addEventListener('input',syncCity);
+            cityInput.addEventListener('change',syncCity);
+            cityInput.addEventListener('address-city-state',syncCity);
             streetInput.addEventListener('input',suggestStreet);
             streetInput.addEventListener('focus',suggestStreet);
+            streetInput.addEventListener('blur',()=>setTimeout(()=>hideAddressSuggestions(streetInput),160));
+
+            if(cityInput.value)syncCity();
         }
 
         async function initializeAddressLists(){
-            try{
-                const cities=await loadCityList();
-                fillDatalist('israel-cities-list',cities.slice(0,120));
-                ['vol-city','ev-city','edit-ev-city','profile-city','family-child-city'].forEach(wireCitySuggestions);
-                announceA11y('רשימת היישובים נטענה');
-            }catch(e){
-                console.error('city datalist failed',e);
-                announceA11y('לא הצלחנו לטעון את רשימת היישובים',true);
-            }
-            [
+            const cityIds=['vol-city','ev-city','edit-ev-city','profile-city','family-child-city'];
+            const pairs=[
                 ['vol-city','vol-street','vol-streets-list'],
                 ['ev-city','ev-street','ev-streets-list'],
                 ['edit-ev-city','edit-ev-street','edit-ev-streets-list'],
                 ['profile-city','profile-street','profile-streets-list'],
                 ['family-child-city','family-child-street','family-streets-list']
-            ].forEach(([city,street,list])=>wireAddressDatalist(city,street,list));
+            ];
+
+            // Wire first, so typing immediately always gives visible feedback.
+            cityIds.forEach(id=>{
+                wireCitySuggestions(id);
+                const input=$(id);
+                if(input)setAddressStatus(input,'טוען רשימת יישובים...','loading');
+            });
+            pairs.forEach(([city,street,list])=>wireAddressDatalist(city,street,list));
+
+            try{
+                const cities=await loadCityList();
+                fillDatalist('israel-cities-list',cities);
+                cityIds.forEach(id=>{
+                    const input=$(id);
+                    if(!input)return;
+                    if(!input.value)setAddressStatus(input,'רשימת היישובים מוכנה — התחילו להקליד.','ok');
+                    else input.dispatchEvent(new Event('input',{bubbles:true}));
+                });
+                announceA11y('רשימת היישובים נטענה');
+            }catch(e){
+                console.error('city datalist failed',e);
+                cityIds.forEach(id=>{
+                    const input=$(id);
+                    if(input)setAddressStatus(input,'רשימת ההצעות לא נטענה. אפשר להקליד כתובת ידנית; היא תיבדק במפה.','error');
+                });
+                announceA11y('לא הצלחנו לטעון את רשימת היישובים',true);
+            }
         }
 
         function registrationLabel(v) {
@@ -1602,6 +1825,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 ['invalid_event_type_config','הגדרת סוגי האירועים אינה תקינה.'],
                 ['invalid_radius_config','הגדרת המרחקים אינה תקינה.'],
                 ['invalid_sector_config','הגדרת המגזרים אינה תקינה.'],
+                ['sector_required','יש לבחור מגזר במפורש.'],
+                ['registration_deadline_in_past','מועד סגירת ההרשמה כבר עבר. יש לבחור מועד מהזמן הנוכחי ועד תחילת האירוע.'],
                 ['invalid_age_range_config','הגדרת טווחי הגיל אינה תקינה.'],
                 ['invalid_asset_url','כתובת קובץ התמונה אינה מאושרת.'],
                 ['invalid_sms_template','נוסח הודעת ה-SMS ריק או ארוך מדי.'],
@@ -1703,6 +1928,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const gender=$('vol-gender').value;
                 const birthYear=Number($('vol-birth-year').value);
                 const sector=$('vol-sector').value;
+                if(!sector) throw new Error('sector_required');
                 const prefs=checkedValues('vol-sector-pref');
                 const eventTypePrefs=checkedValues('vol-event-type-pref');
                 const {city,street,number}=getAddressParts('vol');
@@ -1981,6 +2207,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             $('ev-date').min=new Date().toISOString().slice(0,10);
             syncEventAgeRangeOptions('');
             await restoreEventDraft();
+            validateEventTimingFields('');
             navigate('add-event');
         }
 
@@ -2042,17 +2269,25 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             setFieldValidity(close,badTimes?'שעת הסיום חייבת להיות מאוחרת משעת ההתחלה.':'');
             if(badTimes)ok=false;
 
+            deadline.min=currentDeadlineMinimum();
             if(date?.value&&start.value)deadline.max=date.value+'T'+start.value;
             else deadline.removeAttribute('max');
 
-            let badDeadline=false;
-            if(date?.value&&start.value&&deadline.value){
-                const eventStart=new Date(date.value+'T'+start.value);
+            let message='';
+            if(deadline.value){
                 const deadlineAt=new Date(deadline.value);
-                badDeadline=Number.isFinite(eventStart.getTime())&&Number.isFinite(deadlineAt.getTime())&&deadlineAt>eventStart;
+                const now=new Date();
+                if(Number.isFinite(deadlineAt.getTime())&&deadlineAt<now){
+                    message='מועד סגירת ההרשמה כבר עבר. יש לבחור מועד מהזמן הנוכחי והלאה.';
+                }else if(date?.value&&start.value){
+                    const eventStart=new Date(date.value+'T'+start.value);
+                    if(Number.isFinite(eventStart.getTime())&&Number.isFinite(deadlineAt.getTime())&&deadlineAt>eventStart){
+                        message='מועד סגירת ההרשמה לא יכול להיות אחרי תחילת האירוע.';
+                    }
+                }
             }
-            setFieldValidity(deadline,badDeadline?'מועד סגירת ההרשמה לא יכול להיות אחרי תחילת האירוע.':'');
-            if(badDeadline)ok=false;
+            setFieldValidity(deadline,message);
+            if(message)ok=false;
             return ok;
         }
 
@@ -2150,6 +2385,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(!ev.registration_deadline) throw new Error('invalid_registration_deadline');
             const eventStart=new Date(ev.event_date+'T'+ev.start_time);
             const deadlineAt=new Date(ev.registration_deadline);
+            if(Number.isFinite(deadlineAt.getTime())&&deadlineAt<new Date()) throw new Error('registration_deadline_in_past');
             if(Number.isFinite(eventStart.getTime())&&Number.isFinite(deadlineAt.getTime())&&deadlineAt>eventStart) throw new Error('invalid_registration_deadline');
             if(!ev.city||!ev.street||!ev.house_number) throw new Error('invalid_location');
             if(ev.quota_men<0||ev.quota_women<0) throw new Error('invalid_quota');
@@ -2900,6 +3136,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             $('edit-ev-men').value=e.quota_men??0; $('edit-ev-women').value=e.quota_women??0;
             $('edit-ev-age-range').value=ageRangeValue(e.age_min,e.age_max); $('edit-ev-note').value=e.volunteer_note||'';
             setCheckedValues('edit-ev-accepted-sector',e.accepted_volunteer_sectors||['all']);
+            validateEventTimingFields('edit-');
             navigate('edit-event');
         }
 
@@ -2974,6 +3211,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const coords=await verifyTypedAddress(city,street,number);
                 const days=checkedNumbers('profile-available-day');
                 const eventTypePrefs=checkedValues('profile-event-type-pref');
+                if(!$('profile-sector').value) throw new Error('sector_required');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
                 const {error}=await userRpc('update_my_profile_v6',{

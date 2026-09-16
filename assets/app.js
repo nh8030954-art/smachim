@@ -130,7 +130,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         let chatPollTimer = null;
         const EVENT_DRAFT_PREFIX = 'smachimEventDraftV5:';
         const LEGACY_PERSONAL_STORAGE_KEYS = ['smachimEventDraftV4','pendingHostEvent'];
-        const PUBLIC_APPEARANCE_CACHE_KEY = 'smachimPublicAppearanceV2';
+        const PUBLIC_APPEARANCE_CACHE_KEY = 'smachimPublicAppearanceV3';
         let appliedDesignState = null;
         let logoSizingBound = false;
 
@@ -250,6 +250,25 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(current===nextView) return;
             if(['login','reset-password','register-volunteer','add-event','support'].includes(current)) clearSensitiveForms();
         }
+
+        window.addEventListener('pageshow',event=>{
+            if(sessionToken)return;
+            // Browsers may restore form values from the back/forward cache even after logout.
+            // The site must never re-display personal data for a guest.
+            clearAllPersonalBrowserStorage();
+            clearRuntimeUserData();
+            updateHeaderActions();
+            if(event.persisted){
+                const active=document.querySelector('.screen.active');
+                if(active && ['view-dashboard','view-profile-settings','view-edit-event','view-admin'].includes(active.id)){
+                    navigate('home');
+                }
+            }
+        });
+
+        window.addEventListener('pagehide',()=>{
+            if(!sessionToken) clearSensitiveForms();
+        });
 
         const $ = (id) => document.getElementById(id);
         const esc = (value) => String(value ?? '')
@@ -1042,6 +1061,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         function normalizedDesign(raw={}){
+            const heroDesktopRaw=boundedDesignNumber(raw.hero_height_desktop,0,0,1000);
+            const heroMobileRaw=boundedDesignNumber(raw.hero_height_mobile,0,0,650);
             return {
                 logoDesktop:boundedDesignNumber(raw.logo_width_desktop,380,220,700),
                 logoMobile:boundedDesignNumber(raw.logo_width_mobile,220,140,320),
@@ -1049,8 +1070,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 logoPaddingMobile:boundedDesignNumber(raw.logo_padding_mobile,2,0,40),
                 headerDesktop:0,
                 headerMobile:0,
-                heroDesktop:boundedDesignNumber(raw.hero_height_desktop,0,0,1000),
-                heroMobile:boundedDesignNumber(raw.hero_height_mobile,0,0,650),
+                heroDesktop:heroDesktopRaw>0?Math.max(120,heroDesktopRaw):0,
+                heroMobile:heroMobileRaw>0?Math.max(90,heroMobileRaw):0,
                 heroFit:raw.hero_fit==='cover'?'cover':'contain',
                 buttonPct:boundedDesignNumber(raw.button_font_percent,100,85,130),
                 buttonRadius:boundedDesignNumber(raw.button_radius_px,8,0,24),
@@ -1108,7 +1129,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const value=url||fallback;
             if(value.startsWith('./assets/')){
                 const base=value.split('?')[0];
-                return base+'?v=20260916-visualfix2';
+                return base+'?v=20260916-visualfix4';
             }
             return value;
         }

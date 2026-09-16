@@ -2743,6 +2743,8 @@
 
 
         async function renderVolunteerScoreCard(){
+            const {data:enabled,error:enabledError}=await _supabase.rpc('is_volunteer_scoring_enabled');
+            if(enabledError||!enabled)return '';
             const {data,error}=await _supabase.rpc('get_my_volunteer_score');
             if(error)return '';
             const s=Array.isArray(data)?data[0]:data;
@@ -2758,11 +2760,11 @@
                 '<div class="flex flex-wrap justify-between gap-4 items-center">'+
                     '<div class="flex items-center gap-4"><div class="w-14 h-14 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center text-2xl" aria-hidden="true"><i class="fa-solid '+icon+'"></i></div>'+
                     '<div><h3 id="volunteer-rank-title" class="font-bold text-lg">'+esc(s.rank_label||'משמח מתחיל')+'</h3>'+
-                    '<p class="text-sm text-slate-600"><b>'+points+'</b> נקודות · '+count+' אירועים שאושרו על ידי בעלי השמחה</p></div></div>'+
+                    '<p class="text-sm text-slate-600"><b>'+points+'</b> נקודות · '+count+' אירועים שבהם אישרת הגעה</p></div></div>'+
                     (next===null?'<div class="status-pill bg-brand-50 text-brand-700">הדרגה הגבוהה ביותר</div>':'<div class="text-sm text-slate-500">עוד <b>'+Number(s.points_to_next_rank||0)+'</b> נקודות לדרגה הבאה</div>')+
                 '</div>'+
                 '<div class="progress-track mt-4" role="progressbar" aria-label="התקדמות לדרגה הבאה" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pct+'"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
-                '<p class="text-xs text-slate-500 mt-2">כל השתתפות שמאושרת לאחר האירוע על ידי בעל השמחה מעניקה 100 נקודות. 5 אירועים = משמח מתקדם, 15 = משמח בכיר.</p>'+
+                '<p class="text-xs text-slate-500 mt-2">כאשר מנגנון הניקוד פעיל, כל אירוע שבו המשמח/ת מאשר/ת הגעה מעניק 100 נקודות. 5 אירועים = משמח מתקדם, 15 = משמח בכיר.</p>'+
             '</div>';
         }
 
@@ -3254,12 +3256,12 @@
         }
 
         async function setHostAttendance(eventId,userId,present){
-            const action=present?'לאשר שהמשמח/ת השתתף/ה באירוע? הפעולה תעניק 100 נקודות.':'לבטל את אישור ההגעה בפועל? 100 הנקודות מהאירוע יוסרו.';
+            const action=present?'לאשר שהמשמח/ת השתתף/ה באירוע?':'לבטל את אישור ההגעה בפועל?';
             const ok=await askConfirm(present?'אישור השתתפות בפועל':'ביטול אישור השתתפות',action,present?'אשר הגעה':'בטל אישור');
             if(!ok)return;
             const {error}=await _supabase.rpc('host_confirm_attendance',{p_event_id:eventId,p_user_id:userId,p_present:present});
             if(error)return showToast(readableError(error),'error');
-            showToast(present?'ההגעה אושרה ונוספו 100 נקודות.':'האישור בוטל והנקודות עודכנו.','success');
+            showToast(present?'ההגעה בפועל אושרה.':'אישור ההגעה בפועל בוטל.','success');
             const box=$('registrants-'+eventId);
             if(box)box.classList.add('hidden');
             await showRegistrants(eventId);
@@ -3276,13 +3278,14 @@
             box.innerHTML=data?.length?'<div class="border-t pt-3 space-y-3">'+data.map(r=>{
                 const age=r.birth_year?new Date().getFullYear()-Number(r.birth_year):'—';
                 const self=r.attendance_confirmed_at?'<span class="status-pill bg-brand-50 text-brand-700">אישר/ה שמגיע/ה</span>':'<span class="status-pill bg-slate-100 text-slate-600">טרם אישר/ה</span>';
-                const verified=r.host_attendance_confirmed_at?'<span class="status-pill bg-green-50 text-green-700">השתתפות אושרה · +100</span>':'';
+                const verified=r.host_attendance_confirmed_at?'<span class="status-pill bg-green-50 text-green-700">השתתפות אושרה</span>':'';
                 const action=ended&&r.status==='approved'
                   ? (r.host_attendance_confirmed_at
                     ? '<button onclick="setHostAttendance(\''+esc(eventId)+'\',\''+esc(r.user_id)+'\',false)" class="btn-soft px-3 py-2 text-xs">בטל אישור בפועל</button>'
                     : '<button onclick="setHostAttendance(\''+esc(eventId)+'\',\''+esc(r.user_id)+'\',true)" class="btn-brand px-3 py-2 text-xs">אשר הגעה בפועל</button>')
                   : '';
-                return '<div class="border rounded-xl bg-white p-3 flex flex-wrap justify-between items-center gap-3"><div><div class="font-semibold">'+esc(r.full_name)+' · '+(r.gender==='male'?'משמח':'משמחת')+' · גיל '+esc(age)+'</div><div class="text-xs text-slate-500 mt-1">'+esc(r.volunteer_rank||'משמח מתחיל')+' · '+Number(r.volunteer_points||0)+' נקודות · נרשם '+new Date(r.registered_at).toLocaleDateString('he-IL')+'</div><div class="flex flex-wrap gap-2 mt-2">'+self+verified+'</div></div><div>'+action+'</div></div>';
+                const scoreMeta=r.volunteer_points==null?'':' · '+esc(r.volunteer_rank||'משמח מתחיל')+' · '+Number(r.volunteer_points||0)+' נקודות';
+                return '<div class="border rounded-xl bg-white p-3 flex flex-wrap justify-between items-center gap-3"><div><div class="font-semibold">'+esc(r.full_name)+' · '+(r.gender==='male'?'משמח':'משמחת')+' · גיל '+esc(age)+'</div><div class="text-xs text-slate-500 mt-1">נרשם '+new Date(r.registered_at).toLocaleDateString('he-IL')+scoreMeta+'</div><div class="flex flex-wrap gap-2 mt-2">'+self+verified+'</div></div><div>'+action+'</div></div>';
             }).join('')+'</div>':'<div class="text-sm text-slate-500 border-t pt-3">אין נרשמים עדיין.</div>';
         }
 
@@ -3939,6 +3942,7 @@
                     '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>פרסום אירועים חדשים</b><span class="block text-sm text-slate-500">משתמשים קיימים יוכלו או לא יוכלו לפרסם אירוע חדש.</span></span><input id="admin-setting-events" type="checkbox" '+(site?.event_creation_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
                     '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>הוספת ילדים בגיל 12–17</b><span class="block text-sm text-slate-500">שולט באפשרות של הורה להוסיף ילד/ה לחשבון המשפחתי.</span></span><input id="admin-setting-minors" type="checkbox" '+(site?.minor_registration_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
                     '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>הצגת כתובת מדויקת לפני הרשמה</b><span class="block text-sm text-slate-500">מומלץ להשאיר כבוי: לפני הרשמה יוצגו אולם ועיר בלבד; אחרי הרשמה מאושרת תוצג הכתובת המלאה.</span></span><input id="admin-setting-exact-venue" type="checkbox" '+(site?.show_exact_venue_before_registration?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
+                    '<label class="flex items-start justify-between gap-4 border rounded-xl p-4"><span><b>ניקוד ודרגות למשמחים</b><span class="block text-sm text-slate-500">כשהאפשרות כבויה לא מוצגים ניקוד או דרגות. כשהיא פעילה, כל אישור הגעה מצד המשמח/ת מעניק 100 נקודות.</span></span><input id="admin-setting-volunteer-scoring" type="checkbox" '+(site?.volunteer_scoring_enabled?'checked':'')+' class="mt-1 w-5 h-5"></label>'+
                     '<button class="btn-dark px-5 py-3">שמור הגדרות תפעול</button>'+
                 '</form></div>'+
 
@@ -3996,11 +4000,12 @@
         async function adminSaveSiteSettings(){
             const ok=await askConfirm('שמירת הגדרות אתר','לשמור את ההגדרות התפעוליות? שינוי כאן משפיע מיידית על משתמשים.');
             if(!ok)return;
-            const {error}=await _supabase.rpc('admin_update_site_settings_v2',{
+            const {error}=await _supabase.rpc('admin_update_site_settings_v3',{
                 p_registration_enabled:!!$('admin-setting-registration')?.checked,
                 p_event_creation_enabled:!!$('admin-setting-events')?.checked,
                 p_minor_registration_enabled:!!$('admin-setting-minors')?.checked,
-                p_show_exact_venue_before_registration:!!$('admin-setting-exact-venue')?.checked
+                p_show_exact_venue_before_registration:!!$('admin-setting-exact-venue')?.checked,
+                p_volunteer_scoring_enabled:!!$('admin-setting-volunteer-scoring')?.checked
             });
             if(error)return showToast(readableError(error),'error');
             showToast('הגדרות האתר נשמרו.','success');

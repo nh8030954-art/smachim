@@ -784,7 +784,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const password=$('reset-password').value;
                 const confirm=$('reset-password-confirm').value;
                 if(!isValidPhone(phone))throw new Error('invalid_phone');
-                if(password.length<8)throw new Error('invalid_password');
+                if(password.length<12)throw new Error('invalid_password');
                 if(password!==confirm)throw new Error('הסיסמאות אינן זהות.');
                 const verificationToken=await ensurePhoneVerification(phone,'reset_password');
                 const {error}=await userRpc('reset_password_with_verification',{
@@ -1505,7 +1505,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 ['too_many_login_attempts','יותר מדי ניסיונות התחברות. נסה שוב בעוד כ־15 דקות.'],
                 ['already_registered','כבר קיים חשבון עם מספר הטלפון הזה. התחבר כדי להמשיך.'],
                 ['invalid_phone','מספר הטלפון אינו תקין.'],
-                ['invalid_password','הסיסמה חייבת לכלול לפחות 8 תווים.'],
+                ['invalid_password','הסיסמה חייבת לכלול לפחות 12 תווים.'],
                 ['invalid_name','יש להזין שם מלא.'],
                 ['not_allowed','אין הרשאה לבצע את הפעולה הזאת.'],
                 ['invalid_admin_login','שם המשתמש או סיסמת המנהל שגויים.'],
@@ -1648,7 +1648,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const smsConsent=!!$('vol-sms-consent')?.checked;
 
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
-                if(password.length<8) throw new Error('invalid_password');
+                if(password.length<12) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
@@ -2067,7 +2067,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const legalConsent=!!$('host-legal-consent')?.checked,smsConsent=!!$('host-sms-consent')?.checked;
                 if(name.length<2) throw new Error('invalid_name');
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
-                if(password.length<8) throw new Error('invalid_password');
+                if(password.length<12) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
@@ -3071,7 +3071,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 '<div class="flex justify-between gap-3 items-start"><div><h3 class="text-xl font-bold">הוספת משתמש חדש</h3><p class="text-sm text-slate-500">החשבון נוצר ישירות על ידי מנהל. למשמח/ת נדרשים גם פרטי התאמה מלאים.</p></div><button data-onclick="adminToggleNewUserForm(false)" class="btn-soft px-3 py-2">סגור</button></div>'+
                 '<form id="admin-new-user-form" data-onsubmit="event.preventDefault(); adminCreateUser();" class="space-y-4 mt-5">'+
                     '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">שם מלא</span><input id="admin-new-name" class="input-clean" minlength="2" maxlength="100" required></label><label><span class="field-label">טלפון</span><input id="admin-new-phone" type="tel" class="input-clean" dir="ltr" placeholder="05XXXXXXXX" required></label></div>'+
-                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">סיסמה זמנית</span><input id="admin-user-new-password" type="password" class="input-clean" minlength="8" maxlength="72" required autocomplete="new-password"></label><label><span class="field-label">סוג חשבון</span><select id="admin-new-role" class="input-clean bg-white" data-onchange="adminSyncNewUserRole()" required><option value="host">בעל שמחה</option><option value="volunteer">משמח/ת</option><option value="both">בעל שמחה + משמח/ת</option></select></label></div>'+
+                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">סיסמה זמנית</span><input id="admin-user-new-password" type="password" class="input-clean" minlength="12" maxlength="72" required autocomplete="new-password"></label><label><span class="field-label">סוג חשבון</span><select id="admin-new-role" class="input-clean bg-white" data-onchange="adminSyncNewUserRole()" required><option value="host">בעל שמחה</option><option value="volunteer">משמח/ת</option><option value="both">בעל שמחה + משמח/ת</option></select></label></div>'+
                     '<div id="admin-new-volunteer-fields" class="hidden space-y-4">'+
                         '<div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">איך לפנות?</span><select id="admin-new-gender" class="input-clean bg-white"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="admin-new-birth-year" class="input-clean bg-white"><option value="">בחר/י</option>'+years.join('')+'</select></label><label><span class="field-label">מגזר</span><select id="admin-new-sector" class="input-clean bg-white"><option value="">בחר/י</option>'+sectors.map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join('')+'</select></label></div>'+
                         '<div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><input id="admin-new-city" class="input-clean" placeholder="עיר"><input id="admin-new-street" class="input-clean" placeholder="רחוב"><input id="admin-new-house" class="input-clean" placeholder="מספר"></div></div>'+
@@ -3128,7 +3128,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const radius=volunteer?Number($('admin-new-radius').value):10;
                 if(name.length<2)throw new Error('invalid_name');
                 if(!isValidPhone(phone))throw new Error('invalid_phone');
-                if(password.length<8)throw new Error('invalid_password');
+                if(password.length<12)throw new Error('invalid_password');
                 if(!$('admin-new-consent').checked)throw new Error('admin_user_consent_required');
                 let coords={lat:null,lng:null};
                 if(volunteer){

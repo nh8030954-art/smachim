@@ -106,13 +106,15 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         let adminSmsFilter = 'all';
         let publicSiteConfig = {content:{},field_config:{}};
         let adminEditorState = null;
+        let adminMfaChallenge = '';
+        let adminMfaOtpAuthUri = '';
         let adminTextSearch = '';
         let adminTextRows = [];
         let textOverrideObserver = null;
         let textOverrideScheduled = false;
         let adminIdleTimer = null;
         let userIdleTimer = null;
-        const ADMIN_IDLE_MS = 30 * 60 * 1000;
+        const ADMIN_IDLE_MS = 15 * 60 * 1000;
         const USER_IDLE_MS = 2 * 60 * 60 * 1000;
         let calendarEventCache = new Map();
         let modalResolver = null;
@@ -246,7 +248,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
 
         // CSP-safe event delegation. Markup contains declarative data-* actions only.
-        const SAFE_UI_ACTIONS = new Set(["navigate","openAddEvent","openPersonalArea","handleLogin","handleLogout","handlePasswordReset","handleRegisterVolunteer","showLegalSummary","handleCreateEvent","previewEventMatches","saveEditEvent","loadDashboard","saveProfileSettings","deleteMyAccount","submitSupportRequest","openSupport","saveFamilyChild","syncFamilyChildEventDefault","openProfileSettings","closeEventChat","sendChatMessage","resolveAppModal","toggleAccessibilityPanel","changeAccessibilityFont","toggleAccessibilityPreference","resetAccessibilityPreferences","loadAdminArea","handleAdminPasswordChange","switchDashboardArea","openFamilyChildForm","openFamilyChildArea","deleteFamilyChild","confirmFamilyChildAttendance","cancelFamilyChildRegistration","registerFamilyChildForEvent","markNotificationsRead","openMoovitEvent","downloadCalendar","confirmAttendance","cancelMyRegistration","rsvpEvent","reportEvent","applyMatchingFilters","showRegistrants","openEditEvent","cancelHostEvent","setHostAttendance","adminOpenTab","adminToggleNewUserForm","adminCreateUser","adminSyncNewUserRole","adminSearchUsers","adminShowUser","adminToggleBlock","adminSetUserSms","adminForceLogout","adminDeleteUser","adminCloseDetail","adminSearchEvents","adminShowEvent","adminCancelEvent","adminRunSmsMaintenance","adminSaveSmsSettings","adminChangeSmsFilter","adminRetrySms","adminResolveSupport","adminResolveReport","adminSaveSiteSettings","adminSaveContentEditor","adminUploadAsset","adminSearchSiteTexts","adminSaveSiteText","adminResetSiteText","adminSaveSmsTemplate","adminResetSmsTemplate","adminPreviewVersion","adminDownloadVersion","adminCleanupSessions"]);
+        const SAFE_UI_ACTIONS = new Set(["navigate","openAddEvent","openPersonalArea","handleLogin","handleLogout","handlePasswordReset","handleRegisterVolunteer","showLegalSummary","handleCreateEvent","previewEventMatches","saveEditEvent","loadDashboard","saveProfileSettings","deleteMyAccount","submitSupportRequest","openSupport","saveFamilyChild","syncFamilyChildEventDefault","openProfileSettings","closeEventChat","sendChatMessage","resolveAppModal","toggleAccessibilityPanel","changeAccessibilityFont","toggleAccessibilityPreference","resetAccessibilityPreferences","loadAdminArea","handleAdminPasswordChange","confirmAdminMfa","cancelAdminMfa","switchDashboardArea","openFamilyChildForm","openFamilyChildArea","deleteFamilyChild","confirmFamilyChildAttendance","cancelFamilyChildRegistration","registerFamilyChildForEvent","markNotificationsRead","openMoovitEvent","downloadCalendar","confirmAttendance","cancelMyRegistration","rsvpEvent","reportEvent","applyMatchingFilters","showRegistrants","openEditEvent","cancelHostEvent","setHostAttendance","adminOpenTab","adminToggleNewUserForm","adminCreateUser","adminSyncNewUserRole","adminSearchUsers","adminShowUser","adminToggleBlock","adminSetUserSms","adminForceLogout","adminDeleteUser","adminCloseDetail","adminSearchEvents","adminShowEvent","adminCancelEvent","adminRunSmsMaintenance","adminSaveSmsSettings","adminChangeSmsFilter","adminRetrySms","adminResolveSupport","adminResolveReport","adminSaveSiteSettings","adminSaveContentEditor","adminUploadAsset","adminSearchSiteTexts","adminSaveSiteText","adminResetSiteText","adminSaveSmsTemplate","adminResetSmsTemplate","adminPreviewVersion","adminDownloadVersion","adminCleanupSessions"]);
         function splitDeclarativeParts(text, separator) {
             const out=[]; let current='', quote=null, escaped=false;
             for (const ch of String(text||'')) {
@@ -1007,6 +1009,44 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             textOverrideObserver.observe(document.body,{childList:true,subtree:true});
         }
 
+        function boundedDesignNumber(value,fallback,min,max){
+            const n=Number(value);
+            return Number.isFinite(n)?Math.max(min,Math.min(max,Math.round(n))):fallback;
+        }
+
+        function applySiteDesign(){
+            const d=publicSiteConfig?.field_config?.design||{};
+            const root=document.documentElement;
+            const logoDesktop=boundedDesignNumber(d.logo_width_desktop,380,220,700);
+            const logoMobile=boundedDesignNumber(d.logo_width_mobile,220,140,320);
+            const headerDesktop=boundedDesignNumber(d.header_height_desktop,112,72,180);
+            const headerMobile=boundedDesignNumber(d.header_height_mobile,52,48,100);
+            const heroDesktop=boundedDesignNumber(d.hero_height_desktop,0,0,700);
+            const heroMobile=boundedDesignNumber(d.hero_height_mobile,0,0,420);
+            const buttonPct=boundedDesignNumber(d.button_font_percent,100,85,130);
+            const buttonRadius=boundedDesignNumber(d.button_radius_px,8,0,24);
+            const cardRadius=boundedDesignNumber(d.card_radius_px,16,6,30);
+            const homeGap=boundedDesignNumber(d.home_section_gap_px,24,0,120);
+
+            root.style.setProperty('--site-logo-width-desktop',logoDesktop+'px');
+            root.style.setProperty('--site-logo-width-mobile',logoMobile+'px');
+            root.style.setProperty('--site-header-height-desktop',headerDesktop+'px');
+            root.style.setProperty('--site-header-height-mobile',headerMobile+'px');
+            root.style.setProperty('--site-button-font-size',(buttonPct/100)+'rem');
+            root.style.setProperty('--site-button-radius',buttonRadius+'px');
+            root.style.setProperty('--site-card-radius',cardRadius+'px');
+            root.style.setProperty('--site-home-gap',homeGap+'px');
+
+            root.style.setProperty('--site-hero-height-desktop',heroDesktop?heroDesktop+'px':'auto');
+            root.style.setProperty('--site-hero-img-height-desktop',heroDesktop?'100%':'auto');
+            root.style.setProperty('--site-hero-fit-desktop',heroDesktop?'cover':'contain');
+            root.style.setProperty('--site-hero-overflow-desktop',heroDesktop?'hidden':'visible');
+            root.style.setProperty('--site-hero-height-mobile',heroMobile?heroMobile+'px':'auto');
+            root.style.setProperty('--site-hero-img-height-mobile',heroMobile?'100%':'auto');
+            root.style.setProperty('--site-hero-fit-mobile',heroMobile?'cover':'contain');
+            root.style.setProperty('--site-hero-overflow-mobile',heroMobile?'hidden':'visible');
+        }
+
         function applyPublicSiteConfig(){
             const logo=$('site-logo-img'),hero=$('home-hero-img');
             const versionedAsset=(url,fallback)=>{
@@ -1025,6 +1065,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 hero.dataset.fallback='';
                 hero.src=versionedAsset(publicSiteConfig?.hero_url,'./assets/hero-banner.jpg');
             }
+            applySiteDesign();
             document.querySelectorAll('[data-site-text]').forEach(el=>{
                 const key=el.getAttribute('data-site-text');
                 const v=publicSiteConfig?.content?.[key];
@@ -1468,6 +1509,10 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 ['invalid_admin_password','סיסמת המנהל הנוכחית שגויה.'],
                 ['invalid_admin_new_password','סיסמת מנהל חדשה חייבת לכלול לפחות 12 תווים.'],
                 ['admin_password_unchanged','יש לבחור סיסמת מנהל חדשה ושונה מהסיסמה הנוכחית.'],
+                ['invalid_mfa_code','קוד האימות הדו־שלבי שגוי.'],
+                ['invalid_mfa_challenge','בקשת האימות פגה. התחבר מחדש.'],
+                ['mfa_too_many_attempts','בוצעו יותר מדי ניסיונות קוד. התחבר מחדש בעוד כמה דקות.'],
+                ['mfa_code_replayed','קוד האימות כבר שומש. המתן לקוד הבא.'],
                 ['cannot_block_self','לא ניתן לחסום את חשבון המנהל הפעיל.'],
                 ['invalid_reminder_hours','מספר השעות לתזכורת חייב להיות בין 1 ל-168.'],
                 ['sms_missing','הודעת ה-SMS לא נמצאה.'],
@@ -1677,6 +1722,88 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             await adminOpenTab(adminTab);
         }
 
+        function resetAdminMfaUi(){
+            adminMfaChallenge='';
+            adminMfaOtpAuthUri='';
+            const panel=$('admin-mfa-panel');
+            const enroll=$('admin-mfa-enroll');
+            if(panel)panel.classList.add('hidden');
+            if(enroll)enroll.classList.add('hidden');
+            if($('admin-mfa-secret'))$('admin-mfa-secret').textContent='';
+            if($('admin-mfa-code'))$('admin-mfa-code').value='';
+            const link=$('admin-mfa-open-app');if(link)link.removeAttribute('href');
+            $('login-form')?.classList.remove('hidden');
+        }
+
+        function showAdminMfaStep(data){
+            adminMfaChallenge=String(data?.challenge||'');
+            adminMfaOtpAuthUri=String(data?.otpauth_uri||'');
+            if(!adminMfaChallenge)throw new Error('invalid_mfa_challenge');
+            $('login-form')?.classList.add('hidden');
+            const panel=$('admin-mfa-panel');if(panel)panel.classList.remove('hidden');
+            const enroll=$('admin-mfa-enroll');
+            const first=!!data?.mfa_enrollment_required;
+            if(enroll)enroll.classList.toggle('hidden',!first);
+            if($('admin-mfa-message'))$('admin-mfa-message').textContent=first
+                ?'בכניסה הראשונה לניהול יש להוסיף אימות דו־שלבי. שמור את המפתח באפליקציית Authenticator ואז הזן את הקוד.'
+                :'הזן קוד בן 6 ספרות מאפליקציית Authenticator.';
+            if($('admin-mfa-secret'))$('admin-mfa-secret').textContent=first?String(data?.secret||''):'';
+            const link=$('admin-mfa-open-app');
+            if(link){
+                if(first&&adminMfaOtpAuthUri){link.href=adminMfaOtpAuthUri;link.classList.remove('hidden');}
+                else{link.removeAttribute('href');link.classList.add('hidden');}
+            }
+            setTimeout(()=>$('admin-mfa-code')?.focus(),50);
+        }
+
+        function cancelAdminMfa(){
+            resetAdminMfaUi();
+            if($('login-password'))$('login-password').value='';
+            $('login-phone')?.focus();
+        }
+
+        async function confirmAdminMfa(){
+            if(!adminMfaChallenge)return showToast('בקשת האימות פגה. התחבר מחדש.','warning');
+            const code=String($('admin-mfa-code')?.value||'').trim();
+            if(!/^\d{6}$/.test(code))return showToast('יש להזין קוד בן 6 ספרות.','warning');
+            setBusy('admin-mfa-submit',true,'מאמת...');
+            try{
+                const res=await fetch(SUPABASE_URL+'/functions/v1/admin-auth',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY},
+                    body:JSON.stringify({action:'mfa',challenge:adminMfaChallenge,code}),
+                    cache:'no-store',
+                    credentials:'omit'
+                });
+                const data=await res.json().catch(()=>({}));
+                if(!res.ok)throw new Error(data?.error||'invalid_mfa_code');
+                const token=data?.token;
+                if(!token)throw new Error('invalid_mfa_challenge');
+
+                applyAdminSessionToken(token);
+                adminMode=true;
+                resetAdminMfaUi();
+
+                const profile=await loadProfile();
+                const {data:adminFlag,error:adminErr}=await userRpc('is_admin');
+                if(adminErr||!profile||!adminFlag)throw new Error('not_allowed');
+
+                currentIsAdmin=true;
+                armAdminIdleLogout();
+                $('login-form')?.reset();
+                updateHeaderActions();
+                await loadAdminArea();
+
+                if(data?.must_change_password)showToast('יש להחליף את הסיסמה הזמנית לפני שימוש בפאנל.','warning');
+                else showToast('הכניסה לניהול אומתה בהצלחה.','success');
+            }catch(e){
+                showToast(readableError(e),'error');
+                if($('admin-mfa-code'))$('admin-mfa-code').value='';
+            }finally{
+                setBusy('admin-mfa-submit',false);
+            }
+        }
+
         async function handleLogin(){
             setBusy('login-submit',true,'מתחבר...');
             const identifier=$('login-phone').value.trim();
@@ -1715,30 +1842,17 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const adminRes=await fetch(SUPABASE_URL+'/functions/v1/admin-auth',{
                     method:'POST',
                     headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY},
-                    body:JSON.stringify({username,password})
+                    body:JSON.stringify({action:'password',username,password}),
+                    cache:'no-store',
+                    credentials:'omit'
                 });
                 const data=await adminRes.json().catch(()=>({}));
                 if(!adminRes.ok)throw new Error(data?.error||'invalid_admin_login');
+                if(!data?.mfa_required&&!data?.mfa_enrollment_required)throw new Error('invalid_mfa_challenge');
 
-                const token=data?.token;
-                if(!token)throw new Error('invalid_admin_login');
-
-                applyAdminSessionToken(token);
-                adminMode=true;
-
-                const profile=await loadProfile();
-                const {data:adminFlag,error:adminErr}=await userRpc('is_admin');
-                if(adminErr||!profile||!adminFlag)throw new Error('not_allowed');
-
-                currentIsAdmin=true;
-                armAdminIdleLogout();
-                $('login-form')?.reset();
-                updateHeaderActions();
-                await loadAdminArea();
-
-                if(data?.must_change_password){
-                    showToast('יש להחליף את הסיסמה הזמנית לפני שימוש בפאנל.','warning');
-                }
+                $('login-password').value='';
+                showAdminMfaStep(data);
+                return;
             }catch(e){
                 if(!isPhone){
                     applyAdminSessionToken('');
@@ -3251,6 +3365,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const ageRanges=cfg.age_ranges||[];
             const radii=cfg.radius_options||[];
             const sectors=cfg.sectors||[];
+            const design={logo_width_desktop:380,logo_width_mobile:220,header_height_desktop:112,header_height_mobile:52,hero_height_desktop:0,hero_height_mobile:0,button_font_percent:100,button_radius_px:8,card_radius_px:16,home_section_gap_px:24,...(cfg.design||{})};
 
             return '<div class="space-y-5">'+
                 '<div class="glass-card p-6"><h3 class="text-2xl font-bold">הגדרות תפעוליות</h3><p class="text-sm text-slate-500">מתגים מרכזיים לעצירה או הפעלה של פעולות באתר במקרה הצורך.</p><form data-onsubmit="event.preventDefault(); adminSaveSiteSettings();" class="space-y-4 mt-5">'+
@@ -3268,6 +3383,22 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                         '<div class="border rounded-xl p-4"><b>לוגו</b><div class="bg-slate-50 rounded-lg mt-3 p-3"><img id="admin-logo-preview" src="'+esc(adminEditorState.logo_url||'')+'" alt="תצוגה מקדימה של לוגו האתר" class="max-h-36 mx-auto object-contain"></div><input id="admin-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-clean mt-3"><button data-onclick="adminUploadAsset(\'logo\')" class="btn-soft px-4 py-2 mt-2">העלה לוגו</button></div>'+
                         '<div class="border rounded-xl p-4"><b>תמונת דף הבית</b><div class="bg-slate-50 rounded-lg mt-3 p-3"><img id="admin-hero-preview" src="'+esc(adminEditorState.hero_url||'')+'" alt="תצוגה מקדימה של תמונת דף הבית" class="max-h-36 mx-auto object-contain"></div><input id="admin-hero-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-clean mt-3"><button data-onclick="adminUploadAsset(\'hero\')" class="btn-soft px-4 py-2 mt-2">העלה תמונה</button></div>'+
                     '</div><p class="text-xs text-slate-400 mt-3">עד 5MB. JPG, PNG, WebP או GIF. העלאה לבדה אינה מפרסמת את השינוי עד ללחיצה על “שמור תוכן ועיצוב”.</p>'+
+                '</div>'+
+
+                '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="text-2xl font-bold">גדלים ועיצוב</h3><p class="text-sm text-slate-500">שליטה בטוחה בערכי תצוגה מוגבלים. אין כאן CSS חופשי ולכן אי אפשר להזריק קוד.</p></div><button data-onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3">שמור עיצוב</button></div>'+
+                    '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">'+
+                        '<label><span class="field-label">רוחב לוגו במחשב (px)</span><input id="admin-design-logo-desktop" type="number" min="220" max="700" class="input-clean" value="'+Number(design.logo_width_desktop||380)+'"></label>'+
+                        '<label><span class="field-label">רוחב לוגו בטלפון (px)</span><input id="admin-design-logo-mobile" type="number" min="140" max="320" class="input-clean" value="'+Number(design.logo_width_mobile||220)+'"></label>'+
+                        '<label><span class="field-label">גובה הפס העליון במחשב (px)</span><input id="admin-design-header-desktop" type="number" min="72" max="180" class="input-clean" value="'+Number(design.header_height_desktop||112)+'"></label>'+
+                        '<label><span class="field-label">גובה הפס העליון בטלפון (px)</span><input id="admin-design-header-mobile" type="number" min="48" max="100" class="input-clean" value="'+Number(design.header_height_mobile||52)+'"></label>'+
+                        '<label><span class="field-label">גובה תמונת הבית במחשב (0 = טבעי)</span><input id="admin-design-hero-desktop" type="number" min="0" max="700" class="input-clean" value="'+Number(design.hero_height_desktop||0)+'"></label>'+
+                        '<label><span class="field-label">גובה תמונת הבית בטלפון (0 = טבעי)</span><input id="admin-design-hero-mobile" type="number" min="0" max="420" class="input-clean" value="'+Number(design.hero_height_mobile||0)+'"></label>'+
+                        '<label><span class="field-label">גודל טקסט בכפתורים (%)</span><input id="admin-design-button-font" type="number" min="85" max="130" class="input-clean" value="'+Number(design.button_font_percent||100)+'"></label>'+
+                        '<label><span class="field-label">עיגול פינות כפתורים (px)</span><input id="admin-design-button-radius" type="number" min="0" max="24" class="input-clean" value="'+Number(design.button_radius_px??8)+'"></label>'+
+                        '<label><span class="field-label">עיגול פינות כרטיסים (px)</span><input id="admin-design-card-radius" type="number" min="6" max="30" class="input-clean" value="'+Number(design.card_radius_px||16)+'"></label>'+
+                        '<label><span class="field-label">מרווח בין הבאנר לכפתורי הבית (px)</span><input id="admin-design-home-gap" type="number" min="0" max="120" class="input-clean" value="'+Number(design.home_section_gap_px??24)+'"></label>'+
+                    '</div>'+
+                    '<p class="text-xs text-slate-400 mt-4">גובה באנר 0 שומר על היחס המקורי של התמונה. כשמגדירים גובה קבוע התמונה נחתכת בצורה מבוקרת במרכז במקום להימתח.</p>'+
                 '</div>'+
 
                 '<div class="glass-card p-6"><h3 class="text-2xl font-bold">טקסטים באתר</h3><p class="text-sm text-slate-500">הטקסטים נשמרים כטקסט פשוט בלבד — לא ניתן להכניס HTML או קוד.</p><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">'+
@@ -3384,9 +3515,23 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const v=$('admin-field-label-'+key)?.value.trim();
                 if(v)labels[key]=v; else delete labels[key];
             });
+            const designInt=(id,fallback,min,max)=>boundedDesignNumber($(id)?.value??fallback,fallback,min,max);
+            const design={
+                logo_width_desktop:designInt('admin-design-logo-desktop',base.design?.logo_width_desktop??380,220,700),
+                logo_width_mobile:designInt('admin-design-logo-mobile',base.design?.logo_width_mobile??220,140,320),
+                header_height_desktop:designInt('admin-design-header-desktop',base.design?.header_height_desktop??112,72,180),
+                header_height_mobile:designInt('admin-design-header-mobile',base.design?.header_height_mobile??52,48,100),
+                hero_height_desktop:designInt('admin-design-hero-desktop',base.design?.hero_height_desktop??0,0,700),
+                hero_height_mobile:designInt('admin-design-hero-mobile',base.design?.hero_height_mobile??0,0,420),
+                button_font_percent:designInt('admin-design-button-font',base.design?.button_font_percent??100,85,130),
+                button_radius_px:designInt('admin-design-button-radius',base.design?.button_radius_px??8,0,24),
+                card_radius_px:designInt('admin-design-card-radius',base.design?.card_radius_px??16,6,30),
+                home_section_gap_px:designInt('admin-design-home-gap',base.design?.home_section_gap_px??24,0,120)
+            };
             const fieldConfig={
                 ...base,
                 labels,
+                design,
                 volunteer_event_default:$('admin-config-event-default')?.value||base.volunteer_event_default||'wedding',
                 event_types:adminCollectConfigRows('event',base.event_types||[]),
                 age_ranges:adminCollectConfigRows('age',base.age_ranges||[]),
@@ -3506,8 +3651,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             ]);
             if(sErr)throw sErr;if(aErr)throw aErr;if(hErr)throw hErr;
             const a=s?.admin_account||{};
+            const mfa=s?.admin_mfa||{};
             return '<div class="space-y-5">'+
-                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אבטחה והגדרות מנהל</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-5">'+adminMetric('סשנים משתמשים',s.active_user_sessions)+adminMetric('סשנים מנהל',s.active_admin_sessions)+adminMetric('סשנים שפג תוקפם',s.expired_sessions)+adminMetric('משתמשים חסומים',s.blocked_users)+adminMetric('ניסיונות מנהל שגויים',a.failed_attempts||0)+'</div><div class="mt-4 text-sm text-slate-500">שם משתמש מנהל: <b>'+esc(a.username||'—')+'</b> · נעילה עד: <b>'+esc(adminDateTime(a.locked_until))+'</b></div><div class="mt-2 text-xs text-slate-500 bg-slate-50 border rounded-lg p-3">סשן מנהל נשמר רק בכרטיסייה הנוכחית, פג בשרת אחרי שעתיים ונסגר בדפדפן לאחר 30 דקות ללא פעילות. רק סשן מנהל יכול לקרוא או לשנות נתוני ניהול.</div><button data-onclick="adminCleanupSessions()" class="btn-soft px-3 py-2 mt-4">נקה סשנים שפג תוקפם</button></div>'+
+                '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אבטחה והגדרות מנהל</h3><div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mt-5">'+adminMetric('סשנים משתמשים',s.active_user_sessions)+adminMetric('סשנים מנהל',s.active_admin_sessions)+adminMetric('סשנים שפג תוקפם',s.expired_sessions)+adminMetric('משתמשים חסומים',s.blocked_users)+adminMetric('ניסיונות מנהל שגויים',a.failed_attempts||0)+adminMetric('MFA למנהל',mfa.enabled?'פעיל':'נדרש')+'</div><div class="mt-4 text-sm text-slate-500">שם משתמש מנהל: <b>'+esc(a.username||'—')+'</b> · נעילה עד: <b>'+esc(adminDateTime(a.locked_until))+'</b></div><div class="mt-2 text-xs text-slate-500 bg-slate-50 border rounded-lg p-3">סשן מנהל נשמר רק בכרטיסייה הנוכחית, נוצר רק אחרי סיסמה + קוד Authenticator, פג בשרת אחרי 30 דקות ונסגר בדפדפן לאחר 15 דקות ללא פעילות.</div>'+(mfa.enabled?'<div class="mt-3 bg-green-50 border border-green-200 text-green-700 rounded-lg p-3">אימות דו־שלבי פעיל. שימוש אחרון: <b>'+esc(adminDateTime(mfa.last_used_at))+'</b></div>':'<div class="mt-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 font-bold">בכניסה הבאה לניהול תידרש הגדרה חד־פעמית של Authenticator לפני שייפתח סשן מנהל.</div>')+'<button data-onclick="adminCleanupSessions()" class="btn-soft px-3 py-2 mt-4">נקה סשנים שפג תוקפם</button></div>'+
                 renderAdminPasswordCard(false)+
                 '<div class="glass-card p-6"><h4 class="font-bold text-lg mb-4">יומן פעולות מנהל</h4><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="border-b text-slate-500"><th class="text-right py-2">זמן</th><th>פעולה</th><th>יעד</th><th>פרטים</th></tr></thead><tbody>'+((audit||[]).map(x=>'<tr class="border-b border-slate-100"><td class="py-2 whitespace-nowrap">'+esc(adminDateTime(x.created_at))+'</td><td>'+esc(x.action)+'</td><td>'+esc((x.target_type||'')+(x.target_id?' / '+x.target_id:''))+'</td><td class="max-w-96">'+esc(x.details?JSON.stringify(x.details):'')+'</td></tr>').join('')||'<tr><td colspan="4" class="py-6 text-slate-500">עדיין אין פעולות ביומן.</td></tr>')+'</tbody></table></div></div>'+
                 '<div class="glass-card p-6"><h4 class="font-bold">בדיקות הרשמה</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 text-sm"><div class="border rounded-lg p-3">חשבונות ותיקים ללא אישור פרטיות: <b>'+Number(s.users_missing_privacy_consent||0)+'</b></div><div class="border rounded-lg p-3">חשבונות ותיקים ללא אישור SMS: <b>'+Number(s.users_missing_sms_consent||0)+'</b></div></div></div>'+

@@ -2327,7 +2327,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function renderNotifications() {
-            const {data,error}=await _supabase.from('notifications').select('*').order('created_at',{ascending:false}).limit(8);
+            const {data,error}=await userRpc('get_my_notifications',{p_limit:8});
             if(error||!data?.length) return '';
             const unread=data.filter(n=>!n.read_at).length;
             return '<div class="glass-card p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold">התראות '+(unread?'<span class="text-sm text-brand-600">('+unread+' חדשות)</span>':'')+'</h3>'+(unread?'<button data-onclick="markNotificationsRead()" class="text-sm font-bold text-brand-600 hover:underline">סמן הכול כנקרא</button>':'')+'</div><div class="space-y-3">'+data.map(n=>'<div class="p-3 rounded-lg border '+(n.read_at?'bg-white border-slate-100':'bg-brand-50 border-brand-100')+'"><div class="font-bold text-sm">'+esc(n.title)+'</div><div class="text-sm text-slate-600">'+esc(n.body)+'</div></div>').join('')+'</div></div>';

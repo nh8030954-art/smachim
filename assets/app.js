@@ -14,6 +14,30 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         let _supabase = createAppClient();
 
+        async function adminRpc(name,args={}) {
+            const token=sessionStorage.getItem('smachimAdminSession') || (adminMode ? sessionToken : '');
+            if(!token) return {data:null,error:{message:'session_expired'}};
+            try{
+                const res=await fetch(SUPABASE_URL+'/functions/v1/admin-rpc',{
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json',
+                        'apikey':SUPABASE_PUBLISHABLE_KEY,
+                        'x-app-session':token
+                    },
+                    body:JSON.stringify({name,args:args||{}}),
+                    cache:'no-store',
+                    credentials:'omit'
+                });
+                const payload=await res.json().catch(()=>({}));
+                if(!res.ok) return {data:null,error:{message:String(payload?.error||'admin_rpc_failed')}};
+                return {data:payload?.data??null,error:null};
+            }catch(_){
+                return {data:null,error:{message:'network_error'}};
+            }
+        }
+
+
         function applySessionToken(token) {
             sessionToken = token || '';
             sessionStorage.removeItem('smachimAdminSession');
@@ -1537,7 +1561,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const confirm=$('admin-new-password-confirm').value;
                 if(next.length<12) throw new Error('invalid_admin_new_password');
                 if(next!==confirm) throw new Error('הסיסמאות אינן זהות.');
-                const {error}=await _supabase.rpc('admin_set_password',{p_new_password:next});
+                const {error}=await adminRpc('admin_set_password',{p_new_password:next});
                 if(error) throw error;
                 $('admin-password-form')?.reset();
                 showToast('סיסמת המנהל עודכנה.','success');
@@ -1559,7 +1583,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 showToast('אין הרשאת מנהל.','error');
                 return navigate('login');
             }
-            const {data:status,error:statusErr}=await _supabase.rpc('admin_account_status');
+            const {data:status,error:statusErr}=await adminRpc('admin_account_status');
             if(statusErr) return showToast(readableError(statusErr),'error');
             const account=Array.isArray(status)?status[0]:status;
             const root=$('admin-area-root');
@@ -2739,8 +2763,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function adminRenderOverview(){
             const [{data:o,error},{data:sms}]=await Promise.all([
-                _supabase.rpc('admin_dashboard_overview'),
-                _supabase.rpc('admin_sms_status')
+                adminRpc('admin_dashboard_overview'),
+                adminRpc('admin_sms_status')
             ]);
             if(error)throw error;
             const alerts=[];
@@ -2792,9 +2816,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function adminRenderAnalytics(){
             const [{data:series,error:sErr},{data:b,error:bErr},{data:o,error:oErr}]=await Promise.all([
-                _supabase.rpc('admin_analytics_series',{p_days:30}),
-                _supabase.rpc('admin_analytics_breakdown'),
-                _supabase.rpc('admin_dashboard_overview')
+                adminRpc('admin_analytics_series',{p_days:30}),
+                adminRpc('admin_analytics_breakdown'),
+                adminRpc('admin_dashboard_overview')
             ]);
             if(sErr)throw sErr;if(bErr)throw bErr;if(oErr)throw oErr;
             const rows=series||[];
@@ -2848,7 +2872,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function adminRenderUsers(){
-            const {data,error}=await _supabase.rpc('admin_list_users_v3',{p_search:adminUserSearch||'',p_limit:200,p_offset:0});
+            const {data,error}=await adminRpc('admin_list_users_v3',{p_search:adminUserSearch||'',p_limit:200,p_offset:0});
             if(error)throw error;
             adminUsersCache=data||[];
             return adminNewUserForm()+'<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-end"><div><h3 class="text-2xl font-bold">משתמשים</h3><p class="text-sm text-slate-500">חיפוש, הוספה, מחיקה, בדיקת פרופיל, חסימה, SMS וניתוק סשנים.</p></div><div class="flex flex-wrap gap-2"><button data-onclick="adminToggleNewUserForm(true)" class="btn-brand px-4 py-2"><i class="fa-solid fa-user-plus ml-1"></i> הוסף משתמש</button><input id="admin-user-search" class="input-clean min-w-56" value="'+esc(adminUserSearch)+'" placeholder="שם, טלפון או עיר"><button data-onclick="adminSearchUsers()" class="btn-dark px-4">חפש</button></div></div>'+
@@ -2902,7 +2926,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     if(!city||!street||!house)throw new Error('address_incomplete');
                     coords=await verifyTypedAddress(city,street,house);
                 }
-                const {data,error}=await _supabase.rpc('admin_create_user',{
+                const {data,error}=await adminRpc('admin_create_user',{
                     p_full_name:name,p_phone:phone,p_password:password,p_role:role,
                     p_gender:gender,p_birth_year:birthYear,p_sector:sector,
                     p_city:city,p_street:street,p_house_number:house,p_radius:radius,
@@ -2922,7 +2946,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(!ok)return;
             const typed=await askText('אישור מחיקה','כדי למנוע מחיקה בטעות, הקלד/י מחיקה','מחיקה');
             if(typed!=='מחיקה')return showToast('המחיקה בוטלה.','warning');
-            const {error}=await _supabase.rpc('admin_delete_user',{p_profile_id:id});
+            const {error}=await adminRpc('admin_delete_user',{p_profile_id:id});
             if(error)return showToast(readableError(error),'error');
             showToast('המשתמש נמחק.','success');
             adminCloseDetail();
@@ -2935,7 +2959,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function adminShowUser(id){
-            const {data,error}=await _supabase.rpc('admin_user_detail',{p_profile_id:id});
+            const {data,error}=await adminRpc('admin_user_detail',{p_profile_id:id});
             if(error)return showToast(readableError(error),'error');
             const p=data?.profile||{},st=data?.stats||{},regs=data?.recent_registrations||[];
             const detail=$('admin-detail-panel');if(!detail)return;
@@ -2956,7 +2980,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function adminSetUserSms(id,enabled){
             const ok=await askConfirm(enabled?'הפעלת SMS':'כיבוי SMS',enabled?'לאפשר שוב הודעות SMS למשתמש?':'להפסיק הודעות SMS למשתמש הזה?');
             if(!ok)return;
-            const {error}=await _supabase.rpc('admin_set_user_sms',{p_profile_id:id,p_enabled:enabled});
+            const {error}=await adminRpc('admin_set_user_sms',{p_profile_id:id,p_enabled:enabled});
             if(error)return showToast(readableError(error),'error');
             showToast('ההגדרה עודכנה.','success');await adminOpenTab('users');
         }
@@ -2964,13 +2988,13 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function adminForceLogout(id){
             const ok=await askConfirm('ניתוק משתמש','לנתק את כל הסשנים הרגילים של המשתמש? הוא יצטרך להתחבר מחדש.');
             if(!ok)return;
-            const {error}=await _supabase.rpc('admin_force_logout_user',{p_profile_id:id});
+            const {error}=await adminRpc('admin_force_logout_user',{p_profile_id:id});
             if(error)return showToast(readableError(error),'error');
             showToast('המשתמש נותק.','success');
         }
 
         async function adminRenderEvents(){
-            const {data,error}=await _supabase.rpc('admin_list_events',{p_search:adminEventSearch||'',p_status:adminEventStatus||'all',p_limit:200,p_offset:0});
+            const {data,error}=await adminRpc('admin_list_events',{p_search:adminEventSearch||'',p_status:adminEventStatus||'all',p_limit:200,p_offset:0});
             if(error)throw error;
             const events=data||[];
             return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-end"><div><h3 class="text-2xl font-bold">אירועים</h3><p class="text-sm text-slate-500">מעקב אחר תפוסה, דיווחים, בעל האירוע והנרשמים.</p></div><div class="flex flex-wrap gap-2"><input id="admin-event-search" class="input-clean min-w-52" value="'+esc(adminEventSearch)+'" placeholder="אירוע, בעל שמחה או עיר"><select id="admin-event-status" class="input-clean bg-white"><option value="all">כל הסטטוסים</option><option value="active">פעיל</option><option value="full">מלא</option><option value="completed">הסתיים</option><option value="cancelled">בוטל</option></select><button data-onclick="adminSearchEvents()" class="btn-dark px-4">סנן</button></div></div>'+
@@ -2988,7 +3012,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function adminShowEvent(id){
-            const {data,error}=await _supabase.rpc('admin_event_detail',{p_event_id:id});
+            const {data,error}=await adminRpc('admin_event_detail',{p_event_id:id});
             if(error)return showToast(readableError(error),'error');
             const e=data?.event||{},h=data?.host||{},v=data?.venue||{},regs=data?.registrants||[],reports=data?.reports||[];
             const detail=$('admin-detail-panel');if(!detail)return;
@@ -3001,9 +3025,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function adminRenderSms(){
             const [{data:status,error:sErr},{data:rows,error:rErr},{data:inbound,error:iErr}]=await Promise.all([
-                _supabase.rpc('admin_sms_status'),
-                _supabase.rpc('admin_sms_recent_v2',{p_filter:adminSmsFilter||'all',p_limit:100}),
-                _supabase.rpc('admin_sms_inbound_recent',{p_limit:40})
+                adminRpc('admin_sms_status'),
+                adminRpc('admin_sms_recent_v2',{p_filter:adminSmsFilter||'all',p_limit:100}),
+                adminRpc('admin_sms_inbound_recent',{p_limit:40})
             ]);
             if(sErr)throw sErr;if(rErr)throw rErr;if(iErr)throw iErr;
             const set=status?.settings||{},c=status?.counts||{};
@@ -3021,7 +3045,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function adminSaveSmsSettings(){
             const hours=Number($('admin-sms-reminder-hours')?.value||24);
-            const {error}=await _supabase.rpc('admin_update_sms_settings',{
+            const {error}=await adminRpc('admin_update_sms_settings',{
                 p_sending_enabled:!!$('admin-sms-sending')?.checked,
                 p_invite_enabled:!!$('admin-sms-invites')?.checked,
                 p_reminder_enabled:!!$('admin-sms-reminders')?.checked,
@@ -3034,21 +3058,21 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function adminRetrySms(id){
             const ok=await askConfirm('שליחה חוזרת','לנסות לשלוח מחדש את הודעת ה-SMS שנכשלה?');
             if(!ok)return;
-            const {error}=await _supabase.rpc('admin_retry_sms',{p_id:id});
+            const {error}=await adminRpc('admin_retry_sms',{p_id:id});
             if(error)return showToast(readableError(error),'error');
             showToast('ההודעה הוחזרה לתור השליחה.','success');await adminOpenTab('sms');
         }
 
         async function adminRunSmsMaintenance(){
-            const {error}=await _supabase.rpc('admin_run_sms_maintenance');
+            const {error}=await adminRpc('admin_run_sms_maintenance');
             if(error)return showToast(readableError(error),'error');
             showToast('תחזוקת SMS הושלמה.','success');await adminOpenTab('sms');
         }
 
         async function adminRenderReports(){
             const [{data:rows,error},{data:support,error:supportErr}]=await Promise.all([
-                _supabase.rpc('admin_list_reports',{p_status:'all',p_limit:200}),
-                _supabase.rpc('admin_list_support_requests',{p_status:'all',p_limit:200})
+                adminRpc('admin_list_reports',{p_status:'all',p_limit:200}),
+                adminRpc('admin_list_support_requests',{p_status:'all',p_limit:200})
             ]);
             if(error)throw error;
             if(supportErr)throw supportErr;
@@ -3060,7 +3084,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function adminResolveSupport(id,status){
-            const {error}=await _supabase.rpc('admin_resolve_support_request',{p_id:id,p_status:status});
+            const {error}=await adminRpc('admin_resolve_support_request',{p_id:id,p_status:status});
             if(error)return showToast(readableError(error),'error');
             showToast('הפנייה עודכנה.','success');
             await adminOpenTab('reports');
@@ -3132,11 +3156,11 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function adminRenderSettings(){
             const [{data:site,error:siteErr},{data:sms,error:smsErr},{data:editor,error:editorErr},{data:templates,error:templatesErr},{data:textRows,error:textErr}]=await Promise.all([
-                _supabase.rpc('admin_site_settings'),
-                _supabase.rpc('admin_sms_status'),
-                _supabase.rpc('admin_site_editor_state'),
-                _supabase.rpc('admin_list_sms_templates'),
-                _supabase.rpc('admin_list_site_texts',{p_search:adminTextSearch||'',p_limit:200,p_offset:0})
+                adminRpc('admin_site_settings'),
+                adminRpc('admin_sms_status'),
+                adminRpc('admin_site_editor_state'),
+                adminRpc('admin_list_sms_templates'),
+                adminRpc('admin_list_site_texts',{p_search:adminTextSearch||'',p_limit:200,p_offset:0})
             ]);
             if(siteErr)throw siteErr;if(smsErr)throw smsErr;if(editorErr)throw editorErr;if(templatesErr)throw templatesErr;if(textErr)throw textErr;
             adminEditorState=editor||{content:{},field_config:{}};
@@ -3212,7 +3236,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function adminSaveSiteSettings(){
             const ok=await askConfirm('שמירת הגדרות אתר','לשמור את ההגדרות התפעוליות? שינוי כאן משפיע מיידית על משתמשים.');
             if(!ok)return;
-            const {error}=await _supabase.rpc('admin_update_site_settings_v3',{
+            const {error}=await adminRpc('admin_update_site_settings_v3',{
                 p_registration_enabled:!!$('admin-setting-registration')?.checked,
                 p_event_creation_enabled:!!$('admin-setting-events')?.checked,
                 p_minor_registration_enabled:!!$('admin-setting-minors')?.checked,
@@ -3298,7 +3322,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 return showToast('ברירת המחדל חייבת להיות סוג אירוע פעיל.','error');
             }
 
-            const {error}=await _supabase.rpc('admin_update_site_editor',{
+            const {error}=await adminRpc('admin_update_site_editor',{
                 p_logo_url:$('admin-logo-url')?.value||adminEditorState.logo_url,
                 p_hero_url:$('admin-hero-url')?.value||adminEditorState.hero_url,
                 p_content:content,
@@ -3319,7 +3343,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const row=adminTextRows[index];
             if(!row)return;
             const replacement=$('admin-site-text-'+index)?.value??row.source_text;
-            const {error}=await _supabase.rpc('admin_update_site_text',{
+            const {error}=await adminRpc('admin_update_site_text',{
                 p_source_text:row.source_text,
                 p_replacement:replacement
             });
@@ -3332,7 +3356,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function adminResetSiteText(index){
             const row=adminTextRows[index];
             if(!row)return;
-            const {error}=await _supabase.rpc('admin_reset_site_text',{p_source_text:row.source_text});
+            const {error}=await adminRpc('admin_reset_site_text',{p_source_text:row.source_text});
             if(error)return showToast(readableError(error),'error');
             showToast('הטקסט שוחזר למקור.','success');
             await loadPublicSiteConfig();
@@ -3341,7 +3365,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function adminSaveSmsTemplate(kind){
             const text=$('admin-sms-template-'+kind)?.value||'';
-            const {error}=await _supabase.rpc('admin_update_sms_template',{p_kind:kind,p_template_text:text});
+            const {error}=await adminRpc('admin_update_sms_template',{p_kind:kind,p_template_text:text});
             if(error)return showToast(readableError(error),'error');
             showToast('נוסח ההודעה נשמר.','success');
         }
@@ -3349,7 +3373,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function adminResetSmsTemplate(kind){
             const ok=await askConfirm('שחזור נוסח','להחזיר את נוסח ההודעה לברירת המחדל המקורית?');
             if(!ok)return;
-            const {error}=await _supabase.rpc('admin_reset_sms_template',{p_kind:kind});
+            const {error}=await adminRpc('admin_reset_sms_template',{p_kind:kind});
             if(error)return showToast(readableError(error),'error');
             showToast('הנוסח שוחזר.','success');
             await adminOpenTab('settings');
@@ -3396,9 +3420,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function adminRenderSecurity(){
             const [{data:s,error:sErr},{data:audit,error:aErr},{data:health,error:hErr}]=await Promise.all([
-                _supabase.rpc('admin_security_status'),
-                _supabase.rpc('admin_audit_recent',{p_limit:100}),
-                _supabase.rpc('admin_launch_health')
+                adminRpc('admin_security_status'),
+                adminRpc('admin_audit_recent',{p_limit:100}),
+                adminRpc('admin_launch_health')
             ]);
             if(sErr)throw sErr;if(aErr)throw aErr;if(hErr)throw hErr;
             const a=s?.admin_account||{};
@@ -3419,7 +3443,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function adminCleanupSessions(){
-            const {data,error}=await _supabase.rpc('admin_cleanup_expired_sessions');
+            const {data,error}=await adminRpc('admin_cleanup_expired_sessions');
             if(error)return showToast(readableError(error),'error');
             showToast('נוקו '+Number(data||0)+' סשנים שפג תוקפם.','success');await adminOpenTab('security');
         }
@@ -3429,14 +3453,14 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function adminToggleBlock(profileId,blocked){
             const ok=await askConfirm(blocked?'חסימת משתמש':'פתיחת חסימה',blocked?'לחסום את המשתמש ולנתק את הסשנים הפעילים שלו?':'לפתוח את החסימה?');
             if(!ok)return;
-            const {error}=await _supabase.rpc('admin_set_blocked',{p_profile_id:profileId,p_blocked:blocked});
+            const {error}=await adminRpc('admin_set_blocked',{p_profile_id:profileId,p_blocked:blocked});
             if(error)return showToast(readableError(error),'error');
             showToast(blocked?'המשתמש נחסם.':'החסימה הוסרה.','success');
             await adminOpenTab('users');
         }
 
         async function adminResolveReport(reportId,status){
-            const {error}=await _supabase.rpc('admin_resolve_report',{p_report_id:reportId,p_status:status});
+            const {error}=await adminRpc('admin_resolve_report',{p_report_id:reportId,p_status:status});
             if(error)return showToast(readableError(error),'error');
             showToast('הדיווח עודכן.','success');await adminOpenTab('reports');
         }
@@ -3444,7 +3468,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function adminCancelEvent(eventId){
             const ok=await askConfirm('ביטול אירוע כמנהל','לבטל את האירוע? הנרשמים יקבלו התראה והודעות פעילות של האירוע יבוטלו.','בטל אירוע');
             if(!ok)return;
-            const {error}=await _supabase.rpc('admin_cancel_event',{p_event_id:eventId});
+            const {error}=await adminRpc('admin_cancel_event',{p_event_id:eventId});
             if(error)return showToast(readableError(error),'error');
             showToast('האירוע בוטל.','success');await adminOpenTab('events');
         }

@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-16-171310-0869c41",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-171310",
+      "date": "2026-09-16",
+      "created_at": "2026-09-16T17:13:10Z",
+      "change_title": "Make legal documents and consent labels admin-editable",
+      "commit": "0869c41dbe4fa89b95ab41474d75a750a61ffe9d",
+      "path": "versions/2026-09-16-171310-0869c41.html",
+      "archive": "versions/2026-09-16-171310-0869c41-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-170912-d8b2cb6",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-170912",
       "date": "2026-09-16",

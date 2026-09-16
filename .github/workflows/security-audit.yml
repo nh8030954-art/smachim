@@ -1,0 +1,55 @@
+name: Security audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: node --check assets/app.js
+
+      - name: Prevent server secrets in published files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n -E 'SUPABASE_SERVICE_ROLE_KEY|sb_secret_|SMSGATE_PASSWORD|SMSGATE_USERNAME|sms_dispatch_internal_key'             --include='*.html' --include='*.js' --include='*.json'             --exclude-dir='.git' --exclude-dir='.github' .; then
+            echo "Sensitive server-side secret marker found in published files."
+            exit 1
+          fi
+
+      - name: Prevent persistent authentication tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n -E "localStorage\.setItem\(['\"]smachim(Session|AdminSession)" assets/app.js; then
+            echo "Authentication tokens must never be persisted in localStorage."
+            exit 1
+          fi
+
+      - name: Verify browser security policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "script-src-attr 'none'" index.html
+          grep -q "object-src 'none'" index.html
+          grep -q "base-uri 'self'" index.html
+          grep -q "frame-ancestors 'none'" index.html
+          grep -q 'name="referrer" content="no-referrer"' index.html
+
+      - name: Verify admin and user sessions stay in sessionStorage
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "sessionStorage.getItem('smachimSession')" assets/app.js
+          grep -q "sessionStorage.getItem('smachimAdminSession')" assets/app.js

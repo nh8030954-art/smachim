@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   snapshot:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout history
@@ -27,15 +26,17 @@ jobs:
           PARENT="$(git rev-parse HEAD^)"
           SHORT="$(git rev-parse --short "$PARENT")"
           STAMP="$(date -u +'%Y-%m-%d-%H%M%S')"
+          CREATED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          CHANGE_TITLE="$(git log -1 --pretty=%s HEAD)"
           FILE="versions/${STAMP}-${SHORT}.html"
           ZIP="versions/${STAMP}-${SHORT}-site.zip"
           mkdir -p versions
           git show "${PARENT}:index.html" > "$FILE"
           git archive --format=zip --output="$ZIP" "$PARENT" index.html assets
 
-          python3 - "$FILE" "$ZIP" "$PARENT" "$STAMP" <<'PY'
+          python3 - "$FILE" "$ZIP" "$PARENT" "$STAMP" "$CREATED_AT" "$CHANGE_TITLE" <<'PY'
           import json, pathlib, sys
-          file_path, zip_path, parent, stamp = sys.argv[1:5]
+          file_path, zip_path, parent, stamp, created_at, change_title = sys.argv[1:7]
           manifest_path = pathlib.Path("versions/manifest.json")
           if manifest_path.exists():
               data = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -46,6 +47,8 @@ jobs:
               "id": pathlib.Path(file_path).stem,
               "label": f"גיבוי אוטומטי לפני שינוי {stamp}",
               "date": stamp[:10],
+              "created_at": created_at,
+              "change_title": change_title,
               "commit": parent,
               "path": file_path,
               "archive": zip_path,

@@ -289,7 +289,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
 
         // CSP-safe event delegation. Markup contains declarative data-* actions only.
-        const SAFE_UI_ACTIONS = new Set(["navigate","openAddEvent","openPersonalArea","handleLogin","handleLogout","handlePasswordReset","handleRegisterVolunteer","showLegalSummary","handleCreateEvent","previewEventMatches","saveEditEvent","loadDashboard","saveProfileSettings","deleteMyAccount","submitSupportRequest","openSupport","saveFamilyChild","syncFamilyChildEventDefault","openProfileSettings","closeEventChat","sendChatMessage","resolveAppModal","toggleAccessibilityPanel","changeAccessibilityFont","toggleAccessibilityPreference","resetAccessibilityPreferences","loadAdminArea","handleAdminPasswordChange","confirmAdminMfa","cancelAdminMfa","switchDashboardArea","openFamilyChildForm","openFamilyChildArea","deleteFamilyChild","confirmFamilyChildAttendance","cancelFamilyChildRegistration","registerFamilyChildForEvent","markNotificationsRead","openMoovitEvent","downloadCalendar","confirmAttendance","cancelMyRegistration","rsvpEvent","reportEvent","applyMatchingFilters","showRegistrants","openEditEvent","cancelHostEvent","setHostAttendance","adminOpenTab","adminToggleNewUserForm","adminCreateUser","adminSyncNewUserRole","adminSearchUsers","adminShowUser","adminToggleBlock","adminSetUserSms","adminForceLogout","adminDeleteUser","adminCloseDetail","adminSearchEvents","adminShowEvent","adminCancelEvent","adminRunSmsMaintenance","adminSaveSmsSettings","adminChangeSmsFilter","adminRetrySms","adminResolveSupport","adminResolveReport","adminSaveSiteSettings","adminSaveContentEditor","adminUploadAsset","adminSearchSiteTexts","adminSaveSiteText","adminResetSiteText","adminSaveSmsTemplate","adminResetSmsTemplate","adminPreviewVersion","adminDownloadVersion","adminCleanupSessions"]);
+        const SAFE_UI_ACTIONS = new Set(["navigate","openAddEvent","openPersonalArea","handleLogin","handleLogout","handlePasswordReset","handleRegisterVolunteer","showLegalSummary","handleCreateEvent","previewEventMatches","saveEditEvent","loadDashboard","saveProfileSettings","deleteMyAccount","submitSupportRequest","openSupport","saveFamilyChild","syncFamilyChildEventDefault","openProfileSettings","closeEventChat","sendChatMessage","resolveAppModal","toggleAccessibilityPanel","changeAccessibilityFont","toggleAccessibilityPreference","resetAccessibilityPreferences","loadAdminArea","handleAdminPasswordChange","confirmAdminMfa","cancelAdminMfa","switchDashboardArea","openFamilyChildForm","openFamilyChildArea","deleteFamilyChild","confirmFamilyChildAttendance","cancelFamilyChildRegistration","registerFamilyChildForEvent","markNotificationsRead","openMoovitEvent","downloadCalendar","confirmAttendance","cancelMyRegistration","rsvpEvent","reportEvent","applyMatchingFilters","showRegistrants","openEditEvent","cancelHostEvent","setHostAttendance","adminOpenTab","adminToggleNewUserForm","adminCreateUser","adminSyncNewUserRole","adminSearchUsers","adminShowUser","adminToggleBlock","adminSetUserSms","adminForceLogout","adminDeleteUser","adminCloseDetail","adminSearchEvents","adminShowEvent","adminCancelEvent","adminRunSmsMaintenance","adminSaveSmsSettings","adminChangeSmsFilter","adminRetrySms","adminResolveSupport","adminResolveReport","adminSaveSiteSettings","adminSaveContentEditor","adminUploadAsset","adminSearchSiteTexts","adminSaveSiteText","adminResetSiteText","adminSaveSmsTemplate","adminResetSmsTemplate","adminPreviewVersion","adminDownloadVersion","adminRestoreVersion","adminCleanupSessions"]);
         function splitDeclarativeParts(text, separator) {
             const out=[]; let current='', quote=null, escaped=false;
             for (const ch of String(text||'')) {
@@ -1164,15 +1164,29 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             }catch(_){}
         }
 
+        function sameVisualAsset(a,b){
+            try{
+                const ua=new URL(String(a||''),location.href);
+                const ub=new URL(String(b||''),location.href);
+                return ua.origin===ub.origin&&ua.pathname===ub.pathname;
+            }catch(_){return String(a||'').split('?')[0]===String(b||'').split('?')[0];}
+        }
+
+        function setVisualImageSource(img,next){
+            if(!img||!next)return;
+            const current=img.getAttribute('src')||img.src||'';
+            if(!sameVisualAsset(current,next))img.src=next;
+        }
+
         function applyVisualSnapshot(snapshot){
             const logo=$('site-logo-img'),hero=$('home-hero-img');
             if(logo){
                 logo.dataset.fallback='';
-                logo.src=versionedPublicAsset(snapshot?.logo_url,'./assets/site-title.jpg');
+                setVisualImageSource(logo,versionedPublicAsset(snapshot?.logo_url,'./assets/site-title.jpg'));
             }
             if(hero){
                 hero.dataset.fallback='';
-                hero.src=versionedPublicAsset(snapshot?.hero_url,'./assets/hero-banner.jpg');
+                setVisualImageSource(hero,versionedPublicAsset(snapshot?.hero_url,'./assets/hero-banner.jpg'));
             }
             applySiteDesign(snapshot?.design||{});
         }
@@ -1180,7 +1194,12 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         function applyCachedPublicAppearance(){
             try{
                 const cached=JSON.parse(localStorage.getItem(PUBLIC_APPEARANCE_CACHE_KEY)||'null');
-                if(cached&&typeof cached==='object')applyVisualSnapshot(cached);
+                if(!cached||typeof cached!=='object')return;
+                const logo=$('site-logo-img');
+                if(logo&&cached.logo_url){
+                    logo.dataset.fallback='';
+                    setVisualImageSource(logo,versionedPublicAsset(cached.logo_url,'./assets/site-title.jpg'));
+                }
             }catch(_){}
         }
 
@@ -4159,6 +4178,24 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
 
+        function adminVersionDateTime(v){
+            let d=null;
+            if(v?.created_at)d=new Date(v.created_at);
+            if(!d||Number.isNaN(d.getTime())){
+                const m=String(v?.id||'').match(/^(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})(\d{2})-/);
+                if(m)d=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]),Number(m[4]),Number(m[5]),Number(m[6])));
+            }
+            if(!d||Number.isNaN(d.getTime()))return String(v?.date||'');
+            return new Intl.DateTimeFormat('he-IL',{
+                timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric',
+                hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false
+            }).format(d);
+        }
+
+        function adminVersionChangeTitle(v){
+            return String(v?.change_title||'').trim()||'לא תועד תיאור שינוי לגרסה הזו.';
+        }
+
         async function adminRenderVersions(){
             const res=await fetch('./versions/manifest.json?ts='+Date.now(),{cache:'no-store'});
             if(!res.ok)throw new Error('version_manifest_unavailable');
@@ -4167,9 +4204,11 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const cards=versions.map(v=>{
                 const commit=String(v.commit||'');
                 const commitUrl=commit?'https://github.com/nh8030954-art/smachim/commit/'+encodeURIComponent(commit):'';
-                return '<div class="border rounded-xl p-4 bg-slate-50"><div class="flex flex-wrap justify-between gap-3 items-start"><div><div class="font-bold">'+esc(v.label||v.id||'גרסה')+'</div><div class="text-xs text-slate-500 mt-1">'+esc(v.date||'')+(commit?' · '+esc(commit.slice(0,8)):'')+'</div>'+(v.note?'<p class="text-sm text-slate-600 mt-2">'+esc(v.note)+'</p>':'')+'</div><div class="flex flex-wrap gap-2"><button type="button" data-onclick="adminPreviewVersion(\''+esc(v.path)+'\',\''+esc(v.label||'גרסה')+'\')" class="btn-brand px-3 py-2 text-sm">תצוגה</button><button type="button" data-onclick="adminDownloadVersion(\''+esc(v.path)+'\')" class="btn-soft px-3 py-2 text-sm">הורד index.html</button>'+(v.archive?'<a href="./'+esc(v.archive)+'" download class="btn-soft px-3 py-2 text-sm inline-flex items-center"><i class="fa-solid fa-file-zipper ml-1" aria-hidden="true"></i>ZIP מלא</a>':'')+(commitUrl?'<a target="_blank" rel="noopener" href="'+commitUrl+'" class="btn-soft px-3 py-2 text-sm inline-flex items-center">GitHub</a>':'')+'</div></div></div>';
+                const dt=adminVersionDateTime(v);
+                const changeTitle=adminVersionChangeTitle(v);
+                return '<div class="border rounded-xl p-4 bg-slate-50"><div class="flex flex-wrap justify-between gap-3 items-start"><div class="min-w-0 flex-1"><div class="font-bold">'+esc(v.label||v.id||'גרסה')+'</div><div class="text-xs text-slate-500 mt-1">'+esc(dt)+(commit?' · '+esc(commit.slice(0,8)):'')+'</div><div class="mt-3 rounded-lg border border-slate-200 bg-white p-3"><div class="text-xs font-bold text-slate-500">מה השתנה אחרי הגרסה הזו</div><div class="font-semibold text-slate-800 mt-1">'+esc(changeTitle)+'</div></div>'+(v.note?'<p class="text-xs text-slate-500 mt-2">'+esc(v.note)+'</p>':'')+'</div><div class="flex flex-wrap gap-2"><button type="button" data-onclick="adminPreviewVersion(\''+esc(v.path)+'\',\''+esc(v.label||'גרסה')+'\')" class="btn-brand px-3 py-2 text-sm">תצוגה</button><button type="button" data-onclick="adminDownloadVersion(\''+esc(v.path)+'\')" class="btn-soft px-3 py-2 text-sm">הורד index.html</button>'+(v.archive?'<a href="./'+esc(v.archive)+'" download class="btn-soft px-3 py-2 text-sm inline-flex items-center"><i class="fa-solid fa-file-zipper ml-1" aria-hidden="true"></i>ZIP מלא</a>':'')+(commit?'<button type="button" data-onclick="adminRestoreVersion(\''+esc(commit)+'\')" class="px-3 py-2 text-sm font-bold rounded-lg border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"><i class="fa-solid fa-clock-rotate-left ml-1" aria-hidden="true"></i>שחזר גרסה</button>':'')+(commitUrl?'<a target="_blank" rel="noopener" href="'+commitUrl+'" class="btn-soft px-3 py-2 text-sm inline-flex items-center">GitHub</a>':'')+'</div></div></div>';
             }).join('');
-            return '<div class="space-y-5"><div class="glass-card p-6"><h3 class="text-2xl font-bold">גרסאות האתר</h3><p class="text-sm text-slate-500 mt-1">בכל שינוי עתידי ב־index.html או בקבצי העיצוב נשמר אוטומטית עותק של הגרסה הקודמת. אפשר לצפות בו בבטחה, להוריד את index.html, ובגיבויים האוטומטיים גם ZIP מלא של index.html ותיקיית assets.</p></div><div class="glass-card p-6"><div class="space-y-3">'+(cards||'<p class="text-slate-500">עדיין אין גרסאות שמורות.</p>')+'</div></div><div id="admin-version-preview" class="hidden glass-card p-4"><div class="flex justify-between gap-3 items-center mb-3"><h3 id="admin-version-preview-title" class="font-bold text-lg">תצוגת גרסה</h3><button type="button" data-onclick="$(\'admin-version-preview\').classList.add(\'hidden\')" class="btn-soft px-3 py-2">סגור תצוגה</button></div><iframe id="admin-version-frame" title="תצוגה בטוחה של גרסת אתר קודמת" sandbox="" class="w-full h-[70vh] border rounded-xl bg-white"></iframe><p class="text-xs text-slate-500 mt-2">התצוגה מנוטרלת מסקריפטים ולכן אינה יכולה לבצע פעולות במערכת.</p></div></div>';
+            return '<div class="space-y-5"><div class="glass-card p-6"><h3 class="text-2xl font-bold">גרסאות האתר</h3><p class="text-sm text-slate-500 mt-1">כל גיבוי מציג תאריך ושעה, מה השתנה מיד אחריו, ואפשרות שחזור. השחזור מתבצע דרך GitHub Actions המאובטח כדי שלא לשמור מפתח GitHub בתוך האתר.</p></div><div class="glass-card p-6"><div class="space-y-3">'+(cards||'<p class="text-slate-500">עדיין אין גרסאות שמורות.</p>')+'</div></div><div id="admin-version-preview" class="hidden glass-card p-4"><div class="flex justify-between gap-3 items-center mb-3"><h3 id="admin-version-preview-title" class="font-bold text-lg">תצוגת גרסה</h3><button type="button" data-onclick="$(\'admin-version-preview\').classList.add(\'hidden\')" class="btn-soft px-3 py-2">סגור תצוגה</button></div><iframe id="admin-version-frame" title="תצוגה בטוחה של גרסת אתר קודמת" sandbox="" class="w-full h-[70vh] border rounded-xl bg-white"></iframe><p class="text-xs text-slate-500 mt-2">התצוגה מנוטרלת מסקריפטים ולכן אינה יכולה לבצע פעולות במערכת.</p></div></div>';
         }
 
         async function adminPreviewVersion(path,label){
@@ -4195,6 +4234,20 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const a=document.createElement('a');
             a.href=url;a.download='index.html';a.click();
             setTimeout(()=>URL.revokeObjectURL(url),1000);
+        }
+
+        async function adminRestoreVersion(commit){
+            const sha=String(commit||'').trim();
+            if(!/^[0-9a-f]{40}$/i.test(sha))return showToast('מזהה הגרסה אינו תקין.','error');
+            const ok=await askConfirm(
+                'שחזור גרסת אתר',
+                'השחזור יחזיר את index.html ואת תיקיית assets למצב של הגרסה שנבחרה. הגרסה הנוכחית תישמר אוטומטית בגיבוי לפני השחזור. להמשיך?',
+                'המשך לשחזור'
+            );
+            if(!ok)return;
+            try{await navigator.clipboard.writeText(sha);}catch(_){}
+            window.open('https://github.com/nh8030954-art/smachim/actions/workflows/restore-site.yml','_blank','noopener');
+            showToast('מזהה הגרסה הועתק. בחלון GitHub לחץ Run workflow והדבק אותו בשדה target_commit.','success');
         }
 
         async function adminRenderSecurity(){

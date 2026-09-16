@@ -7,7 +7,9 @@
       "commit": "b0b1a31a6c17291e5c18fadae743c9c0163a09cf",
       "path": "versions/2026-09-16-152958-b0b1a31.html",
       "archive": "versions/2026-09-16-152958-b0b1a31-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T15:29:58Z",
+      "change_title": "Crop built-in logo whitespace and honor hero height"
     },
     {
       "id": "2026-09-16-151237-5fd0efd",
@@ -16,7 +18,9 @@
       "commit": "5fd0efdb3ec093fd5e578d7793196c8275f426ac",
       "path": "versions/2026-09-16-151237-5fd0efd.html",
       "archive": "versions/2026-09-16-151237-5fd0efd-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T15:12:37Z",
+      "change_title": "Refresh privacy and mobile fixes"
     },
     {
       "id": "2026-09-16-151158-b69daf2",
@@ -25,7 +29,9 @@
       "commit": "b69daf2ec7a850c8edc195c5ef1b526eb6654b11",
       "path": "versions/2026-09-16-151158-b69daf2.html",
       "archive": "versions/2026-09-16-151158-b69daf2-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T15:11:58Z",
+      "change_title": "Purge admin and family data on logout"
     },
     {
       "id": "2026-09-16-151013-dcc5491",
@@ -34,7 +40,9 @@
       "commit": "dcc54916e452f126e33b19d34dae551a0564a317",
       "path": "versions/2026-09-16-151013-dcc5491.html",
       "archive": "versions/2026-09-16-151013-dcc5491-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T15:10:13Z",
+      "change_title": "Disable guest form persistence and refresh mobile fixes"
     },
     {
       "id": "2026-09-16-150955-19945c1",
@@ -43,7 +51,9 @@
       "commit": "19945c17f06347a42658eebe3bec6ed98f539539",
       "path": "versions/2026-09-16-150955-19945c1.html",
       "archive": "versions/2026-09-16-150955-19945c1-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T15:09:55Z",
+      "change_title": "Fix mobile hero sizing and strengthen logout privacy"
     },
     {
       "id": "2026-09-16-145523-7c9cbea",
@@ -52,7 +62,9 @@
       "commit": "7c9cbeace1d57c305aa936530999b0e6db575720",
       "path": "versions/2026-09-16-145523-7c9cbea.html",
       "archive": "versions/2026-09-16-145523-7c9cbea-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T14:55:23Z",
+      "change_title": "Use natural logo spacing and non-distorting hero layout"
     },
     {
       "id": "2026-09-16-143128-2b0b2e2",
@@ -61,7 +73,9 @@
       "commit": "2b0b2e2f841005de234d4633dca7811243a2622e",
       "path": "versions/2026-09-16-143128-2b0b2e2.html",
       "archive": "versions/2026-09-16-143128-2b0b2e2-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T14:31:28Z",
+      "change_title": "Fix owner privacy, admin design sizing, and update home banner"
     },
     {
       "id": "2026-09-16-140429-5bdf5f5",
@@ -70,7 +84,9 @@
       "commit": "5bdf5f545f81b347da307fbc7db9d999857555b0",
       "path": "versions/2026-09-16-140429-5bdf5f5.html",
       "archive": "versions/2026-09-16-140429-5bdf5f5-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T14:04:29Z",
+      "change_title": "Load QR library for admin MFA enrollment"
     },
     {
       "id": "2026-09-16-135917-d45a59b",
@@ -79,7 +95,9 @@
       "commit": "d45a59b827dc7f40590ad842a11c80bb0ee293c3",
       "path": "versions/2026-09-16-135917-d45a59b.html",
       "archive": "versions/2026-09-16-135917-d45a59b-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T13:59:17Z",
+      "change_title": "Render admin MFA enrollment as QR code"
     },
     {
       "id": "2026-09-16-135850-998b1a2",
@@ -88,7 +106,9 @@
       "commit": "998b1a2789683268185e7b3502afd3e39a85097a",
       "path": "versions/2026-09-16-135850-998b1a2.html",
       "archive": "versions/2026-09-16-135850-998b1a2-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T13:58:50Z",
+      "change_title": "Show QR setup for admin MFA"
     },
     {
       "id": "2026-09-16-135814-4daf5c9",
@@ -97,7 +117,9 @@
       "commit": "4daf5c9bfa1d60b087db26c5202ad245ba509a74",
       "path": "versions/2026-09-16-135814-4daf5c9.html",
       "archive": "versions/2026-09-16-135814-4daf5c9-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T13:58:14Z",
+      "change_title": "Vendor QRCode library for admin MFA setup"
     },
     {
       "id": "2026-09-16-124554-76f54d0",
@@ -106,7 +128,9 @@
       "commit": "76f54d09b554a64d0ea1b9d7e0433c7791627f5d",
       "path": "versions/2026-09-16-124554-76f54d0.html",
       "archive": "versions/2026-09-16-124554-76f54d0-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T12:45:54Z",
+      "change_title": "Ignore disabled options in form values"
     },
     {
       "id": "2026-09-16-124530-4506856",
@@ -115,7 +139,9 @@
       "commit": "4506856a0a821e7ca0f4bd5a2ab7e603255a593b",
       "path": "versions/2026-09-16-124530-4506856.html",
       "archive": "versions/2026-09-16-124530-4506856-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T12:45:30Z",
+      "change_title": "Hide disabled configurable choices"
     },
     {
       "id": "2026-09-16-123556-6648c10",
@@ -124,7 +150,9 @@
       "commit": "6648c10b2b3571be5d2f2aaa8007d7a32621f79d",
       "path": "versions/2026-09-16-123556-6648c10.html",
       "archive": "versions/2026-09-16-123556-6648c10-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T12:35:56Z",
+      "change_title": "Show reliable address feedback and hide disabled engagement"
     },
     {
       "id": "2026-09-16-123520-8167867",
@@ -133,7 +161,9 @@
       "commit": "8167867d0dcd90f9017c452b23d6bfff81795e32",
       "path": "versions/2026-09-16-123520-8167867.html",
       "archive": "versions/2026-09-16-123520-8167867-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T12:35:20Z",
+      "change_title": "Fix address suggestions deadline validation and option defaults"
     },
     {
       "id": "2026-09-16-120437-24d1c39",
@@ -142,7 +172,9 @@
       "commit": "24d1c39b24b5dabc9cb17e2c6886cb587ad8c40e",
       "path": "versions/2026-09-16-120437-24d1c39.html",
       "archive": "versions/2026-09-16-120437-24d1c39-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T12:04:37Z",
+      "change_title": "Clear stale custom validity when resetting forms"
     },
     {
       "id": "2026-09-16-120408-ce4f07b",
@@ -151,7 +183,9 @@
       "commit": "ce4f07bc865f8fe65351277a7657b0ac25adf954",
       "path": "versions/2026-09-16-120408-ce4f07b.html",
       "archive": "versions/2026-09-16-120408-ce4f07b-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T12:04:08Z",
+      "change_title": "Hide disabled event option and require explicit sector choice"
     },
     {
       "id": "2026-09-16-120357-55db406",
@@ -160,7 +194,9 @@
       "commit": "55db40606d290c1997fd1a2d2039498897c56c01",
       "path": "versions/2026-09-16-120357-55db406.html",
       "archive": "versions/2026-09-16-120357-55db406-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T12:03:57Z",
+      "change_title": "Fix form validation feedback and address suggestions"
     },
     {
       "id": "2026-09-16-110220-e870ca2",
@@ -169,7 +205,9 @@
       "commit": "e870ca217fc079e353355a48793fe6a5a4319131",
       "path": "versions/2026-09-16-110220-e870ca2.html",
       "archive": "versions/2026-09-16-110220-e870ca2-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T11:02:20Z",
+      "change_title": "Align password fields with 12-character minimum"
     },
     {
       "id": "2026-09-16-110144-e5913d3",
@@ -178,7 +216,9 @@
       "commit": "e5913d30d41b803ec8d791eb39267f5ff93abbe0",
       "path": "versions/2026-09-16-110144-e5913d3.html",
       "archive": "versions/2026-09-16-110144-e5913d3-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T11:01:44Z",
+      "change_title": "Require stronger passwords for new and reset accounts"
     },
     {
       "id": "2026-09-16-101948-87e526a",
@@ -187,7 +227,9 @@
       "commit": "87e526a8f1d117df5af3e57b3c0cf8eea516b5b2",
       "path": "versions/2026-09-16-101948-87e526a.html",
       "archive": "versions/2026-09-16-101948-87e526a-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T10:19:48Z",
+      "change_title": "Tighten CSP after routing privacy proxy"
     },
     {
       "id": "2026-09-16-101934-a567825",
@@ -196,7 +238,9 @@
       "commit": "a567825817b25927e0807d9858309966dc32e80d",
       "path": "versions/2026-09-16-101934-a567825.html",
       "archive": "versions/2026-09-16-101934-a567825-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T10:19:34Z",
+      "change_title": "Proxy route calculations and strengthen location privacy"
     },
     {
       "id": "2026-09-16-100827-bc0da21",
@@ -205,7 +249,9 @@
       "commit": "bc0da211778c6925340865b418c0551487ad9b32",
       "path": "versions/2026-09-16-100827-bc0da21.html",
       "archive": "versions/2026-09-16-100827-bc0da21-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T10:08:27Z",
+      "change_title": "Refresh hardened app cache version"
     },
     {
       "id": "2026-09-16-100229-236ba6d",
@@ -214,7 +260,9 @@
       "commit": "236ba6d93d9cf4c50cc0b97be54647e8bc8f62a7",
       "path": "versions/2026-09-16-100229-236ba6d.html",
       "archive": "versions/2026-09-16-100229-236ba6d-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T10:02:29Z",
+      "change_title": "Restrict declarative UI actions to one safe command"
     },
     {
       "id": "2026-09-16-100025-73b9b94",
@@ -223,7 +271,9 @@
       "commit": "73b9b94412942c1a4bf3b35ba1c7111b727dc52d",
       "path": "versions/2026-09-16-100025-73b9b94.html",
       "archive": "versions/2026-09-16-100025-73b9b94-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T10:00:25Z",
+      "change_title": "Load security bootstrap and refresh hardened app"
     },
     {
       "id": "2026-09-16-100010-25e4b08",
@@ -232,7 +282,9 @@
       "commit": "25e4b0817ed63158d06c4013135955cc6f789d75",
       "path": "versions/2026-09-16-100010-25e4b08.html",
       "archive": "versions/2026-09-16-100010-25e4b08-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T10:00:10Z",
+      "change_title": "Add early anti-clickjacking guard"
     },
     {
       "id": "2026-09-16-095649-ff76327",
@@ -241,7 +293,9 @@
       "commit": "ff76327ded53b22bd1e4d789b3c583bcb357bc8f",
       "path": "versions/2026-09-16-095649-ff76327.html",
       "archive": "versions/2026-09-16-095649-ff76327-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T09:56:49Z",
+      "change_title": "Add admin MFA flow and safe visual controls"
     },
     {
       "id": "2026-09-16-095543-72236c9",
@@ -250,7 +304,9 @@
       "commit": "72236c915cdc77869b244d51955dad9b57736b0a",
       "path": "versions/2026-09-16-095543-72236c9.html",
       "archive": "versions/2026-09-16-095543-72236c9-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T09:55:43Z",
+      "change_title": "Add safe admin design controls foundation and MFA login panel"
     },
     {
       "id": "2026-09-16-093547-19386f7",
@@ -259,7 +315,9 @@
       "commit": "19386f7501521f23bdf665e6a0768edaba40fc8a",
       "path": "versions/2026-09-16-093547-19386f7.html",
       "archive": "versions/2026-09-16-093547-19386f7-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T09:35:47Z",
+      "change_title": "Harden session privacy and cross-tab logout"
     },
     {
       "id": "2026-09-16-092106-e1c4a6c",
@@ -268,7 +326,9 @@
       "commit": "e1c4a6cf1454aa8f28d30c0e8b6bd813208ad892",
       "path": "versions/2026-09-16-092106-e1c4a6c.html",
       "archive": "versions/2026-09-16-092106-e1c4a6c-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T09:21:06Z",
+      "change_title": "Bust app cache after button fix"
     },
     {
       "id": "2026-09-16-092050-dc5e9f9",
@@ -277,7 +337,9 @@
       "commit": "dc5e9f93c1f5073adbfadc2ddeef2787b2a26142",
       "path": "versions/2026-09-16-092050-dc5e9f9.html",
       "archive": "versions/2026-09-16-092050-dc5e9f9-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T09:20:50Z",
+      "change_title": "Fix CSP-safe button and form action delegation"
     },
     {
       "id": "2026-09-16-085416-82ccf3d",
@@ -286,7 +348,9 @@
       "commit": "82ccf3dcbff241c2fa335b3c57ed8aec45d22d8b",
       "path": "versions/2026-09-16-085416-82ccf3d.html",
       "archive": "versions/2026-09-16-085416-82ccf3d-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T08:54:16Z",
+      "change_title": "Route notifications through secured user gateway"
     },
     {
       "id": "2026-09-16-084643-d07258d",
@@ -295,7 +359,9 @@
       "commit": "d07258dddef2370c5ca564125156ff96e7b600f5",
       "path": "versions/2026-09-16-084643-d07258d.html",
       "archive": "versions/2026-09-16-084643-d07258d-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T08:46:43Z",
+      "change_title": "Route user RPCs through hardened server gateway"
     },
     {
       "id": "2026-09-16-083841-26800e2",
@@ -304,7 +370,9 @@
       "commit": "26800e29e4ebfaf9ad7c5bcc1a7f470d8d3d42fb",
       "path": "versions/2026-09-16-083841-26800e2.html",
       "archive": "versions/2026-09-16-083841-26800e2-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T08:38:41Z",
+      "change_title": "Tighten content security policy"
     },
     {
       "id": "2026-09-16-080113-fbc791a",
@@ -313,7 +381,9 @@
       "commit": "fbc791ad7de9d7c59e80630d11da8d9e5b369ddb",
       "path": "versions/2026-09-16-080113-fbc791a.html",
       "archive": "versions/2026-09-16-080113-fbc791a-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T08:01:13Z",
+      "change_title": "Route admin RPCs through authenticated Edge gateway"
     },
     {
       "id": "2026-09-16-075645-2676271",
@@ -322,7 +392,9 @@
       "commit": "2676271562176ec73992420f2ffb8b559bf6a795",
       "path": "versions/2026-09-16-075645-2676271.html",
       "archive": "versions/2026-09-16-075645-2676271-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T07:56:45Z",
+      "change_title": "Harden browser CSP and session storage"
     },
     {
       "id": "2026-09-16-072708-1dea6cc",
@@ -331,7 +403,9 @@
       "commit": "1dea6cca6fc3f7902ad78433c9c2c1c6d63af761",
       "path": "versions/2026-09-16-072708-1dea6cc.html",
       "archive": "versions/2026-09-16-072708-1dea6cc-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T07:27:08Z",
+      "change_title": "Fix hardened CSP directive boundaries"
     },
     {
       "id": "2026-09-16-072301-82f62f6",
@@ -340,7 +414,9 @@
       "commit": "82f62f6bed6929bf4595c260f3462964afe7918a",
       "path": "versions/2026-09-16-072301-82f62f6.html",
       "archive": "versions/2026-09-16-072301-82f62f6-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T07:23:01Z",
+      "change_title": "Harden CSP and browser session storage"
     },
     {
       "id": "2026-09-16-063255-8045daf",
@@ -349,7 +425,9 @@
       "commit": "8045daf31b7271462f330931cd83ee386f472f0c",
       "path": "versions/2026-09-16-063255-8045daf.html",
       "archive": "versions/2026-09-16-063255-8045daf-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-16T06:32:55Z",
+      "change_title": "Make volunteer scoring admin-controlled and self-confirmed"
     },
     {
       "id": "2026-09-15-200740-6528b82",
@@ -358,7 +436,9 @@
       "commit": "6528b8235e6d8ce7c7e4275eb804eb18bf47ac2d",
       "path": "versions/2026-09-15-200740-6528b82.html",
       "archive": "versions/2026-09-15-200740-6528b82-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-15T20:07:40Z",
+      "change_title": "Fix mobile footer and strengthen accessibility"
     },
     {
       "id": "2026-09-15-195749-dd1e23e",
@@ -367,7 +447,9 @@
       "commit": "dd1e23ec4857d4fc9ac32336c564b4cfb1a0d539",
       "path": "versions/2026-09-15-195749-dd1e23e.html",
       "archive": "versions/2026-09-15-195749-dd1e23e-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-15T19:57:49Z",
+      "change_title": "Add full accessibility settings menu"
     },
     {
       "id": "2026-09-15-194953-c13fadc",
@@ -376,7 +458,9 @@
       "commit": "c13fadc7e2ddaeb879d5d5e87ed2885cf6f12744",
       "path": "versions/2026-09-15-194953-c13fadc.html",
       "archive": "versions/2026-09-15-194953-c13fadc-site.zip",
-      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets.",
+      "created_at": "2026-09-15T19:49:53Z",
+      "change_title": "Add full site archive downloads to version history"
     },
     {
       "id": "2026-09-15-before-wcag-points",
@@ -384,7 +468,8 @@
       "date": "2026-09-15",
       "commit": "6261f86975226476d39c643227a519b4e1299019",
       "path": "versions/2026-09-15-before-wcag-points.html",
-      "note": "גיבוי מלא של index.html לפני מקצה השינויים הנוכחי."
+      "note": "גיבוי מלא של index.html לפני מקצה השינויים הנוכחי.",
+      "change_title": "לא תועד תיאור השינוי."
     }
   ]
 }

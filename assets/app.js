@@ -116,6 +116,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         let userIdleTimer = null;
         const ADMIN_IDLE_MS = 15 * 60 * 1000;
         const USER_IDLE_MS = 2 * 60 * 60 * 1000;
+        const LEGAL_VERSION = '2026-09-16-v1';
         let calendarEventCache = new Map();
         let modalResolver = null;
         try { localStorage.removeItem('smachimDashboardArea'); } catch(_) {}
@@ -725,7 +726,12 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 modalResolver=resolve;
                 lastFocusedBeforeAppModal=document.activeElement instanceof HTMLElement?document.activeElement:null;
                 $('modal-title').textContent=title;
-                $('modal-message').textContent=message;
+                const messageEl=$('modal-message');
+                messageEl.textContent=message;
+                messageEl.style.maxHeight='';
+                messageEl.style.overflowY='';
+                messageEl.style.textAlign='';
+                messageEl.style.paddingInlineEnd='';
                 $('modal-confirm').textContent=confirmText;
                 $('modal-cancel').textContent=cancelText;
                 const inp=$('modal-input');
@@ -824,10 +830,24 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         function showLegalSummary(kind){
-            if(kind==='privacy'){
-                return openAppModal({title:'מדיניות פרטיות',message:'אנחנו שומרים את הפרטים הנדרשים להפעלת החשבון ולהתאמת אירועים: טלפון, פרטי פרופיל, כתובת לצורך חישוב מרחק ופעילות במערכת. כתובת המגורים אינה מוצגת לבעלי אירועים. חישוב מסלול נעשה דרך שרת המערכת; שירות המפה החיצוני עשוי לקבל נתוני מפה/מיקום הנחוצים להצגת המפה. ניתן למחוק חשבון מההגדרות.',confirmText:'הבנתי',cancelText:'סגור'});
+            const isPrivacy=kind==='privacy';
+            const source=$(isPrivacy?'view-privacy':'view-terms')?.querySelector('.legal-document');
+            const title=isPrivacy?'מדיניות פרטיות מלאה':'תנאי שימוש מלאים';
+            const text=(source?.innerText||'').trim();
+            const promise=openAppModal({
+                title,
+                message:text || 'המסמך המלא זמין בקישור שבתחתית האתר.',
+                confirmText:'קראתי',
+                cancelText:'סגור'
+            });
+            const messageEl=$('modal-message');
+            if(messageEl){
+                messageEl.style.maxHeight='60vh';
+                messageEl.style.overflowY='auto';
+                messageEl.style.textAlign='right';
+                messageEl.style.paddingInlineEnd='0.35rem';
             }
-            return openAppModal({title:'תנאי שימוש',message:'יש למסור פרטים נכונים, להשתמש בשירות למטרת המיזם בלבד ולעדכן ביטול או שינוי בזמן. המערכת מסייעת בהתאמה אך אינה יכולה להבטיח הגעה בפועל.',confirmText:'הבנתי',cancelText:'סגור'});
+            return promise;
         }
 
         async function handlePasswordReset(){
@@ -1963,6 +1983,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
                 ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
+                ['legal_version_mismatch','מסמכי הפרטיות והתנאים עודכנו. יש לרענן את הדף, לקרוא ולאשר את הגרסה העדכנית.'],
                 ['phone_verification_required','יש לאמת את מספר הטלפון לפני המשך ההרשמה.'],
                 ['verification_rate_limited','נשלח קוד לאחרונה. יש להמתין כדקה לפני שליחת קוד נוסף.'],
                 ['verification_invalid_code','קוד האימות שגוי.'],
@@ -2072,7 +2093,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await userRpc('username_register_v8',{
+                const {data:token,error}=await userRpc('username_register_v9',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
                     p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
@@ -2080,7 +2101,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     p_availability_days:days,p_availability_from:availableFrom,p_availability_until:availableUntil,
                     p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng,
                     p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true,
-                    p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false
+                    p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false,
+                    p_privacy_version:LEGAL_VERSION,p_terms_version:LEGAL_VERSION,p_sms_notice_version:LEGAL_VERSION
                 });
                 if(error) throw error;
                 applySessionToken(token); await loadProfile(); updateHeaderActions();
@@ -2608,14 +2630,15 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await userRpc('username_register_v8',{
+                const {data:token,error}=await userRpc('username_register_v9',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_volunteer_event_type_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
                     p_strict_separation:false,p_availability_days:[0,1,2,3,4],
                     p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null,
                     p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true,
-                    p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false
+                    p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false,
+                    p_privacy_version:LEGAL_VERSION,p_terms_version:LEGAL_VERSION,p_sms_notice_version:LEGAL_VERSION
                 });
                 if(error){
                     if(String(error.message).includes('already_registered')){

@@ -772,7 +772,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         function showLegalSummary(kind){
             if(kind==='privacy'){
-                return openAppModal({title:'מדיניות פרטיות',message:'אנחנו שומרים את הפרטים הנדרשים להפעלת החשבון ולהתאמת אירועים: טלפון, פרטי פרופיל, כתובת לצורך חישוב מרחק ופעילות במערכת. כתובת המגורים אינה מוצגת לבעלי אירועים. ניתן למחוק חשבון מההגדרות.',confirmText:'הבנתי',cancelText:'סגור'});
+                return openAppModal({title:'מדיניות פרטיות',message:'אנחנו שומרים את הפרטים הנדרשים להפעלת החשבון ולהתאמת אירועים: טלפון, פרטי פרופיל, כתובת לצורך חישוב מרחק ופעילות במערכת. כתובת המגורים אינה מוצגת לבעלי אירועים. חישוב מסלול נעשה דרך שרת המערכת; שירות המפה החיצוני עשוי לקבל נתוני מפה/מיקום הנחוצים להצגת המפה. ניתן למחוק חשבון מההגדרות.',confirmText:'הבנתי',cancelText:'סגור'});
             }
             return openAppModal({title:'תנאי שימוש',message:'יש למסור פרטים נכונים, להשתמש בשירות למטרת המיזם בלבד ולעדכן ביטול או שינוי בזמן. המערכת מסייעת בהתאמה אך אינה יכולה להבטיח הגעה בפועל.',confirmText:'הבנתי',cancelText:'סגור'});
         }
@@ -2583,12 +2583,25 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             map.fitBounds(L.latLngBounds([home,hall]),{padding:[28,28]});
             setTimeout(()=>map.invalidateSize(),80);
             try{
-                const url='https://router.project-osrm.org/route/v1/driving/'+home[1]+','+home[0]+';'+hall[1]+','+hall[0]+'?overview=full&geometries=geojson';
-                const res=await fetch(url),json=await res.json(),route=json?.routes?.[0];
-                if(!route)throw new Error('route');
+                const res=await fetch(SUPABASE_URL+'/functions/v1/route-proxy',{
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json',
+                        'apikey':SUPABASE_PUBLISHABLE_KEY,
+                        'x-app-session':sessionToken
+                    },
+                    body:JSON.stringify({
+                        from_lat:home[0],from_lng:home[1],
+                        to_lat:hall[0],to_lng:hall[1]
+                    }),
+                    cache:'no-store',
+                    credentials:'omit'
+                });
+                const route=await res.json().catch(()=>null);
+                if(!res.ok||!route?.geometry)throw new Error('route');
                 const layer=L.geoJSON(route.geometry,{weight:5,opacity:.75}).addTo(map);
                 map.fitBounds(layer.getBounds(),{padding:[26,26]});
-                if(stats)stats.innerHTML='<b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>מרחק בכביש:</b> '+(route.distance/1000).toFixed(1)+' ק״מ · <b>זמן נסיעה משוער:</b> '+Math.round(route.duration/60)+' דקות';
+                if(stats)stats.innerHTML='<b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · <b>מרחק בכביש:</b> '+(Number(route.distance)/1000).toFixed(1)+' ק״מ · <b>זמן נסיעה משוער:</b> '+Math.round(Number(route.duration)/60)+' דקות';
             }catch(_){
                 L.polyline([home,hall],{dashArray:'6,8'}).addTo(map);
                 if(stats)stats.innerHTML='<b>מרחק אווירי:</b> '+esc(ev.distance_km)+' ק״מ · מסלול כביש לא זמין כרגע.';

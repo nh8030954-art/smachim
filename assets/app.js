@@ -1179,7 +1179,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         function checkedValues(name) {
-            return [...document.querySelectorAll('input[name="'+name+'"]:checked')].map(x=>x.value);
+            return [...document.querySelectorAll('input[name="'+name+'"]:checked')]
+                .filter(x=>!x.disabled)
+                .map(x=>x.value);
         }
 
         function checkedNumbers(name) {

@@ -472,7 +472,7 @@
             <div class="glass-card p-8">
                 <h1 data-site-text="volunteer_registration_title" class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h1>
                 <p data-site-text="volunteer_registration_subtitle" class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
-                <form id="volunteer-form" data-onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="on">
+                <form id="volunteer-form" data-onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="off">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span id="vol-name-label" data-field-label="vol_name" class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
                         <label><span id="vol-phone-label" data-field-label="vol_phone" class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
@@ -912,7 +912,7 @@
     </footer>
 
     <script src="assets/vendor/qrcode.min.js"></script>
-    <script src="assets/app.js?v=header-hero-controls-20260916-1"></script>
+    <script src="assets/app.js?v=privacy-mobilefix-20260916-2"></script>
 </body>
 </html>
 

@@ -2032,6 +2032,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(panel)panel.classList.add('hidden');
             if(enroll)enroll.classList.add('hidden');
             if($('admin-mfa-secret'))$('admin-mfa-secret').textContent='';
+            if($('admin-mfa-qr'))$('admin-mfa-qr').innerHTML='';
+            if($('admin-mfa-manual-details'))$('admin-mfa-manual-details').open=false;
             if($('admin-mfa-code'))$('admin-mfa-code').value='';
             const link=$('admin-mfa-open-app');if(link)link.removeAttribute('href');
             $('login-form')?.classList.remove('hidden');
@@ -2047,9 +2049,35 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const first=!!data?.mfa_enrollment_required;
             if(enroll)enroll.classList.toggle('hidden',!first);
             if($('admin-mfa-message'))$('admin-mfa-message').textContent=first
-                ?'בכניסה הראשונה לניהול יש להוסיף אימות דו־שלבי. שמור את המפתח באפליקציית Authenticator ואז הזן את הקוד.'
+                ?'סרוק את קוד ה־QR באפליקציית Authenticator ואז הזן את הקוד בן 6 הספרות.'
                 :'הזן קוד בן 6 ספרות מאפליקציית Authenticator.';
             if($('admin-mfa-secret'))$('admin-mfa-secret').textContent=first?String(data?.secret||''):'';
+
+            const qr=$('admin-mfa-qr');
+            if(qr){
+                qr.innerHTML='';
+                qr.classList.toggle('hidden',!first);
+                if(first&&adminMfaOtpAuthUri){
+                    if(typeof QRCode==='function'){
+                        try{
+                            new QRCode(qr,{
+                                text:adminMfaOtpAuthUri,
+                                width:220,
+                                height:220,
+                                correctLevel:QRCode.CorrectLevel.M
+                            });
+                        }catch(e){
+                            qr.textContent='לא הצלחנו ליצור את קוד ה־QR. אפשר להשתמש במפתח הידני.';
+                        }
+                    }else{
+                        qr.textContent='לא הצלחנו ליצור את קוד ה־QR. אפשר להשתמש במפתח הידני.';
+                    }
+                }
+            }
+
+            const details=$('admin-mfa-manual-details');
+            if(details)details.open=false;
+
             const link=$('admin-mfa-open-app');
             if(link){
                 if(first&&adminMfaOtpAuthUri){link.href=adminMfaOtpAuthUri;link.classList.remove('hidden');}

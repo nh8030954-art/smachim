@@ -431,8 +431,8 @@
                 <p class="text-sm text-slate-500 mt-2">נשלח קוד אימות ב-SMS למספר הרשום בחשבון.</p>
                 <form id="reset-password-form" data-onsubmit="event.preventDefault(); handlePasswordReset();" class="space-y-4 mt-6">
                     <input type="tel" id="reset-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" inputmode="tel" required>
-                    <input type="password" id="reset-password" class="input-clean" placeholder="סיסמה חדשה" minlength="8" maxlength="72" required>
-                    <input type="password" id="reset-password-confirm" class="input-clean" placeholder="אימות סיסמה חדשה" minlength="8" maxlength="72" required>
+                    <input type="password" id="reset-password" class="input-clean" placeholder="סיסמה חדשה" minlength="12" maxlength="72" required>
+                    <input type="password" id="reset-password-confirm" class="input-clean" placeholder="אימות סיסמה חדשה" minlength="12" maxlength="72" required>
                     <button id="reset-password-submit" type="submit" class="w-full btn-brand py-3">שלח קוד ואפס סיסמה</button>
                 </form>
                 <button type="button" data-onclick="navigate('login')" class="mt-4 text-sm font-bold text-slate-500 hover:text-brand-700">חזרה להתחברות</button>
@@ -450,8 +450,8 @@
                         <label><span id="vol-phone-label" data-field-label="vol_phone" class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label><span class="field-label">סיסמה</span><input type="password" id="vol-pass" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
-                        <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                        <label><span class="field-label">סיסמה</span><input type="password" id="vol-pass" class="input-clean" minlength="12" maxlength="72" autocomplete="new-password" required></label>
+                        <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" minlength="12" maxlength="72" autocomplete="new-password" required></label>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label><span data-field-label="vol_gender" class="field-label">איך לפנות אליך?</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
@@ -540,8 +540,8 @@
                             <label><span data-field-label="host_phone" class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span data-field-label="host_password" class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
-                            <label><span data-field-label="host_password_confirm" class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                            <label><span data-field-label="host_password" class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="12" maxlength="72" autocomplete="new-password" required></label>
+                            <label><span data-field-label="host_password_confirm" class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="12" maxlength="72" autocomplete="new-password" required></label>
                         </div>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל SMS תפעולי לצורך אימות החשבון וניהול האירוע.</span></label>

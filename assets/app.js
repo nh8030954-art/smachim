@@ -116,7 +116,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         let userIdleTimer = null;
         const ADMIN_IDLE_MS = 15 * 60 * 1000;
         const USER_IDLE_MS = 2 * 60 * 60 * 1000;
-        const LEGAL_VERSION = '2026-09-16-v1';
+        const LEGAL_VERSION = '2026-09-16-v2';
         let calendarEventCache = new Map();
         let modalResolver = null;
         try { localStorage.removeItem('smachimDashboardArea'); } catch(_) {}
@@ -1982,7 +1982,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 ['invalid_support_status','סטטוס הפנייה אינו תקין.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
-                ['consent_required','יש לאשר את תנאי השימוש, מדיניות הפרטיות וקבלת ה-SMS התפעולי.'],
+                ['consent_required','יש לאשר בנפרד את תנאי השימוש, את מדיניות הפרטיות ואת קבלת ה-SMS התפעולי.'],
                 ['legal_version_mismatch','מסמכי הפרטיות והתנאים עודכנו. יש לרענן את הדף, לקרוא ולאשר את הגרסה העדכנית.'],
                 ['phone_verification_required','יש לאמת את מספר הטלפון לפני המשך ההרשמה.'],
                 ['verification_rate_limited','נשלח קוד לאחרונה. יש להמתין כדקה לפני שליחת קוד נוסף.'],
@@ -2078,7 +2078,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const availableUntil=$('vol-available-until').value||null;
                 const transport=$('vol-transport').value;
                 const separation=$('vol-separation').checked;
-                const legalConsent=!!$('vol-legal-consent')?.checked;
+                const termsConsent=!!$('vol-terms-consent')?.checked;
+                const privacyConsent=!!$('vol-privacy-consent')?.checked;
                 const smsConsent=!!$('vol-sms-consent')?.checked;
 
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
@@ -2088,7 +2089,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
                 const calculatedAge=new Date().getFullYear()-birthYear;
                 if(calculatedAge<18) throw new Error('adult_account_required');
-                if(!legalConsent||!smsConsent) throw new Error('consent_required');
+                if(!termsConsent||!privacyConsent||!smsConsent) throw new Error('consent_required');
                 if(!city||!street||!number) throw new Error('address_incomplete');
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
@@ -2100,7 +2101,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     p_radius:radius,p_max_days_per_week:maxDays,p_strict_separation:separation,
                     p_availability_days:days,p_availability_from:availableFrom,p_availability_until:availableUntil,
                     p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng,
-                    p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true,
+                    p_verification_token:verificationToken,p_privacy_accepted:privacyConsent,p_terms_accepted:termsConsent,p_sms_consent:smsConsent,
                     p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false,
                     p_privacy_version:LEGAL_VERSION,p_terms_version:LEGAL_VERSION,p_sms_notice_version:LEGAL_VERSION
                 });
@@ -2357,7 +2358,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const accountFields=$('host-account-fields');
             const existingNote=$('host-existing-account-note');
             const existingText=$('host-existing-account-text');
-            const fields=['host-name','host-phone','host-pass','host-pass-confirm','host-legal-consent','host-sms-consent'];
+            const fields=['host-name','host-phone','host-pass','host-pass-confirm','host-terms-consent','host-privacy-consent','host-sms-consent'];
             block?.classList.remove('hidden');
             if(currentProfile){
                 $('event-form')?.setAttribute('autocomplete','on');
@@ -2622,12 +2623,14 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
                 const name=$('host-name').value.trim(),phone=normalizePhone($('host-phone').value);
                 const password=$('host-pass').value,confirmPassword=$('host-pass-confirm').value;
-                const legalConsent=!!$('host-legal-consent')?.checked,smsConsent=!!$('host-sms-consent')?.checked;
+                const termsConsent=!!$('host-terms-consent')?.checked;
+                const privacyConsent=!!$('host-privacy-consent')?.checked;
+                const smsConsent=!!$('host-sms-consent')?.checked;
                 if(name.length<2) throw new Error('invalid_name');
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
                 if(password.length<12) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
-                if(!legalConsent||!smsConsent) throw new Error('consent_required');
+                if(!termsConsent||!privacyConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
                 const {data:token,error}=await userRpc('username_register_v9',{
@@ -2636,7 +2639,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
                     p_strict_separation:false,p_availability_days:[0,1,2,3,4],
                     p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null,
-                    p_verification_token:verificationToken,p_privacy_accepted:true,p_terms_accepted:true,p_sms_consent:true,
+                    p_verification_token:verificationToken,p_privacy_accepted:privacyConsent,p_terms_accepted:termsConsent,p_sms_consent:smsConsent,
                     p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false,
                     p_privacy_version:LEGAL_VERSION,p_terms_version:LEGAL_VERSION,p_sms_notice_version:LEGAL_VERSION
                 });

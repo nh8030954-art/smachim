@@ -66,6 +66,66 @@
         const hero=document.getElementById("home-hero-img");
         if(logo&&cached?.logo_url) logo.src=versioned(cached.logo_url,"./assets/site-title.jpg");
         if(hero&&cached?.hero_url) hero.src=versioned(cached.hero_url,"./assets/hero-banner.jpg");
+
+        // Easier time selection: keep the original inputs (and all existing logic) intact,
+        // while presenting a simple 15-minute selector from 17:00 through 02:00.
+        const timeIds=[
+          "vol-available-from","vol-available-until",
+          "profile-available-from","profile-available-until",
+          "ev-start","ev-close","edit-ev-start","edit-ev-close"
+        ];
+        const times=[];
+        for(let m=17*60;m<=26*60;m+=15){
+          const normalized=m%(24*60);
+          times.push(String(Math.floor(normalized/60)).padStart(2,"0")+":"+String(normalized%60).padStart(2,"0"));
+        }
+        const syncVisual=(input,select)=>{
+          const value=input.value||"";
+          if(value && !times.includes(value)){
+            let legacy=select.querySelector('option[data-legacy="1"]');
+            if(!legacy){
+              legacy=document.createElement("option");
+              legacy.dataset.legacy="1";
+              select.appendChild(legacy);
+            }
+            legacy.value=value;
+            legacy.textContent=value;
+          }
+          select.value=value;
+        };
+        timeIds.forEach(id=>{
+          const input=document.getElementById(id);
+          if(!input || input.dataset.simpleTimeReady==="1") return;
+          input.dataset.simpleTimeReady="1";
+          const select=document.createElement("select");
+          select.className=input.className+" bg-white";
+          select.setAttribute("aria-label",input.getAttribute("aria-label")||"בחירת שעה");
+          const empty=document.createElement("option");
+          empty.value="";
+          empty.textContent="בחר/י שעה";
+          select.appendChild(empty);
+          times.forEach(t=>{
+            const option=document.createElement("option");
+            option.value=t;
+            option.textContent=t;
+            select.appendChild(option);
+          });
+          input.style.display="none";
+          input.setAttribute("aria-hidden","true");
+          input.insertAdjacentElement("afterend",select);
+          select.addEventListener("change",()=>{
+            input.value=select.value;
+            input.dispatchEvent(new Event("input",{bubbles:true}));
+            input.dispatchEvent(new Event("change",{bubbles:true}));
+          });
+          syncVisual(input,select);
+          let last=input.value;
+          const observer=()=>{
+            if(input.value!==last){ last=input.value; syncVisual(input,select); }
+            if(document.documentElement.contains(input)) requestAnimationFrame(observer);
+          };
+          requestAnimationFrame(observer);
+        });
       },{once:true});
     } catch (_) {}
   } catch (_) {

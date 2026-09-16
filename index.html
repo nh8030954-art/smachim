@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://unpkg.com; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://unpkg.com https://*.tile.openstreetmap.org https://ybccbyyrrxdzarsgylql.supabase.co; connect-src 'self' https://ybccbyyrrxdzarsgylql.supabase.co wss://ybccbyyrrxdzarsgylql.supabase.co https://router.project-osrm.org; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests; frame-ancestors 'none'; worker-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://ybccbyyrrxdzarsgylql.supabase.co; connect-src 'self' https://ybccbyyrrxdzarsgylql.supabase.co wss://ybccbyyrrxdzarsgylql.supabase.co https://router.project-osrm.org https://nominatim.openstreetmap.org https://data.gov.il; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'none'; worker-src 'self' blob:; upgrade-insecure-requests;">
     <title>שמחים בשמחתם</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Frank+Ruhl+Libre:wght@700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4"></script>
+    <link rel="stylesheet" href="assets/tailwind.generated.css">
+    <script src="assets/vendor/supabase.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="assets/tailwind-config.js"></script>
+    <link rel="stylesheet" href="assets/vendor/leaflet.css">
+    <script src="assets/vendor/leaflet.js"></script>
     <style>
         html { scroll-padding-top: 8rem; }
         body { background-color: #F8FAFC; color: #0f172a; }
@@ -329,12 +328,12 @@
     <header class="site-header sticky top-0 z-50" role="banner">
         <div class="site-header-inner max-w-7xl mx-auto px-6">
             <nav id="header-actions" class="site-header-actions" aria-label="ניווט ראשי">
-                <button onclick="navigate('home')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600 transition">
+                <button data-onclick="navigate('home')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600 transition">
                     <i class="fa-solid fa-house ml-1"></i> דף הבית
                 </button>
             </nav>
-            <button type="button" class="site-title-wrap" onclick="navigate('home')" aria-label="שמחים בשמחתם - דף הבית">
-                <img id="site-logo-img" src="./assets/site-title.jpg?v=mobilefix3" alt="" aria-hidden="true" width="2048" height="938" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/site-title.jpg?v=mobilefix3';}">
+            <button type="button" class="site-title-wrap" data-onclick="navigate('home')" aria-label="שמחים בשמחתם - דף הבית">
+                <img id="site-logo-img" src="./assets/site-title.jpg?v=mobilefix3" alt="" aria-hidden="true" width="2048" height="938" decoding="async" data-fallback-src="./assets/site-title.jpg?v=mobilefix3">
             </button>
         </div>
     </header>
@@ -343,20 +342,20 @@
         <!-- דף הבית -->
         <div id="view-home" class="screen active">
             <h1 class="sr-only">שמחים בשמחתם — חיבור בין בעלי שמחה למשמחים</h1>
-            <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg?v=mobilefix3" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='./assets/hero-banner.jpg?v=mobilefix3';}"></div>
+            <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg?v=mobilefix3" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" data-fallback-src="./assets/hero-banner.jpg?v=mobilefix3"></div>
             <div class="max-w-5xl mx-auto px-6 pt-6 pb-14">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <button onclick="navigate('register-volunteer')" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                    <button data-onclick="navigate('register-volunteer')" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4 text-brand-600 text-2xl"><i class="fa-solid fa-hand-holding-heart"></i></div>
                         <span data-site-text="home_volunteer_title" class="text-2xl font-bold text-slate-800 mb-2">אני רוצה לשמח</span>
                         <span data-site-text="home_volunteer_subtitle" class="text-slate-500">הרשמה מלאה וחיפוש אירועים מתאימים.</span>
                     </button>
-                    <button onclick="openAddEvent()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                    <button data-onclick="openAddEvent()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-700 text-2xl"><i class="fa-solid fa-calendar-plus"></i></div>
                         <span data-site-text="home_host_title" class="text-2xl font-bold text-slate-800 mb-2">יש לי אירוע</span>
                         <span data-site-text="home_host_subtitle" class="text-slate-500">הרשמה כבעל שמחה ופרסום אירוע.</span>
                     </button>
-                    <button onclick="openPersonalArea()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                    <button data-onclick="openPersonalArea()" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-700 text-2xl"><i class="fa-solid fa-user"></i></div>
                         <span data-site-text="home_account_title" class="text-2xl font-bold text-slate-800 mb-2">אזור אישי</span>
                         <span data-site-text="home_account_subtitle" class="text-slate-500">התחברות וניהול אירועים או התנדבויות.</span>
@@ -370,12 +369,12 @@
             <div class="glass-card p-8 text-center">
                 <h1 data-site-text="login_title" class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h1>
                 <p data-site-text="login_subtitle" class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות מספר טלפון וסיסמה.</p>
-                <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6" autocomplete="on">
+                <form id="login-form" data-onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6" autocomplete="on">
                     <input type="text" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="username">
                     <input type="password" id="login-password" class="input-clean" placeholder="סיסמה" required autocomplete="current-password">
                     <button id="login-submit" type="submit" class="w-full btn-dark py-3">כניסה למערכת</button>
                 </form>
-                <button type="button" onclick="navigate('reset-password')" class="mt-4 text-sm font-bold text-brand-700 hover:underline">שכחתי סיסמה</button>
+                <button type="button" data-onclick="navigate('reset-password')" class="mt-4 text-sm font-bold text-brand-700 hover:underline">שכחתי סיסמה</button>
             </div>
         </div>
 
@@ -383,7 +382,7 @@
         <div id="view-admin" class="screen max-w-7xl mx-auto px-4 md:px-6 py-10">
             <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
                 <div><h1 class="text-3xl font-bold text-brand-dark">ניהול שמחים בשמחתם</h1><p class="text-sm text-slate-500 mt-1">אזור מנהל נפרד מחשבונות המשתמשים.</p></div>
-                <button type="button" onclick="handleLogout()" class="btn-soft px-4 py-2">יציאה מניהול</button>
+                <button type="button" data-onclick="handleLogout()" class="btn-soft px-4 py-2">יציאה מניהול</button>
             </div>
             <div id="admin-area-root"></div>
         </div>
@@ -393,13 +392,13 @@
             <div class="glass-card p-8">
                 <h1 class="text-2xl font-bold text-brand-dark">איפוס סיסמה</h1>
                 <p class="text-sm text-slate-500 mt-2">נשלח קוד אימות ב-SMS למספר הרשום בחשבון.</p>
-                <form id="reset-password-form" onsubmit="event.preventDefault(); handlePasswordReset();" class="space-y-4 mt-6">
+                <form id="reset-password-form" data-onsubmit="event.preventDefault(); handlePasswordReset();" class="space-y-4 mt-6">
                     <input type="tel" id="reset-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" inputmode="tel" required>
                     <input type="password" id="reset-password" class="input-clean" placeholder="סיסמה חדשה" minlength="8" maxlength="72" required>
                     <input type="password" id="reset-password-confirm" class="input-clean" placeholder="אימות סיסמה חדשה" minlength="8" maxlength="72" required>
                     <button id="reset-password-submit" type="submit" class="w-full btn-brand py-3">שלח קוד ואפס סיסמה</button>
                 </form>
-                <button type="button" onclick="navigate('login')" class="mt-4 text-sm font-bold text-slate-500 hover:text-brand-700">חזרה להתחברות</button>
+                <button type="button" data-onclick="navigate('login')" class="mt-4 text-sm font-bold text-slate-500 hover:text-brand-700">חזרה להתחברות</button>
             </div>
         </div>
 
@@ -408,7 +407,7 @@
             <div class="glass-card p-8">
                 <h1 data-site-text="volunteer_registration_title" class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h1>
                 <p data-site-text="volunteer_registration_subtitle" class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
-                <form id="volunteer-form" onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="on">
+                <form id="volunteer-form" data-onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="on">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span id="vol-name-label" data-field-label="vol_name" class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
                         <label><span id="vol-phone-label" data-field-label="vol_phone" class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
@@ -472,7 +471,7 @@
                     </div>
                     <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"><input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700 text-sm">הצג לי רק אירועים בהפרדה מלאה</span></label>
                     <div class="space-y-2">
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל הודעות SMS תפעוליות לצורך אימות החשבון, הזמנות לאירועים, אישורים, שינויים ותזכורות.</span></label>
                     </div>
                     <button id="vol-submit" type="submit" class="w-full btn-brand py-4">השלם הרשמה</button>
@@ -487,7 +486,7 @@
                     <div><h1 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h1><p class="text-sm text-slate-500 mt-1">טיוטה נשמרת אוטומטית רק לחשבון מחובר ונמחקת בהתנתקות. אורח שאינו מחובר לא נשמר בדפדפן.</p></div>
                     <span id="draft-indicator" class="text-xs font-bold text-slate-400"></span>
                 </div>
-                <form id="event-form" onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6" autocomplete="on">
+                <form id="event-form" data-onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6" autocomplete="on">
                     <div id="host-account-block" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
                         <div id="host-existing-account-note" class="hidden">
                             <h3 class="font-bold text-slate-800">פרסום מתוך החשבון המחובר</h3>
@@ -507,7 +506,7 @@
                             <label><span data-field-label="host_password" class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                             <label><span data-field-label="host_password_confirm" class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
                         </div>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל SMS תפעולי לצורך אימות החשבון וניהול האירוע.</span></label>
                         </div>
                     </div>
@@ -554,7 +553,7 @@
                     <div class="bg-slate-50 border rounded-xl p-4">
                         <div class="flex flex-wrap gap-3 justify-between items-center">
                             <div><div class="font-bold">בדיקת התאמות לפני הפרסום</div><div class="text-xs text-slate-500">אפשר לראות כמה משמחים קיימים כרגע שעומדים בקריטריונים.</div></div>
-                            <button type="button" onclick="previewEventMatches()" class="btn-soft px-4 py-2">בדוק התאמות</button>
+                            <button type="button" data-onclick="previewEventMatches()" class="btn-soft px-4 py-2">בדוק התאמות</button>
                         </div>
                         <div id="event-preview-count" class="text-sm mt-3"></div>
                     </div>
@@ -567,7 +566,7 @@
         <div id="view-edit-event" class="screen max-w-4xl mx-auto px-6 py-12">
             <div class="glass-card p-8">
                 <h1 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">עריכת אירוע</h1>
-                <form id="edit-event-form" onsubmit="event.preventDefault(); saveEditEvent();" class="space-y-6">
+                <form id="edit-event-form" data-onsubmit="event.preventDefault(); saveEditEvent();" class="space-y-6">
                     <input type="hidden" id="edit-event-id">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">שם האירוע</span><input type="text" id="edit-ev-name" class="input-clean" required></label>
@@ -582,7 +581,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת משמחים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת משמחות</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
                     <label><span class="field-label">טווח גילאים למשמחים</span><select id="edit-ev-age-range" class="input-clean bg-white"><option value="all">ללא הגבלת גיל</option><option value="12-18" data-minor-age hidden disabled>12–18</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
                     <label><span class="field-label">הערה למשמחים</span><textarea id="edit-ev-note" class="input-clean min-h-24" maxlength="600"></textarea></label>
-                    <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
+                    <div class="grid grid-cols-2 gap-3"><button type="button" data-onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
                 </form>
             </div>
         </div>
@@ -592,7 +591,7 @@
             <div class="glass-card p-8">
                 <h1 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הגדרות משמח</h1>
                 <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div><div id="profile-guardian-note" class="hidden mt-3 text-sm text-slate-600 bg-white border rounded-lg p-3"></div></div>
-                <form id="profile-form" onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-6">
+                <form id="profile-form" data-onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-6">
                     <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">איך לפנות אליך?</span><select id="profile-gender" class="input-clean bg-white"><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
                     <div><span class="field-label">באילו מגזרים אני מוכן לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="all"> כל המגזרים</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="secular"> חילוני</label></div></div>
@@ -602,12 +601,12 @@
                     <div><span class="field-label">ימים פנויים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="0"> א׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="1"> ב׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="2"> ג׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="3"> ד׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="4"> ה׳</label></div></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">פנוי החל משעה</span><input type="time" id="profile-available-from" class="input-clean"></label><label><span class="field-label">פנוי עד שעה</span><input type="time" id="profile-available-until" class="input-clean"></label></div>
                     <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="profile-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">הצג לי רק אירועים בהפרדה מלאה</span></label>
-                    <div class="grid grid-cols-2 gap-3"><button type="button" onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button></div>
+                    <div class="grid grid-cols-2 gap-3"><button type="button" data-onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button></div>
                 </form>
                 <div class="mt-8 pt-6 border-t border-red-100">
                     <h3 class="font-bold text-red-700">מחיקת חשבון</h3>
                     <p class="text-sm text-slate-500 mt-1">מחיקה מסירה את החשבון והמידע האישי המקושר אליו. אם יש אירועים עתידיים שפרסמת, יש לבטל אותם קודם.</p>
-                    <button type="button" onclick="deleteMyAccount()" class="mt-3 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-2 font-bold text-sm">מחק את החשבון שלי</button>
+                    <button type="button" data-onclick="deleteMyAccount()" class="mt-3 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-2 font-bold text-sm">מחק את החשבון שלי</button>
                 </div>
             </div>
         </div>
@@ -617,7 +616,7 @@
             <div class="glass-card p-8">
                 <h1 class="text-3xl font-bold text-brand-dark">פנייה למנהל המערכת</h1>
                 <p class="text-sm text-slate-500 mt-2">אפשר לפנות בנושאי חשבון, אירועים, SMS או תקלה באתר. הפרטים ישמשו רק לצורך טיפול בפנייה.</p>
-                <form id="support-form" onsubmit="event.preventDefault(); submitSupportRequest();" class="space-y-4 mt-6">
+                <form id="support-form" data-onsubmit="event.preventDefault(); submitSupportRequest();" class="space-y-4 mt-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label><span class="field-label">שם</span><input id="support-name" class="input-clean" maxlength="100" required autocomplete="name"></label>
                         <label><span class="field-label">מספר טלפון לחזרה</span><input id="support-phone" type="tel" class="input-clean" maxlength="20" required dir="ltr" autocomplete="tel"></label>
@@ -641,7 +640,7 @@
                 <div><h3 class="font-bold">SMS</h3><p class="text-sm text-slate-600 mt-1">הודעות SMS משמשות לאימות מספר הטלפון, הזמנות, אישורים, שינויים ותזכורות. המערכת אינה מיועדת לשליחת פרסום מסחרי ללא הסכמה נפרדת.</p></div>
                 <div><h3 class="font-bold">אבטחה ושמירת מידע</h3><p class="text-sm text-slate-600 mt-1">המערכת משתמשת בבקרות גישה, סשנים מוגבלים, רישום פעולות מנהל והגבלות קצב. מידע עשוי להישמר כל עוד החשבון פעיל או ככל שנדרש לצרכים תפעוליים, אבטחתיים או משפטיים.</p></div>
                 <div><h3 class="font-bold">מחיקת חשבון</h3><p class="text-sm text-slate-600 mt-1">ניתן למחוק את החשבון מתוך הגדרות הפרופיל. לפני מחיקה יש לבטל אירועים עתידיים שפורסמו. מחיקת חשבון הורה מסירה גם את פרופילי הילדים המנוהלים בחשבון, בכפוף למידע שנדרש לשמור כדין או לצורך אבטחה.</p></div>
-                <button type="button" onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
+                <button type="button" data-onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
             </div>
         </div>
 
@@ -656,7 +655,7 @@
                 <div><h3 class="font-bold">התאמות והגעה</h3><p class="text-sm text-slate-600 mt-1">המערכת מסייעת בהתאמה אך אינה יכולה להבטיח הגעה בפועל, זמינות תחבורה, התנהגות של משתמשים או התאמה מושלמת בכל מצב. כל משתמש אחראי לשיקול דעתו ולהתנהלותו באירוע.</p></div>
                 <div><h3 class="font-bold">שינויים וביטולים</h3><p class="text-sm text-slate-600 mt-1">יש לעדכן שינוי מהותי או ביטול מוקדם ככל האפשר כדי שניתן יהיה לעדכן את המשתתפים. בעל אירוע אחראי לעדכן את פרטי האירוע והמשמח/ת אחראי/ת לבטל בזמן אם אינו/ה יכול/ה להגיע.</p></div>
                 <div><h3 class="font-bold">פניות ודיווחים</h3><p class="text-sm text-slate-600 mt-1">ניתן לדווח על אירוע מתוך המערכת או לפנות למנהל באמצעות טופס הפנייה באתר. במקרה חירום יש לפנות לגורמי החירום המתאימים ולא להסתמך על האתר.</p></div>
-                <button type="button" onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
+                <button type="button" data-onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
             </div>
         </div>
 
@@ -680,10 +679,10 @@
                 <div>
                     <h2 class="font-bold text-lg">נתקלת בבעיית נגישות?</h2>
                     <p class="text-sm text-slate-600 mt-1">אם משהו באתר אינו נגיש עבורך, אפשר לפנות אלינו דרך טופס הפנייה. נשמח לקבל תיאור של הפעולה שניסית לבצע, סוג המכשיר או טכנולוגיית העזר שבה השתמשת והבעיה שנתקלת בה.</p>
-                    <button type="button" onclick="openSupport('נגישות')" class="btn-brand px-4 py-2 mt-3">פנייה בנושא נגישות</button>
+                    <button type="button" data-onclick="openSupport('נגישות')" class="btn-brand px-4 py-2 mt-3">פנייה בנושא נגישות</button>
                 </div>
                 <p class="text-xs text-slate-500">בדיקה פנימית אחרונה: 15.09.2026. הבדיקה כוללת מבנה סמנטי, מקלדת, פוקוס, הודעות לקוראי מסך, הגדלת טקסט, Reflow, ניגודיות, טפסים, מודאלים, קישורים חיצוניים ומובייל. ההצהרה אינה אישור חיצוני או תעודת עמידה משפטית; בדיקת עמידה מלאה מחייבת גם בדיקות ידניות עם קוראי מסך וטכנולוגיות מסייעות אמיתיות.</p>
-                <button type="button" onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
+                <button type="button" data-onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
             </div>
         </div>
 
@@ -692,13 +691,13 @@
             <div class="glass-card p-8">
                 <div class="flex justify-between gap-3 items-start">
                     <div><h1 id="family-form-title" class="text-2xl font-bold text-brand-dark">הוספת ילד/ה לחשבון</h1><p class="text-sm text-slate-500 mt-1">הילד/ה מנוהל/ת מתוך החשבון שלך. אין צורך במספר טלפון, סיסמה או חשבון נפרד.</p></div>
-                    <button type="button" onclick="loadDashboard()" class="btn-soft px-3 py-2">חזרה</button>
+                    <button type="button" data-onclick="loadDashboard()" class="btn-soft px-3 py-2">חזרה</button>
                 </div>
-                <form id="family-child-form" onsubmit="event.preventDefault(); saveFamilyChild();" class="space-y-5 mt-6">
+                <form id="family-child-form" data-onsubmit="event.preventDefault(); saveFamilyChild();" class="space-y-5 mt-6">
                     <input type="hidden" id="family-child-id">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <label><span data-field-label="family_name" class="field-label">שם הילד/ה</span><input id="family-child-name" class="input-clean" required></label>
-                        <label><span data-field-label="family_gender" class="field-label">איך לפנות?</span><select id="family-child-gender" class="input-clean bg-white" required onchange="syncFamilyChildEventDefault()"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
+                        <label><span data-field-label="family_gender" class="field-label">איך לפנות?</span><select id="family-child-gender" class="input-clean bg-white" required data-onchange="syncFamilyChildEventDefault()"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
                         <label><span data-field-label="family_birth_year" class="field-label">שנת לידה</span><select id="family-child-birth-year" class="input-clean bg-white family-birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
                     </div>
                     <label><span data-field-label="family_sector" class="field-label">מגזר</span><select id="family-child-sector" class="input-clean bg-white" required><option value="">בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
@@ -750,7 +749,7 @@
         <div id="view-family-child-area" class="screen max-w-6xl mx-auto px-6 py-10">
             <div class="flex flex-wrap justify-between gap-3 items-center mb-6">
                 <div><h1 id="family-child-area-title" class="text-3xl font-bold text-brand-dark">ילד/ה</h1><p class="text-sm text-slate-500">ניהול ההתנדבויות מתוך חשבון ההורה.</p></div>
-                <div class="flex gap-2"><button id="family-child-edit-button" class="btn-soft px-4 py-2">עריכת פרטים</button><button onclick="loadDashboard()" class="btn-dark px-4 py-2">חזרה לאזור האישי</button></div>
+                <div class="flex gap-2"><button id="family-child-edit-button" class="btn-soft px-4 py-2">עריכת פרטים</button><button data-onclick="loadDashboard()" class="btn-dark px-4 py-2">חזרה לאזור האישי</button></div>
             </div>
             <div id="family-child-area-content" class="space-y-6"></div>
         </div>
@@ -760,8 +759,8 @@
             <div class="flex flex-wrap gap-3 justify-between items-center mb-8">
                 <h1 id="user-greeting" class="text-3xl font-bold text-brand-dark">אזור אישי</h1>
                 <div class="flex gap-2">
-                    <button onclick="openProfileSettings()" class="btn-soft px-4 py-2 text-sm"><i class="fa-solid fa-gear ml-1"></i> הגדרות</button>
-                    <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold text-sm">התנתק</button>
+                    <button data-onclick="openProfileSettings()" class="btn-soft px-4 py-2 text-sm"><i class="fa-solid fa-gear ml-1"></i> הגדרות</button>
+                    <button data-onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold text-sm">התנתק</button>
                 </div>
             </div>
             <div id="dashboard-content" class="space-y-8"></div>
@@ -778,16 +777,16 @@
             <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl h-[78vh] p-5 flex flex-col">
                 <div class="flex items-center justify-between gap-3 border-b pb-3">
                     <div><h3 id="chat-title" class="text-xl font-bold text-brand-dark">צ׳אט האירוע</h3><p id="chat-description" class="text-xs text-slate-500">בעל השמחה והמשמחים הרשומים בלבד</p></div>
-                    <button type="button" onclick="closeEventChat()" class="btn-soft px-3 py-2" aria-label="סגור צ׳אט"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                    <button type="button" data-onclick="closeEventChat()" class="btn-soft px-3 py-2" aria-label="סגור צ׳אט"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                 </div>
                 <div id="chat-messages" class="chat-messages flex-1 overflow-y-auto p-3 my-4 space-y-2" role="log" aria-label="הודעות בצ׳אט" aria-live="polite" aria-atomic="false" aria-relevant="additions text" tabindex="0"></div>
-                <form onsubmit="event.preventDefault(); sendChatMessage();" class="flex gap-2">
+                <form data-onsubmit="event.preventDefault(); sendChatMessage();" class="flex gap-2">
                     <label for="chat-input" class="sr-only">כתוב הודעה לצ׳אט האירוע</label><textarea id="chat-input" maxlength="1000" class="input-clean min-h-12 max-h-28" placeholder="כתוב הודעה..." aria-describedby="chat-description"></textarea>
                     <button id="chat-send" type="submit" class="btn-brand px-5">שלח</button>
                 </form>
             </div>
         </div>
-        <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><label for="modal-input" id="modal-input-label" class="sr-only">הקלדת תשובה</label><input id="modal-input" class="input-clean mt-4 hidden" type="text" aria-labelledby="modal-input-label"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
+        <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><label for="modal-input" id="modal-input-label" class="sr-only">הקלדת תשובה</label><input id="modal-input" class="input-clean mt-4 hidden" type="text" aria-labelledby="modal-input-label"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" data-onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" data-onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
     </main>
     <aside id="accessibility-panel" class="a11y-panel hidden" role="dialog" aria-modal="false" aria-labelledby="accessibility-panel-title">
         <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3 mb-3">
@@ -795,7 +794,7 @@
                 <h2 id="accessibility-panel-title" class="text-lg font-bold text-brand-dark">הגדרות נגישות</h2>
                 <p class="text-xs text-slate-500 mt-1">ההתאמות נשמרות במכשיר הזה בלבד.</p>
             </div>
-            <button type="button" onclick="toggleAccessibilityPanel(false)" class="btn-soft px-3 py-2" aria-label="סגור הגדרות נגישות">
+            <button type="button" data-onclick="toggleAccessibilityPanel(false)" class="btn-soft px-3 py-2" aria-label="סגור הגדרות נגישות">
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
@@ -803,47 +802,47 @@
         <section aria-labelledby="a11y-font-title" class="mb-4">
             <h3 id="a11y-font-title" class="font-bold mb-2">גודל טקסט</h3>
             <div class="a11y-font-controls flex items-center gap-2">
-                <button type="button" onclick="changeAccessibilityFont(-0.1)" aria-label="הקטן טקסט">א−</button>
+                <button type="button" data-onclick="changeAccessibilityFont(-0.1)" aria-label="הקטן טקסט">א−</button>
                 <div id="a11y-font-value" class="flex-1 text-center font-bold" aria-live="polite">100%</div>
-                <button type="button" onclick="changeAccessibilityFont(0.1)" aria-label="הגדל טקסט">א+</button>
+                <button type="button" data-onclick="changeAccessibilityFont(0.1)" aria-label="הגדל טקסט">א+</button>
             </div>
         </section>
 
         <div class="grid grid-cols-1 gap-2">
-            <button id="a11y-high-contrast-btn" type="button" class="a11y-control" aria-pressed="false" onclick="toggleAccessibilityPreference('highContrast')">
+            <button id="a11y-high-contrast-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('highContrast')">
                 <i class="fa-solid fa-circle-half-stroke ml-2" aria-hidden="true"></i>ניגודיות גבוהה
             </button>
-            <button id="a11y-grayscale-btn" type="button" class="a11y-control" aria-pressed="false" onclick="toggleAccessibilityPreference('grayscale')">
+            <button id="a11y-grayscale-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('grayscale')">
                 <i class="fa-solid fa-palette ml-2" aria-hidden="true"></i>גווני אפור
             </button>
-            <button id="a11y-links-btn" type="button" class="a11y-control" aria-pressed="false" onclick="toggleAccessibilityPreference('underlineLinks')">
+            <button id="a11y-links-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('underlineLinks')">
                 <i class="fa-solid fa-link ml-2" aria-hidden="true"></i>הדגשת קישורים
             </button>
-            <button id="a11y-font-btn" type="button" class="a11y-control" aria-pressed="false" onclick="toggleAccessibilityPreference('readableFont')">
+            <button id="a11y-font-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('readableFont')">
                 <i class="fa-solid fa-font ml-2" aria-hidden="true"></i>פונט קריא
             </button>
-            <button id="a11y-motion-btn" type="button" class="a11y-control" aria-pressed="false" onclick="toggleAccessibilityPreference('reduceMotion')">
+            <button id="a11y-motion-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('reduceMotion')">
                 <i class="fa-solid fa-person-walking ml-2" aria-hidden="true"></i>הפחתת תנועה
             </button>
         </div>
 
         <div class="grid grid-cols-2 gap-2 mt-4">
-            <button type="button" onclick="resetAccessibilityPreferences()" class="btn-soft py-3">איפוס</button>
-            <button type="button" onclick="navigate('accessibility');toggleAccessibilityPanel(false);" class="btn-dark py-3">הצהרת נגישות</button>
+            <button type="button" data-onclick="resetAccessibilityPreferences()" class="btn-soft py-3">איפוס</button>
+            <button type="button" data-onclick="navigate('accessibility');toggleAccessibilityPanel(false);" class="btn-dark py-3">הצהרת נגישות</button>
         </div>
     </aside>
 
-    <button id="accessibility-toggle" type="button" class="a11y-fab" onclick="toggleAccessibilityPanel()" aria-label="פתח הגדרות נגישות" aria-expanded="false" aria-controls="accessibility-panel">
+    <button id="accessibility-toggle" type="button" class="a11y-fab" data-onclick="toggleAccessibilityPanel()" aria-label="פתח הגדרות נגישות" aria-expanded="false" aria-controls="accessibility-panel">
         <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
     </button>
 
     <footer class="site-footer border-t border-slate-200 bg-white py-5 px-6" role="contentinfo" aria-label="קישורים ומידע">
         <div class="site-footer-links max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
-            <button type="button" data-site-text="footer_privacy_label" onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
-            <button type="button" data-site-text="footer_terms_label" onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
-            <button type="button" onclick="toggleAccessibilityPanel(true)" class="hover:text-brand-700">הגדרות נגישות</button>
-            <button type="button" onclick="navigate('accessibility')" class="hover:text-brand-700">הצהרת נגישות</button>
-            <button type="button" onclick="openSupport()" class="hover:text-brand-700">פנייה למנהל</button>
+            <button type="button" data-site-text="footer_privacy_label" data-onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
+            <button type="button" data-site-text="footer_terms_label" data-onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
+            <button type="button" data-onclick="toggleAccessibilityPanel(true)" class="hover:text-brand-700">הגדרות נגישות</button>
+            <button type="button" data-onclick="navigate('accessibility')" class="hover:text-brand-700">הצהרת נגישות</button>
+            <button type="button" data-onclick="openSupport()" class="hover:text-brand-700">פנייה למנהל</button>
         </div>
     </footer>
 

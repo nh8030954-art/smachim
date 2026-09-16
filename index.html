@@ -372,6 +372,21 @@
         .address-status[data-state="info"] { color:#475569; }
         .address-status[data-state="manual"] { color:#92400e; }
         .address-status[data-state="error"] { color:#b91c1c; font-weight:700; }
+
+        .legal-document section { padding-top:.2rem; }
+        .legal-document section h2 { margin-bottom:.7rem; line-height:1.45; }
+        .legal-document section p { line-height:1.9; }
+        .legal-document section ul { margin-top:.75rem; line-height:1.8; }
+        .legal-modal-content { text-align:right; color:#475569; line-height:1.9; }
+        .legal-modal-content > div:first-child { margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid #e2e8f0; }
+        .legal-modal-content h1 { color:#0f172a; font-size:1.5rem; font-weight:800; line-height:1.45; margin:0 0 .45rem; }
+        .legal-modal-content section { margin-top:1.65rem; }
+        .legal-modal-content section:first-child { margin-top:0; }
+        .legal-modal-content h2 { color:#1e293b; font-size:1.05rem; font-weight:800; line-height:1.5; margin:0 0 .65rem; }
+        .legal-modal-content p { margin:0; line-height:1.9; }
+        .legal-modal-content ul { margin:.7rem 0 0; padding-right:1.35rem; list-style:disc; }
+        .legal-modal-content li { margin:.35rem 0; line-height:1.8; }
+        .legal-modal-content .bg-brand-50 { margin-bottom:1.5rem; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -924,7 +939,7 @@
                 </form>
             </div>
         </div>
-        <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><label for="modal-input" id="modal-input-label" class="sr-only">הקלדת תשובה</label><input id="modal-input" class="input-clean mt-4 hidden" type="text" aria-labelledby="modal-input-label"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" data-onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" data-onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
+        <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><div id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></div><label for="modal-input" id="modal-input-label" class="sr-only">הקלדת תשובה</label><input id="modal-input" class="input-clean mt-4 hidden" type="text" aria-labelledby="modal-input-label"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" data-onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" data-onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
     </main>
     <aside id="accessibility-panel" class="a11y-panel hidden" role="dialog" aria-modal="false" aria-labelledby="accessibility-panel-title">
         <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3 mb-3">

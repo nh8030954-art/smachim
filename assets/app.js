@@ -588,6 +588,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const el=event.target;
                 if(!(el instanceof HTMLElement))return;
                 el.setAttribute('aria-invalid','true');
+                const form=el.closest('form');
+                const firstInvalid=form?.querySelector(':invalid');
+                if(firstInvalid&&firstInvalid!==el)return;
                 const name=el.getAttribute('aria-label')||el.closest('label')?.innerText?.trim()||el.getAttribute('placeholder')||'שדה';
                 announceA11y('יש לתקן את השדה: '+name,true);
             },true);
@@ -618,7 +621,15 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             observer.observe(document.body,{childList:true,subtree:true});
         }
 
+        function clearTransientErrors(){
+            const box=$('toast-container');
+            box?.querySelectorAll('.toast-card[data-toast-type="error"],.toast-card[data-toast-type="warning"]').forEach(el=>el.remove());
+            const alertRegion=$('a11y-alert-region');
+            if(alertRegion)alertRegion.textContent='';
+        }
+
         function navigate(view) {
+            clearTransientErrors();
             clearGuestFormWhenLeaving(view);
             document.querySelectorAll('.screen').forEach(el=>{
                 el.classList.remove('active');
@@ -659,6 +670,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const el=document.createElement('div');
             const accent=type==='error'?'border-red-200 text-red-700':type==='success'?'border-emerald-200 text-emerald-800':type==='warning'?'border-amber-200 text-amber-800':'border-slate-200 text-slate-700';
             el.className='toast-card '+accent;
+            el.dataset.toastType=type;
             el.textContent=message;
             el.setAttribute('role',type==='error'?'alert':'status');
             el.setAttribute('aria-live',type==='error'?'assertive':'polite');
@@ -920,7 +932,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             rebuildSelect('ev-type',eventTypes);
             rebuildSelect('edit-ev-type',eventTypes);
             rebuildSelect('vol-sector',sectors,{placeholder:'בחר'});
-            rebuildSelect('profile-sector',sectors);
+            rebuildSelect('profile-sector',sectors,{placeholder:'בחר'});
             rebuildSelect('family-child-sector',sectors,{placeholder:'בחר'});
             ['ev-sector','edit-ev-sector'].forEach(id=>rebuildSelect(id,sectors,{includeAll:true}));
             ['vol-radius','profile-radius','family-child-radius'].forEach(id=>rebuildSelect(id,radii));
@@ -1414,28 +1426,78 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             }
         }
 
-        function wireAddressDatalist(cityInputId,listId){
-            const input=$(cityInputId);
+        function tryShowPicker(input){
+            if(!input||typeof input.showPicker!=='function')return;
+            try{input.showPicker();}catch(_){}
+        }
+
+        function filterAddressItems(items,query,limit=60){
+            const q=String(query||'').trim().toLocaleLowerCase('he');
+            if(!q)return items.slice(0,limit);
+            const starts=[],contains=[];
+            for(const item of items){
+                const v=String(item||''),n=v.toLocaleLowerCase('he');
+                if(n.startsWith(q))starts.push(v);
+                else if(n.includes(q))contains.push(v);
+                if(starts.length+contains.length>=limit*2)break;
+            }
+            return [...starts,...contains].slice(0,limit);
+        }
+
+        function wireCitySuggestions(inputId){
+            const input=$(inputId);
             if(!input)return;
-            const run=debounce(()=>refreshStreetDatalist(cityInputId,listId),250);
-            input.addEventListener('input',run);
-            input.addEventListener('change',()=>refreshStreetDatalist(cityInputId,listId));
-            input.addEventListener('blur',()=>refreshStreetDatalist(cityInputId,listId));
+            const refresh=debounce(async()=>{
+                try{
+                    const items=await loadCityList();
+                    const matches=filterAddressItems(items,input.value,60);
+                    fillDatalist('israel-cities-list',matches);
+                    if(String(input.value||'').trim().length>=2&&matches.length)tryShowPicker(input);
+                }catch(e){console.warn('city suggestions failed',e);}
+            },120);
+            input.addEventListener('input',refresh);
+            input.addEventListener('focus',refresh);
+        }
+
+        function wireAddressDatalist(cityInputId,streetInputId,listId){
+            const cityInput=$(cityInputId),streetInput=$(streetInputId);
+            if(!cityInput||!streetInput)return;
+            const loadForCity=debounce(()=>refreshStreetDatalist(cityInputId,listId),180);
+            cityInput.addEventListener('input',loadForCity);
+            cityInput.addEventListener('change',()=>refreshStreetDatalist(cityInputId,listId));
+            cityInput.addEventListener('blur',()=>refreshStreetDatalist(cityInputId,listId));
+
+            const suggestStreet=debounce(async()=>{
+                const city=String(cityInput.value||'').trim();
+                if(!city)return;
+                try{
+                    const items=await loadStreetList(city);
+                    const matches=filterAddressItems(items,streetInput.value,60);
+                    fillDatalist(listId,matches);
+                    if(String(streetInput.value||'').trim().length>=1&&matches.length)tryShowPicker(streetInput);
+                }catch(e){console.warn('street suggestions failed',e);}
+            },120);
+            streetInput.addEventListener('input',suggestStreet);
+            streetInput.addEventListener('focus',suggestStreet);
         }
 
         async function initializeAddressLists(){
             try{
-                fillDatalist('israel-cities-list',await loadCityList());
+                const cities=await loadCityList();
+                fillDatalist('israel-cities-list',cities.slice(0,120));
+                ['vol-city','ev-city','edit-ev-city','profile-city','family-child-city'].forEach(wireCitySuggestions);
+                announceA11y('רשימת היישובים נטענה');
             }catch(e){
                 console.error('city datalist failed',e);
+                announceA11y('לא הצלחנו לטעון את רשימת היישובים',true);
             }
             [
-                ['vol-city','vol-streets-list'],
-                ['ev-city','ev-streets-list'],
-                ['edit-ev-city','edit-ev-streets-list'],
-                ['profile-city','profile-streets-list'],
-                ['family-child-city','family-streets-list']
-            ].forEach(([city,list])=>wireAddressDatalist(city,list));
+                ['vol-city','vol-street','vol-streets-list'],
+                ['ev-city','ev-street','ev-streets-list'],
+                ['edit-ev-city','edit-ev-street','edit-ev-streets-list'],
+                ['profile-city','profile-street','profile-streets-list'],
+                ['family-child-city','family-child-street','family-streets-list']
+            ].forEach(([city,street,list])=>wireAddressDatalist(city,street,list));
         }
 
         function registrationLabel(v) {
@@ -1958,6 +2020,76 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if($('draft-indicator'))$('draft-indicator').textContent='';
         }
 
+        function setFieldValidity(el,message=''){
+            if(!el)return;
+            el.setCustomValidity(message);
+            el.setAttribute('aria-invalid',message?'true':'false');
+        }
+
+        function validateEventTimingFields(prefix=''){
+            const date=$(prefix+'ev-date'),start=$(prefix+'ev-start'),close=$(prefix+'ev-close'),deadline=$(prefix+'ev-registration-deadline');
+            if(!start||!close||!deadline)return true;
+
+            let ok=true;
+            const badTimes=!!(start.value&&close.value&&close.value<=start.value);
+            setFieldValidity(close,badTimes?'שעת הסיום חייבת להיות מאוחרת משעת ההתחלה.':'');
+            if(badTimes)ok=false;
+
+            if(date?.value&&start.value)deadline.max=date.value+'T'+start.value;
+            else deadline.removeAttribute('max');
+
+            let badDeadline=false;
+            if(date?.value&&start.value&&deadline.value){
+                const eventStart=new Date(date.value+'T'+start.value);
+                const deadlineAt=new Date(deadline.value);
+                badDeadline=Number.isFinite(eventStart.getTime())&&Number.isFinite(deadlineAt.getTime())&&deadlineAt>eventStart;
+            }
+            setFieldValidity(deadline,badDeadline?'מועד סגירת ההרשמה לא יכול להיות אחרי תחילת האירוע.':'');
+            if(badDeadline)ok=false;
+            return ok;
+        }
+
+        function wireEventTimingValidation(prefix=''){
+            ['ev-date','ev-start','ev-close','ev-registration-deadline'].forEach(name=>{
+                const el=$(prefix+name);
+                if(!el)return;
+                el.addEventListener('input',()=>validateEventTimingFields(prefix));
+                el.addEventListener('change',()=>validateEventTimingFields(prefix));
+            });
+            validateEventTimingFields(prefix);
+        }
+
+        function validateAvailabilityFields(prefix){
+            const boxes=[...document.querySelectorAll('input[name="'+prefix+'-available-day"]')];
+            const first=boxes[0];
+            const from=$(prefix+'-available-from'),until=$(prefix+'-available-until');
+            const noDays=boxes.length&&!boxes.some(x=>x.checked);
+            if(first)setFieldValidity(first,noDays?'יש לבחור לפחות יום זמינות אחד.':'');
+            const badHours=!!(from?.value&&until?.value&&until.value<=from.value);
+            setFieldValidity(until,badHours?'שעת הסיום של הזמינות חייבת להיות מאוחרת משעת ההתחלה.':'');
+            return !noDays&&!badHours;
+        }
+
+        function wireAvailabilityValidation(prefix){
+            document.querySelectorAll('input[name="'+prefix+'-available-day"]').forEach(el=>el.addEventListener('change',()=>validateAvailabilityFields(prefix)));
+            [$(prefix+'-available-from'),$(prefix+'-available-until')].filter(Boolean).forEach(el=>{
+                el.addEventListener('input',()=>validateAvailabilityFields(prefix));
+                el.addEventListener('change',()=>validateAvailabilityFields(prefix));
+            });
+            validateAvailabilityFields(prefix);
+        }
+
+        function wirePhoneValidity(id){
+            const el=$(id);if(!el)return;
+            const validate=()=>{
+                if(!el.value){setFieldValidity(el,'');return;}
+                setFieldValidity(el,isValidPhone(el.value)?'':'יש להזין מספר טלפון ישראלי תקין, לדוגמה 0501234567.');
+            };
+            el.addEventListener('input',()=>setFieldValidity(el,''));
+            el.addEventListener('change',validate);
+            el.addEventListener('blur',validate);
+        }
+
         function initEventDraftAutosave(){
             const form=$('event-form'); if(!form) return;
             form.querySelectorAll('input,select,textarea').forEach(el=>{
@@ -1970,6 +2102,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 d.setHours(d.getHours()-2);
                 const pad=n=>String(n).padStart(2,'0');
                 $('ev-registration-deadline').value=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+                validateEventTimingFields('');
             };
             $('ev-date')?.addEventListener('change',suggest); $('ev-start')?.addEventListener('change',suggest);
         }
@@ -2008,6 +2141,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(isFridayOrSaturday(ev.event_date)) throw new Error('weekend_event_forbidden');
             if(!ev.start_time||!ev.close_time||ev.close_time<=ev.start_time) throw new Error('invalid_event_times');
             if(!ev.registration_deadline) throw new Error('invalid_registration_deadline');
+            const eventStart=new Date(ev.event_date+'T'+ev.start_time);
+            const deadlineAt=new Date(ev.registration_deadline);
+            if(Number.isFinite(eventStart.getTime())&&Number.isFinite(deadlineAt.getTime())&&deadlineAt>eventStart) throw new Error('invalid_registration_deadline');
             if(!ev.city||!ev.street||!ev.house_number) throw new Error('invalid_location');
             if(ev.quota_men<0||ev.quota_women<0) throw new Error('invalid_quota');
             if(ev.age_min!=null&&ev.age_max!=null&&ev.age_min>ev.age_max) throw new Error('invalid_age_range');
@@ -2032,6 +2168,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function previewEventMatches(){
             const box=$('event-preview-count'); if(!box) return;
+            clearTransientErrors();
+            validateEventTimingFields('');
+            if(!$('event-form')?.reportValidity())return;
             try{
                 const ev=collectEventForm(''); validateEventPayload(ev);
                 box.textContent='בודק התאמות...';
@@ -2796,7 +2935,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             $('profile-name').value=currentProfile.full_name||'';
             $('profile-gender').value=currentProfile.gender||'male';
             $('profile-birth-year').value=currentProfile.birth_year||'';
-            $('profile-sector').value=(currentProfile.sector&&currentProfile.sector!=='all')?currentProfile.sector:'haredi';
+            $('profile-sector').value=(currentProfile.sector&&currentProfile.sector!=='all')?currentProfile.sector:'';
             setCheckedValues('profile-sector-pref',currentProfile.volunteer_sector_preferences||['all']);
             setCheckedValues('profile-event-type-pref',currentProfile.volunteer_event_type_preferences||['all']);
             const isMinorManaged=!!currentProfile.guardian_managed&&(new Date().getFullYear()-Number(currentProfile.birth_year||0)<18);
@@ -3734,6 +3873,11 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         $('edit-ev-type')?.addEventListener('change',()=>syncEventAgeRangeOptions('edit-'));
         $('ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
         $('edit-ev-date')?.addEventListener('change',e=>guardEventDateInput(e.target));
+        wireEventTimingValidation('');
+        wireEventTimingValidation('edit-');
+        wireAvailabilityValidation('vol');
+        wireAvailabilityValidation('profile');
+        ['vol-phone','host-phone','reset-phone','support-phone'].forEach(wirePhoneValidity);
         initializeAddressLists();
         initEventDraftAutosave();
         updateHeaderActions();

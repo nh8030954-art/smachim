@@ -130,6 +130,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         let chatPollTimer = null;
         const EVENT_DRAFT_PREFIX = 'smachimEventDraftV5:';
         const LEGACY_PERSONAL_STORAGE_KEYS = ['smachimEventDraftV4','pendingHostEvent'];
+        const PUBLIC_APPEARANCE_CACHE_KEY = 'smachimPublicAppearanceV2';
+        let appliedDesignState = null;
+        let logoSizingBound = false;
 
         const authBroadcast = 'BroadcastChannel' in window ? new BroadcastChannel('smachim-auth') : null;
         if(authBroadcast){
@@ -1038,58 +1041,120 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             return Number.isFinite(n)?Math.max(min,Math.min(max,Math.round(n))):fallback;
         }
 
-        function applySiteDesign(){
-            const d=publicSiteConfig?.field_config?.design||{};
-            const root=document.documentElement;
-            const logoDesktop=boundedDesignNumber(d.logo_width_desktop,380,220,700);
-            const logoMobile=boundedDesignNumber(d.logo_width_mobile,220,140,320);
-            const headerDesktop=boundedDesignNumber(d.header_height_desktop,112,72,180);
-            const headerMobile=boundedDesignNumber(d.header_height_mobile,52,48,100);
-            const heroDesktop=boundedDesignNumber(d.hero_height_desktop,0,0,700);
-            const heroMobile=boundedDesignNumber(d.hero_height_mobile,0,0,420);
-            const buttonPct=boundedDesignNumber(d.button_font_percent,100,85,130);
-            const buttonRadius=boundedDesignNumber(d.button_radius_px,8,0,24);
-            const cardRadius=boundedDesignNumber(d.card_radius_px,16,6,30);
-            const homeGap=boundedDesignNumber(d.home_section_gap_px,24,0,120);
-
-            root.style.setProperty('--site-logo-width-desktop',logoDesktop+'px');
-            root.style.setProperty('--site-logo-width-mobile',logoMobile+'px');
-            root.style.setProperty('--site-header-height-desktop',headerDesktop+'px');
-            root.style.setProperty('--site-header-height-mobile',headerMobile+'px');
-            root.style.setProperty('--site-button-font-size',(buttonPct/100)+'rem');
-            root.style.setProperty('--site-button-radius',buttonRadius+'px');
-            root.style.setProperty('--site-card-radius',cardRadius+'px');
-            root.style.setProperty('--site-home-gap',homeGap+'px');
-
-            root.style.setProperty('--site-hero-height-desktop',heroDesktop?heroDesktop+'px':'auto');
-            root.style.setProperty('--site-hero-img-height-desktop',heroDesktop?'100%':'auto');
-            root.style.setProperty('--site-hero-fit-desktop',heroDesktop?'cover':'contain');
-            root.style.setProperty('--site-hero-overflow-desktop',heroDesktop?'hidden':'visible');
-            root.style.setProperty('--site-hero-height-mobile',heroMobile?heroMobile+'px':'auto');
-            root.style.setProperty('--site-hero-img-height-mobile',heroMobile?'100%':'auto');
-            root.style.setProperty('--site-hero-fit-mobile',heroMobile?'cover':'contain');
-            root.style.setProperty('--site-hero-overflow-mobile',heroMobile?'hidden':'visible');
+        function normalizedDesign(raw={}){
+            return {
+                logoDesktop:boundedDesignNumber(raw.logo_width_desktop,380,220,700),
+                logoMobile:boundedDesignNumber(raw.logo_width_mobile,220,140,320),
+                headerDesktop:boundedDesignNumber(raw.header_height_desktop,112,72,340),
+                headerMobile:boundedDesignNumber(raw.header_height_mobile,52,48,180),
+                heroDesktop:boundedDesignNumber(raw.hero_height_desktop,0,0,700),
+                heroMobile:boundedDesignNumber(raw.hero_height_mobile,0,0,420),
+                buttonPct:boundedDesignNumber(raw.button_font_percent,100,85,130),
+                buttonRadius:boundedDesignNumber(raw.button_radius_px,8,0,24),
+                cardRadius:boundedDesignNumber(raw.card_radius_px,16,6,30),
+                homeGap:boundedDesignNumber(raw.home_section_gap_px,24,0,120)
+            };
         }
 
-        function applyPublicSiteConfig(){
-            const logo=$('site-logo-img'),hero=$('home-hero-img');
-            const versionedAsset=(url,fallback)=>{
-                const value=url||fallback;
-                if(value.startsWith('./assets/')){
-                    const base=value.split('?')[0];
-                    return base+'?v=20260914-mobilefix3';
-                }
-                return value;
+        function syncLogoHeaderToWidth(){
+            const logo=$('site-logo-img');
+            if(!logo||!appliedDesignState)return;
+            const root=document.documentElement;
+            const naturalRatio=(logo.naturalWidth&&logo.naturalHeight)
+                ? logo.naturalWidth/logo.naturalHeight
+                : (2048/938);
+            const desktopNeeded=Math.ceil(appliedDesignState.logoDesktop/naturalRatio)+2;
+            const mobileRenderedWidth=Math.min(appliedDesignState.logoMobile,Math.max(140,window.innerWidth*0.64));
+            const mobileNeeded=Math.ceil(mobileRenderedWidth/naturalRatio)+2;
+            root.style.setProperty('--site-header-height-desktop',Math.max(appliedDesignState.headerDesktop,desktopNeeded)+'px');
+            root.style.setProperty('--site-header-height-mobile',Math.max(appliedDesignState.headerMobile,mobileNeeded)+'px');
+        }
+
+        function ensureLogoSizingBound(){
+            if(logoSizingBound)return;
+            logoSizingBound=true;
+            const logo=$('site-logo-img');
+            logo?.addEventListener('load',()=>requestAnimationFrame(syncLogoHeaderToWidth));
+            let resizeFrame=0;
+            window.addEventListener('resize',()=>{
+                cancelAnimationFrame(resizeFrame);
+                resizeFrame=requestAnimationFrame(syncLogoHeaderToWidth);
+            },{passive:true});
+        }
+
+        function applySiteDesign(designOverride=null){
+            const raw=designOverride||publicSiteConfig?.field_config?.design||{};
+            const d=normalizedDesign(raw);
+            appliedDesignState=d;
+            const root=document.documentElement;
+
+            root.style.setProperty('--site-logo-width-desktop',d.logoDesktop+'px');
+            root.style.setProperty('--site-logo-width-mobile',d.logoMobile+'px');
+            root.style.setProperty('--site-header-height-desktop',d.headerDesktop+'px');
+            root.style.setProperty('--site-header-height-mobile',d.headerMobile+'px');
+            root.style.setProperty('--site-button-font-size',(d.buttonPct/100)+'rem');
+            root.style.setProperty('--site-button-radius',d.buttonRadius+'px');
+            root.style.setProperty('--site-card-radius',d.cardRadius+'px');
+            root.style.setProperty('--site-home-gap',d.homeGap+'px');
+
+            root.style.setProperty('--site-hero-height-desktop',d.heroDesktop?d.heroDesktop+'px':'auto');
+            root.style.setProperty('--site-hero-img-height-desktop',d.heroDesktop?'100%':'auto');
+            root.style.setProperty('--site-hero-fit-desktop',d.heroDesktop?'cover':'contain');
+            root.style.setProperty('--site-hero-overflow-desktop',d.heroDesktop?'hidden':'visible');
+            root.style.setProperty('--site-hero-height-mobile',d.heroMobile?d.heroMobile+'px':'auto');
+            root.style.setProperty('--site-hero-img-height-mobile',d.heroMobile?'100%':'auto');
+            root.style.setProperty('--site-hero-fit-mobile',d.heroMobile?'cover':'contain');
+            root.style.setProperty('--site-hero-overflow-mobile',d.heroMobile?'hidden':'visible');
+
+            ensureLogoSizingBound();
+            requestAnimationFrame(syncLogoHeaderToWidth);
+        }
+
+        function versionedPublicAsset(url,fallback){
+            const value=url||fallback;
+            if(value.startsWith('./assets/')){
+                const base=value.split('?')[0];
+                return base+'?v=20260916-visualfix2';
+            }
+            return value;
+        }
+
+        function publicAppearanceSnapshot(config=publicSiteConfig){
+            return {
+                logo_url:config?.logo_url||'./assets/site-title.jpg',
+                hero_url:config?.hero_url||'./assets/hero-banner.jpg',
+                design:config?.field_config?.design||{}
             };
+        }
+
+        function cachePublicAppearance(config=publicSiteConfig){
+            try{
+                localStorage.setItem(PUBLIC_APPEARANCE_CACHE_KEY,JSON.stringify(publicAppearanceSnapshot(config)));
+            }catch(_){}
+        }
+
+        function applyVisualSnapshot(snapshot){
+            const logo=$('site-logo-img'),hero=$('home-hero-img');
             if(logo){
                 logo.dataset.fallback='';
-                logo.src=versionedAsset(publicSiteConfig?.logo_url,'./assets/site-title.jpg');
+                logo.src=versionedPublicAsset(snapshot?.logo_url,'./assets/site-title.jpg');
             }
             if(hero){
                 hero.dataset.fallback='';
-                hero.src=versionedAsset(publicSiteConfig?.hero_url,'./assets/hero-banner.jpg');
+                hero.src=versionedPublicAsset(snapshot?.hero_url,'./assets/hero-banner.jpg');
             }
-            applySiteDesign();
+            applySiteDesign(snapshot?.design||{});
+        }
+
+        function applyCachedPublicAppearance(){
+            try{
+                const cached=JSON.parse(localStorage.getItem(PUBLIC_APPEARANCE_CACHE_KEY)||'null');
+                if(cached&&typeof cached==='object')applyVisualSnapshot(cached);
+            }catch(_){}
+        }
+
+        function applyPublicSiteConfig(){
+            applyVisualSnapshot(publicAppearanceSnapshot(publicSiteConfig));
             document.querySelectorAll('[data-site-text]').forEach(el=>{
                 const key=el.getAttribute('data-site-text');
                 const v=publicSiteConfig?.content?.[key];
@@ -1105,6 +1170,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const {data,error}=await userRpc('public_site_config');
                 if(!error&&data){
                     publicSiteConfig=data;
+                    cachePublicAppearance(data);
                     applyPublicSiteConfig();
                 }
             }catch(e){console.warn('public site config unavailable',e);}
@@ -2222,6 +2288,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const fields=['host-name','host-phone','host-pass','host-pass-confirm','host-legal-consent','host-sms-consent'];
             block?.classList.remove('hidden');
             if(currentProfile){
+                $('event-form')?.setAttribute('autocomplete','on');
                 accountFields?.classList.add('hidden');
                 existingNote?.classList.remove('hidden');
                 if(existingText){
@@ -2232,6 +2299,13 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 accountFields?.classList.remove('hidden');
                 existingNote?.classList.add('hidden');
                 if(existingText)existingText.textContent='';
+                const activeView=document.querySelector('.screen.active')?.id||'';
+                if(activeView!=='view-add-event'){
+                    $('event-form')?.reset();
+                    ['host-name','host-phone','host-pass','host-pass-confirm'].forEach(id=>{const el=$(id);if(el)el.value='';});
+                    if($('draft-indicator'))$('draft-indicator').textContent='';
+                }
+                $('event-form')?.setAttribute('autocomplete','off');
                 fields.forEach(id=>{const el=$(id);if(el)el.required=true;});
             }
             $('ev-date').min=new Date().toISOString().slice(0,10);
@@ -3821,8 +3895,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">'+
                         '<label><span class="field-label">רוחב לוגו במחשב (px)</span><input id="admin-design-logo-desktop" type="number" min="220" max="700" class="input-clean" value="'+Number(design.logo_width_desktop||380)+'"></label>'+
                         '<label><span class="field-label">רוחב לוגו בטלפון (px)</span><input id="admin-design-logo-mobile" type="number" min="140" max="320" class="input-clean" value="'+Number(design.logo_width_mobile||220)+'"></label>'+
-                        '<label><span class="field-label">גובה הפס העליון במחשב (px)</span><input id="admin-design-header-desktop" type="number" min="72" max="180" class="input-clean" value="'+Number(design.header_height_desktop||112)+'"></label>'+
-                        '<label><span class="field-label">גובה הפס העליון בטלפון (px)</span><input id="admin-design-header-mobile" type="number" min="48" max="100" class="input-clean" value="'+Number(design.header_height_mobile||52)+'"></label>'+
+                        '<label><span class="field-label">גובה מינימלי של הפס העליון במחשב (px)</span><input id="admin-design-header-desktop" type="number" min="72" max="340" class="input-clean" value="'+Number(design.header_height_desktop||112)+'"></label>'+
+                        '<label><span class="field-label">גובה מינימלי של הפס העליון בטלפון (px)</span><input id="admin-design-header-mobile" type="number" min="48" max="180" class="input-clean" value="'+Number(design.header_height_mobile||52)+'"></label>'+
                         '<label><span class="field-label">גובה תמונת הבית במחשב (0 = טבעי)</span><input id="admin-design-hero-desktop" type="number" min="0" max="700" class="input-clean" value="'+Number(design.hero_height_desktop||0)+'"></label>'+
                         '<label><span class="field-label">גובה תמונת הבית בטלפון (0 = טבעי)</span><input id="admin-design-hero-mobile" type="number" min="0" max="420" class="input-clean" value="'+Number(design.hero_height_mobile||0)+'"></label>'+
                         '<label><span class="field-label">גודל טקסט בכפתורים (%)</span><input id="admin-design-button-font" type="number" min="85" max="130" class="input-clean" value="'+Number(design.button_font_percent||100)+'"></label>'+
@@ -3830,7 +3904,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                         '<label><span class="field-label">עיגול פינות כרטיסים (px)</span><input id="admin-design-card-radius" type="number" min="6" max="30" class="input-clean" value="'+Number(design.card_radius_px||16)+'"></label>'+
                         '<label><span class="field-label">מרווח בין הבאנר לכפתורי הבית (px)</span><input id="admin-design-home-gap" type="number" min="0" max="120" class="input-clean" value="'+Number(design.home_section_gap_px??24)+'"></label>'+
                     '</div>'+
-                    '<p class="text-xs text-slate-400 mt-4">גובה באנר 0 שומר על היחס המקורי של התמונה. כשמגדירים גובה קבוע התמונה נחתכת בצורה מבוקרת במרכז במקום להימתח.</p>'+
+                    '<p class="text-xs text-slate-400 mt-4">גובה באנר 0 שומר על היחס המקורי של התמונה. כשמגדירים גובה קבוע התמונה מעוגנת לחלק העליון וגדלה כלפי מטה. רוחב הלוגו מגדיל אוטומטית את הפס העליון במידת הצורך כדי שהלוגו באמת יגדל ולא ייחסם על־ידי גובה הפס.</p>'+
                 '</div>'+
 
                 '<div class="glass-card p-6"><h3 class="text-2xl font-bold">טקסטים באתר</h3><p class="text-sm text-slate-500">הטקסטים נשמרים כטקסט פשוט בלבד — לא ניתן להכניס HTML או קוד.</p><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">'+
@@ -3951,8 +4025,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const design={
                 logo_width_desktop:designInt('admin-design-logo-desktop',base.design?.logo_width_desktop??380,220,700),
                 logo_width_mobile:designInt('admin-design-logo-mobile',base.design?.logo_width_mobile??220,140,320),
-                header_height_desktop:designInt('admin-design-header-desktop',base.design?.header_height_desktop??112,72,180),
-                header_height_mobile:designInt('admin-design-header-mobile',base.design?.header_height_mobile??52,48,100),
+                header_height_desktop:designInt('admin-design-header-desktop',base.design?.header_height_desktop??112,72,340),
+                header_height_mobile:designInt('admin-design-header-mobile',base.design?.header_height_mobile??52,48,180),
                 hero_height_desktop:designInt('admin-design-hero-desktop',base.design?.hero_height_desktop??0,0,700),
                 hero_height_mobile:designInt('admin-design-hero-mobile',base.design?.hero_height_mobile??0,0,420),
                 button_font_percent:designInt('admin-design-button-font',base.design?.button_font_percent??100,85,130),
@@ -3979,15 +4053,28 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 return showToast('ברירת המחדל חייבת להיות סוג אירוע פעיל.','error');
             }
 
+            const nextLogo=$('admin-logo-url')?.value||adminEditorState.logo_url;
+            const nextHero=$('admin-hero-url')?.value||adminEditorState.hero_url;
             const {error}=await adminRpc('admin_update_site_editor',{
-                p_logo_url:$('admin-logo-url')?.value||adminEditorState.logo_url,
-                p_hero_url:$('admin-hero-url')?.value||adminEditorState.hero_url,
+                p_logo_url:nextLogo,
+                p_hero_url:nextHero,
                 p_content:content,
                 p_field_config:fieldConfig
             });
             if(error)return showToast(readableError(error),'error');
+
+            publicSiteConfig={
+                ...publicSiteConfig,
+                logo_url:nextLogo,
+                hero_url:nextHero,
+                content,
+                field_config:fieldConfig
+            };
+            cachePublicAppearance(publicSiteConfig);
+            applyPublicSiteConfig();
+
             showToast('תוכן האתר והאפשרויות עודכנו.','success');
-            await loadPublicSiteConfig();
+            void loadPublicSiteConfig();
             await adminOpenTab('settings');
         }
 
@@ -4168,4 +4255,5 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 else if(sessionToken)armUserIdleLogout();
             }
         });
+        applyCachedPublicAppearance();
         loadPublicSiteConfig().finally(()=>initSession());

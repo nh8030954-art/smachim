@@ -6,7 +6,7 @@
     <meta name="referrer" content="no-referrer">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://ybccbyyrrxdzarsgylql.supabase.co; connect-src 'self' https://ybccbyyrrxdzarsgylql.supabase.co wss://ybccbyyrrxdzarsgylql.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'none'; worker-src 'self' blob:; upgrade-insecure-requests;">
     <title>שמחים בשמחתם</title>
-    <script src="assets/security-bootstrap.js?v=security-20260916"></script>
+    <script src="assets/security-bootstrap.js?v=appearance-security-20260916-2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Frank+Ruhl+Libre:wght@700;900&display=swap" rel="stylesheet">
@@ -67,7 +67,7 @@
         .area-switch button { padding:.65rem 1rem; border-radius:.6rem; font-weight:700; font-size:.9rem; color:#64748b; }
         .area-switch button.active { background:#fff; color:#0f766e; box-shadow:0 1px 4px rgba(15,23,42,.08); }
         .home-hero { width:100%; height:var(--site-hero-height-desktop); min-height:1px; background:#f8fafc; display:block; visibility:visible; overflow:var(--site-hero-overflow-desktop); }
-        .home-hero img { width:100%; height:var(--site-hero-img-height-desktop); min-height:1px; display:block; object-fit:var(--site-hero-fit-desktop); object-position:center; visibility:visible; opacity:1; }
+        .home-hero img { width:100%; height:var(--site-hero-img-height-desktop); min-height:1px; display:block; object-fit:var(--site-hero-fit-desktop); object-position:center top; visibility:visible; opacity:1; }
         .site-header { background:#fff; position:sticky; top:0; z-index:50; display:block; width:100%; visibility:visible; opacity:1; border-bottom:1px solid rgba(226,232,240,.65); }
         .site-header-inner { position:relative; min-height:var(--site-header-height-desktop); height:var(--site-header-height-desktop); display:flex; align-items:center; justify-content:center; max-width:80rem; margin:0 auto; padding:0 1.5rem; }
         .site-title-wrap { width:var(--site-logo-width-desktop); height:calc(var(--site-header-height-desktop) - 2px); overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; background:#fff; border:0; padding:0; }
@@ -148,6 +148,7 @@
                 height:var(--site-hero-img-height-mobile) !important;
                 min-height:1px !important;
                 object-fit:var(--site-hero-fit-mobile) !important;
+                object-position:center top !important;
                 visibility:visible !important;
                 opacity:1 !important;
                 margin:0 !important;
@@ -388,7 +389,7 @@
         <!-- דף הבית -->
         <div id="view-home" class="screen active">
             <h1 class="sr-only">שמחים בשמחתם — חיבור בין בעלי שמחה למשמחים</h1>
-            <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg?v=mobilefix3" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" data-fallback-src="./assets/hero-banner.jpg?v=mobilefix3"></div>
+            <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg?v=20260916-newhero" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" data-fallback-src="./assets/hero-banner.jpg?v=20260916-newhero"></div>
             <div id="home-actions-section" class="max-w-5xl mx-auto px-6 pt-6 pb-14">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <button data-onclick="navigate('register-volunteer')" class="site-home-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
@@ -551,7 +552,7 @@
                     <div><h1 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h1><p class="text-sm text-slate-500 mt-1">טיוטה נשמרת אוטומטית רק לחשבון מחובר ונמחקת בהתנתקות. אורח שאינו מחובר לא נשמר בדפדפן.</p></div>
                     <span id="draft-indicator" class="text-xs font-bold text-slate-400"></span>
                 </div>
-                <form id="event-form" data-onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6" autocomplete="on">
+                <form id="event-form" data-onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6" autocomplete="off">
                     <div id="host-account-block" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
                         <div id="host-existing-account-note" class="hidden">
                             <h3 class="font-bold text-slate-800">פרסום מתוך החשבון המחובר</h3>
@@ -564,8 +565,8 @@
                             <p class="text-xs text-slate-500 mt-1">הטלפון ישמש כשם המשתמש להתחברות לאזור האישי.</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label><span data-field-label="host_name" class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" autocomplete="name" minlength="2" maxlength="100" required></label>
-                            <label><span data-field-label="host_phone" class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
+                            <label><span data-field-label="host_name" class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" autocomplete="off" minlength="2" maxlength="100" required></label>
+                            <label><span data-field-label="host_phone" class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="off" required></label>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <label><span data-field-label="host_password" class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="12" maxlength="72" autocomplete="new-password" required></label>
@@ -912,7 +913,7 @@
     </footer>
 
     <script src="assets/vendor/qrcode.min.js"></script>
-    <script src="assets/app.js?v=admin-mfa-qrfix-20260916"></script>
+    <script src="assets/app.js?v=privacy-design-hero-20260916-2"></script>
 </body>
 </html>
 

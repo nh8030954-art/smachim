@@ -1045,10 +1045,13 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             return {
                 logoDesktop:boundedDesignNumber(raw.logo_width_desktop,380,220,700),
                 logoMobile:boundedDesignNumber(raw.logo_width_mobile,220,140,320),
-                headerDesktop:boundedDesignNumber(raw.header_height_desktop,112,72,340),
-                headerMobile:boundedDesignNumber(raw.header_height_mobile,52,48,180),
-                heroDesktop:boundedDesignNumber(raw.hero_height_desktop,0,0,700),
-                heroMobile:boundedDesignNumber(raw.hero_height_mobile,0,0,420),
+                logoPaddingDesktop:boundedDesignNumber(raw.logo_padding_desktop,4,0,80),
+                logoPaddingMobile:boundedDesignNumber(raw.logo_padding_mobile,2,0,40),
+                headerDesktop:0,
+                headerMobile:0,
+                heroDesktop:boundedDesignNumber(raw.hero_height_desktop,0,0,1000),
+                heroMobile:boundedDesignNumber(raw.hero_height_mobile,0,0,650),
+                heroFit:raw.hero_fit==='cover'?'cover':'contain',
                 buttonPct:boundedDesignNumber(raw.button_font_percent,100,85,130),
                 buttonRadius:boundedDesignNumber(raw.button_radius_px,8,0,24),
                 cardRadius:boundedDesignNumber(raw.card_radius_px,16,6,30),
@@ -1057,17 +1060,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         function syncLogoHeaderToWidth(){
-            const logo=$('site-logo-img');
-            if(!logo||!appliedDesignState)return;
-            const root=document.documentElement;
-            const naturalRatio=(logo.naturalWidth&&logo.naturalHeight)
-                ? logo.naturalWidth/logo.naturalHeight
-                : (2048/938);
-            const desktopNeeded=Math.ceil(appliedDesignState.logoDesktop/naturalRatio)+2;
-            const mobileRenderedWidth=Math.min(appliedDesignState.logoMobile,Math.max(140,window.innerWidth*0.64));
-            const mobileNeeded=Math.ceil(mobileRenderedWidth/naturalRatio)+2;
-            root.style.setProperty('--site-header-height-desktop',Math.max(appliedDesignState.headerDesktop,desktopNeeded)+'px');
-            root.style.setProperty('--site-header-height-mobile',Math.max(appliedDesignState.headerMobile,mobileNeeded)+'px');
+            // Header height is now driven by the logo's natural aspect ratio + explicit white padding.
+            // This prevents oversized blank header bands when the logo width changes.
         }
 
         function ensureLogoSizingBound(){
@@ -1090,8 +1084,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
             root.style.setProperty('--site-logo-width-desktop',d.logoDesktop+'px');
             root.style.setProperty('--site-logo-width-mobile',d.logoMobile+'px');
-            root.style.setProperty('--site-header-height-desktop',d.headerDesktop+'px');
-            root.style.setProperty('--site-header-height-mobile',d.headerMobile+'px');
+            root.style.setProperty('--site-logo-padding-desktop',d.logoPaddingDesktop+'px');
+            root.style.setProperty('--site-logo-padding-mobile',d.logoPaddingMobile+'px');
             root.style.setProperty('--site-button-font-size',(d.buttonPct/100)+'rem');
             root.style.setProperty('--site-button-radius',d.buttonRadius+'px');
             root.style.setProperty('--site-card-radius',d.cardRadius+'px');
@@ -1099,11 +1093,11 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
             root.style.setProperty('--site-hero-height-desktop',d.heroDesktop?d.heroDesktop+'px':'auto');
             root.style.setProperty('--site-hero-img-height-desktop',d.heroDesktop?'100%':'auto');
-            root.style.setProperty('--site-hero-fit-desktop',d.heroDesktop?'cover':'contain');
+            root.style.setProperty('--site-hero-fit-desktop',d.heroDesktop?d.heroFit:'contain');
             root.style.setProperty('--site-hero-overflow-desktop',d.heroDesktop?'hidden':'visible');
             root.style.setProperty('--site-hero-height-mobile',d.heroMobile?d.heroMobile+'px':'auto');
             root.style.setProperty('--site-hero-img-height-mobile',d.heroMobile?'100%':'auto');
-            root.style.setProperty('--site-hero-fit-mobile',d.heroMobile?'cover':'contain');
+            root.style.setProperty('--site-hero-fit-mobile',d.heroMobile?d.heroFit:'contain');
             root.style.setProperty('--site-hero-overflow-mobile',d.heroMobile?'hidden':'visible');
 
             ensureLogoSizingBound();
@@ -3871,7 +3865,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const ageRanges=cfg.age_ranges||[];
             const radii=cfg.radius_options||[];
             const sectors=cfg.sectors||[];
-            const design={logo_width_desktop:380,logo_width_mobile:220,header_height_desktop:112,header_height_mobile:52,hero_height_desktop:0,hero_height_mobile:0,button_font_percent:100,button_radius_px:8,card_radius_px:16,home_section_gap_px:24,...(cfg.design||{})};
+            const design={logo_width_desktop:380,logo_width_mobile:220,logo_padding_desktop:4,logo_padding_mobile:2,hero_height_desktop:0,hero_height_mobile:0,hero_fit:'contain',button_font_percent:100,button_radius_px:8,card_radius_px:16,home_section_gap_px:24,...(cfg.design||{})};
 
             return '<div class="space-y-5">'+
                 '<div class="glass-card p-6"><h3 class="text-2xl font-bold">הגדרות תפעוליות</h3><p class="text-sm text-slate-500">מתגים מרכזיים לעצירה או הפעלה של פעולות באתר במקרה הצורך.</p><form data-onsubmit="event.preventDefault(); adminSaveSiteSettings();" class="space-y-4 mt-5">'+
@@ -3895,16 +3889,17 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">'+
                         '<label><span class="field-label">רוחב לוגו במחשב (px)</span><input id="admin-design-logo-desktop" type="number" min="220" max="700" class="input-clean" value="'+Number(design.logo_width_desktop||380)+'"></label>'+
                         '<label><span class="field-label">רוחב לוגו בטלפון (px)</span><input id="admin-design-logo-mobile" type="number" min="140" max="320" class="input-clean" value="'+Number(design.logo_width_mobile||220)+'"></label>'+
-                        '<label><span class="field-label">גובה מינימלי של הפס העליון במחשב (px)</span><input id="admin-design-header-desktop" type="number" min="72" max="340" class="input-clean" value="'+Number(design.header_height_desktop||112)+'"></label>'+
-                        '<label><span class="field-label">גובה מינימלי של הפס העליון בטלפון (px)</span><input id="admin-design-header-mobile" type="number" min="48" max="180" class="input-clean" value="'+Number(design.header_height_mobile||52)+'"></label>'+
-                        '<label><span class="field-label">גובה תמונת הבית במחשב (0 = טבעי)</span><input id="admin-design-hero-desktop" type="number" min="0" max="700" class="input-clean" value="'+Number(design.hero_height_desktop||0)+'"></label>'+
-                        '<label><span class="field-label">גובה תמונת הבית בטלפון (0 = טבעי)</span><input id="admin-design-hero-mobile" type="number" min="0" max="420" class="input-clean" value="'+Number(design.hero_height_mobile||0)+'"></label>'+
+                        '<label><span class="field-label">שוליים לבנים מעל ומתחת ללוגו במחשב (px)</span><input id="admin-design-logo-padding-desktop" type="number" min="0" max="80" class="input-clean" value="'+Number(design.logo_padding_desktop??4)+'"></label>'+
+                        '<label><span class="field-label">שוליים לבנים מעל ומתחת ללוגו בטלפון (px)</span><input id="admin-design-logo-padding-mobile" type="number" min="0" max="40" class="input-clean" value="'+Number(design.logo_padding_mobile??2)+'"></label>'+
+                        '<label><span class="field-label">גובה שטח תמונת הבית במחשב (0 = טבעי)</span><input id="admin-design-hero-desktop" type="number" min="0" max="1000" class="input-clean" value="'+Number(design.hero_height_desktop||0)+'"></label>'+
+                        '<label><span class="field-label">גובה שטח תמונת הבית בטלפון (0 = טבעי)</span><input id="admin-design-hero-mobile" type="number" min="0" max="650" class="input-clean" value="'+Number(design.hero_height_mobile||0)+'"></label>'+
+                        '<label><span class="field-label">התאמת תמונת הבית</span><select id="admin-design-hero-fit" class="input-clean bg-white"><option value="contain" '+(design.hero_fit!=='cover'?'selected':'')+'>הצג את כל התמונה — ללא חיתוך</option><option value="cover" '+(design.hero_fit==='cover'?'selected':'')+'>מלא את כל השטח — ייתכן חיתוך בצדדים</option></select></label>'+
                         '<label><span class="field-label">גודל טקסט בכפתורים (%)</span><input id="admin-design-button-font" type="number" min="85" max="130" class="input-clean" value="'+Number(design.button_font_percent||100)+'"></label>'+
                         '<label><span class="field-label">עיגול פינות כפתורים (px)</span><input id="admin-design-button-radius" type="number" min="0" max="24" class="input-clean" value="'+Number(design.button_radius_px??8)+'"></label>'+
                         '<label><span class="field-label">עיגול פינות כרטיסים (px)</span><input id="admin-design-card-radius" type="number" min="6" max="30" class="input-clean" value="'+Number(design.card_radius_px||16)+'"></label>'+
                         '<label><span class="field-label">מרווח בין הבאנר לכפתורי הבית (px)</span><input id="admin-design-home-gap" type="number" min="0" max="120" class="input-clean" value="'+Number(design.home_section_gap_px??24)+'"></label>'+
                     '</div>'+
-                    '<p class="text-xs text-slate-400 mt-4">גובה באנר 0 שומר על היחס המקורי של התמונה. כשמגדירים גובה קבוע התמונה מעוגנת לחלק העליון וגדלה כלפי מטה. רוחב הלוגו מגדיל אוטומטית את הפס העליון במידת הצורך כדי שהלוגו באמת יגדל ולא ייחסם על־ידי גובה הפס.</p>'+
+                    '<p class="text-xs text-slate-400 mt-4">השוליים של הלוגו הם המרווח הלבן מעליו ומתחתיו — 0 מצמיד את הלוגו כמעט לשולי הפס. גובה תמונת הבית 0 מציג את היחס הטבעי. במצב “ללא חיתוך” כל התמונה תמיד נשארת גלויה; במצב “מלא את כל השטח” הבאנר ימלא את הגובה אך עשוי להיחתך מעט בצדדים.</p>'+
                 '</div>'+
 
                 '<div class="glass-card p-6"><h3 class="text-2xl font-bold">טקסטים באתר</h3><p class="text-sm text-slate-500">הטקסטים נשמרים כטקסט פשוט בלבד — לא ניתן להכניס HTML או קוד.</p><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">'+
@@ -4025,10 +4020,11 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const design={
                 logo_width_desktop:designInt('admin-design-logo-desktop',base.design?.logo_width_desktop??380,220,700),
                 logo_width_mobile:designInt('admin-design-logo-mobile',base.design?.logo_width_mobile??220,140,320),
-                header_height_desktop:designInt('admin-design-header-desktop',base.design?.header_height_desktop??112,72,340),
-                header_height_mobile:designInt('admin-design-header-mobile',base.design?.header_height_mobile??52,48,180),
-                hero_height_desktop:designInt('admin-design-hero-desktop',base.design?.hero_height_desktop??0,0,700),
-                hero_height_mobile:designInt('admin-design-hero-mobile',base.design?.hero_height_mobile??0,0,420),
+                logo_padding_desktop:designInt('admin-design-logo-padding-desktop',base.design?.logo_padding_desktop??4,0,80),
+                logo_padding_mobile:designInt('admin-design-logo-padding-mobile',base.design?.logo_padding_mobile??2,0,40),
+                hero_height_desktop:designInt('admin-design-hero-desktop',base.design?.hero_height_desktop??0,0,1000),
+                hero_height_mobile:designInt('admin-design-hero-mobile',base.design?.hero_height_mobile??0,0,650),
+                hero_fit:$('admin-design-hero-fit')?.value==='cover'?'cover':'contain',
                 button_font_percent:designInt('admin-design-button-font',base.design?.button_font_percent??100,85,130),
                 button_radius_px:designInt('admin-design-button-radius',base.design?.button_radius_px??8,0,24),
                 card_radius_px:designInt('admin-design-card-radius',base.design?.card_radius_px??16,6,30),

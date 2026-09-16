@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-16-170824-cacdd66",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-170824",
+      "date": "2026-09-16",
+      "created_at": "2026-09-16T17:08:24Z",
+      "change_title": "Record separate terms and privacy consent",
+      "commit": "cacdd667c83aa81ef5da72e3b69dd7e6a6aca47a",
+      "path": "versions/2026-09-16-170824-cacdd66.html",
+      "archive": "versions/2026-09-16-170824-cacdd66-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-170811-c231aec",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-170811",
       "date": "2026-09-16",

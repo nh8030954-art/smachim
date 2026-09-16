@@ -279,7 +279,12 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         function runDeclarativeHandler(code, element, event) {
-            for(const statement of splitDeclarativeParts(code,';')) {
+            const statements=splitDeclarativeParts(code,';');
+            const hasPrevent=statements[0]==='event.preventDefault()';
+            const expectedMax=hasPrevent?2:1;
+            if(!statements.length || statements.length>expectedMax) throw new Error('blocked_ui_action_sequence');
+            if(hasPrevent && statements.length!==2) throw new Error('blocked_ui_action_sequence');
+            for(const statement of statements) {
                 if(statement==='event.preventDefault()') {
                     event.preventDefault();
                     continue;

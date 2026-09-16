@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-16-165430-d5b231a",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-165430",
+      "date": "2026-09-16",
+      "created_at": "2026-09-16T16:54:30Z",
+      "change_title": "Add prominent location privacy notice",
+      "commit": "d5b231a88b7cae6737a7524e086274f29963b0c5",
+      "path": "versions/2026-09-16-165430-d5b231a.html",
+      "archive": "versions/2026-09-16-165430-d5b231a-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-165252-c600288",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-165252",
       "date": "2026-09-16",

@@ -14,6 +14,28 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         let _supabase = createAppClient();
 
+        async function userRpc(name,args={}) {
+            try{
+                const headers={
+                    'Content-Type':'application/json',
+                    'apikey':SUPABASE_PUBLISHABLE_KEY
+                };
+                if(sessionToken) headers['x-app-session']=sessionToken;
+                const res=await fetch(SUPABASE_URL+'/functions/v1/user-rpc',{
+                    method:'POST',
+                    headers,
+                    body:JSON.stringify({name,args:args||{}}),
+                    cache:'no-store',
+                    credentials:'omit'
+                });
+                const payload=await res.json().catch(()=>({}));
+                if(!res.ok) return {data:null,error:{message:String(payload?.error||'rpc_failed')}};
+                return {data:payload?.data??null,error:null};
+            }catch(_){
+                return {data:null,error:{message:'network_error'}};
+            }
+        }
+
         async function adminRpc(name,args={}) {
             const token=sessionStorage.getItem('smachimAdminSession') || (adminMode ? sessionToken : '');
             if(!token) return {data:null,error:{message:'session_expired'}};
@@ -719,7 +741,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 if(password.length<8)throw new Error('invalid_password');
                 if(password!==confirm)throw new Error('הסיסמאות אינן זהות.');
                 const verificationToken=await ensurePhoneVerification(phone,'reset_password');
-                const {error}=await _supabase.rpc('reset_password_with_verification',{
+                const {error}=await userRpc('reset_password_with_verification',{
                     p_phone:phone,p_verification_token:verificationToken,p_new_password:password
                 });
                 if(error)throw error;
@@ -735,7 +757,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(!ok)return;
             const typed=await askText('אישור אחרון','כדי לאשר, יש להקליד את המילה: מחיקה','מחיקה');
             if(typed!=='מחיקה')return showToast('החשבון לא נמחק.','warning');
-            const {error}=await _supabase.rpc('delete_my_account');
+            const {error}=await userRpc('delete_my_account');
             if(error)return showToast(readableError(error),'error');
             applySessionToken('');
             clearAllPersonalBrowserStorage();
@@ -976,7 +998,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         async function loadPublicSiteConfig(){
             try{
-                const {data,error}=await _supabase.rpc('public_site_config');
+                const {data,error}=await userRpc('public_site_config');
                 if(!error&&data){
                     publicSiteConfig=data;
                     applyPublicSiteConfig();
@@ -1476,7 +1498,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function loadProfile(retries=2) {
             if (!sessionToken) return null;
             for (let i=0; i<retries; i++) {
-                const { data, error } = await _supabase.rpc('username_my_profile');
+                const { data, error } = await userRpc('username_my_profile');
                 const profile = Array.isArray(data) ? data[0] : data;
                 if (!error && profile) {
                     currentProfile = profile;
@@ -1501,7 +1523,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 updateHeaderActions();
                 return;
             }
-            const {data:adminFlag}=await _supabase.rpc('is_admin');
+            const {data:adminFlag}=await userRpc('is_admin');
             currentIsAdmin=!!adminFlag;
             if(adminMode&&!currentIsAdmin){
                 adminMode=false;
@@ -1548,7 +1570,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v8',{
+                const {data:token,error}=await userRpc('username_register_v8',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
                     p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
@@ -1591,7 +1613,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function loadAdminArea(){
             if(!sessionToken||!adminMode) return navigate('login');
             const profile=currentProfile||await loadProfile();
-            const {data:adminFlag,error:adminErr}=await _supabase.rpc('is_admin');
+            const {data:adminFlag,error:adminErr}=await userRpc('is_admin');
             currentIsAdmin=!!adminFlag&&!adminErr;
             if(!profile||!currentIsAdmin){
                 applySessionToken('');
@@ -1666,7 +1688,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 adminMode=true;
 
                 const profile=await loadProfile();
-                const {data:adminFlag,error:adminErr}=await _supabase.rpc('is_admin');
+                const {data:adminFlag,error:adminErr}=await userRpc('is_admin');
                 if(adminErr||!profile||!adminFlag)throw new Error('not_allowed');
 
                 currentIsAdmin=true;
@@ -1698,7 +1720,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function handleLogout(){
             const token=sessionToken;
             const wasAdmin=adminMode;
-            try{if(token)await _supabase.rpc('username_logout',{p_token:token});}catch(_){}
+            try{if(token)await userRpc('username_logout',{p_token:token});}catch(_){}
             if(wasAdmin) applyAdminSessionToken(''); else applySessionToken('');
             clearAllPersonalBrowserStorage();
             clearRuntimeUserData();
@@ -1836,7 +1858,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             validateEventPayload(ev);
             const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
 
-            const {data:eventId,error}=await _supabase.rpc('create_event_v5',{
+            const {data:eventId,error}=await userRpc('create_event_v5',{
                 p_event_name:ev.event_name,p_event_type:ev.event_type,p_event_date:ev.event_date,
                 p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
                 p_city:ev.city,p_street:ev.street,p_house_number:ev.house_number,
@@ -1855,7 +1877,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const ev=collectEventForm(''); validateEventPayload(ev);
                 box.textContent='בודק התאמות...';
                 const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
-                const {data,error}=await _supabase.rpc('preview_event_match_count_v3',{
+                const {data,error}=await userRpc('preview_event_match_count_v3',{
                     p_event_type:ev.event_type,p_event_date:ev.event_date,p_start_time:ev.start_time,p_close_time:ev.close_time,
                     p_sector_pref:ev.sector_pref,p_accepted_volunteer_sectors:ev.accepted_sectors,
                     p_is_separated:ev.is_separated,p_age_min:ev.age_min,p_age_max:ev.age_max,
@@ -1891,7 +1913,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await _supabase.rpc('username_register_v8',{
+                const {data:token,error}=await userRpc('username_register_v8',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_volunteer_event_type_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
@@ -1966,7 +1988,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function renderQuickStats() {
-            const {data,error}=await _supabase.rpc('get_dashboard_stats');
+            const {data,error}=await userRpc('get_dashboard_stats');
             if(error||!data?.length) return '';
             const s=data[0];
             return '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3"><div class="mini-stat"><div class="text-xs text-slate-500">התנדבויות קרובות</div><div class="text-2xl font-bold mt-1">'+Number(s.upcoming_approved||0)+'</div></div><div class="mini-stat"><div class="text-xs text-slate-500">אירועים פעילים שלי</div><div class="text-2xl font-bold mt-1">'+Number(s.hosted_active||0)+'</div></div><div class="mini-stat"><div class="text-xs text-slate-500">התראות חדשות</div><div class="text-2xl font-bold mt-1">'+Number(s.unread_notifications||0)+'</div></div><div class="mini-stat"><div class="text-xs text-slate-500">רדיוס התאמה</div><div class="text-2xl font-bold mt-1">'+esc(radiusLabel(currentProfile.radius))+'</div></div></div>';
@@ -1989,7 +2011,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 showToast('יש להשלים קודם את פרטי המשמח בהגדרות.','warning');
                 return openProfileSettings();
             }
-            const {error}=await _supabase.rpc('enable_volunteer_mode');
+            const {error}=await userRpc('enable_volunteer_mode');
             if(error) return showToast(readableError(error),'error');
             await loadProfile(); dashboardArea='volunteer'; localStorage.setItem('smachimDashboardArea','volunteer');
             showToast('מצב משמח הופעל!','success'); await loadDashboard();
@@ -1997,9 +2019,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
 
         async function renderVolunteerScoreCard(){
-            const {data:enabled,error:enabledError}=await _supabase.rpc('is_volunteer_scoring_enabled');
+            const {data:enabled,error:enabledError}=await userRpc('is_volunteer_scoring_enabled');
             if(enabledError||!enabled)return '';
-            const {data,error}=await _supabase.rpc('get_my_volunteer_score');
+            const {data,error}=await userRpc('get_my_volunteer_score');
             if(error)return '';
             const s=Array.isArray(data)?data[0]:data;
             if(!s)return '';
@@ -2069,7 +2091,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 '<div id="dash-main-b"></div>'+
                 '<div id="dash-cta"></div><div id="dash-admin"></div>';
 
-            void _supabase.rpc('sync_event_statuses');
+            void userRpc('sync_event_statuses');
 
             const tasks=[
                 renderQuickStats().then(x=>setDashHtml('dash-stats',x)),
@@ -2093,7 +2115,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 }
             }
 
-            const adminPromise=_supabase.rpc('is_admin').then(async({data})=>{
+            const adminPromise=userRpc('is_admin').then(async({data})=>{
                 currentIsAdmin=!!data;
                 if(currentIsAdmin) setDashHtml('dash-admin',await renderAdminPanel());
             });
@@ -2102,7 +2124,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function renderFamilySection(){
-            const {data,error}=await _supabase.rpc('get_family_children');
+            const {data,error}=await userRpc('get_family_children');
             if(error)return '<div class="glass-card p-5"><h3 class="font-bold">המשפחה שלי</h3><p class="text-sm text-slate-500 mt-1">לא הצלחנו לטעון כרגע.</p></div>';
             familyChildrenCache=data||[];
             return '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="text-xl font-bold">'+esc(siteText('family_title','המשפחה שלי'))+'</h3><p class="text-sm text-slate-500">'+esc(siteText('family_subtitle','אפשר להוסיף ילד/ה בגיל 12–17 לחשבון רק אם תרצה/י. הילד/ה לא מקבל/ת חשבון נפרד.'))+'</p></div><button data-onclick="openFamilyChildForm()" class="btn-soft px-4 py-2"><i class="fa-solid fa-user-plus ml-1"></i> הוסף ילד/ה</button></div>'+
@@ -2145,7 +2167,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if(!currentProfile)await loadProfile();
             const child=childId?familyChildrenCache.find(x=>x.id===childId):null;
             if(childId&&!child){
-                const {data}=await _supabase.rpc('get_family_children');
+                const {data}=await userRpc('get_family_children');
                 familyChildrenCache=data||[];
             }
             fillFamilyChildForm(childId?familyChildrenCache.find(x=>x.id===childId):null);
@@ -2179,14 +2201,14 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const coords=await verifyTypedAddress(city,street,number);
                 let result;
                 if(id){
-                    result=await _supabase.rpc('update_family_child_v2',{
+                    result=await userRpc('update_family_child_v2',{
                         p_child_id:id,p_full_name:name,p_gender:gender,p_birth_year:birthYear,p_sector:sector,
                         p_event_type_preferences:eventTypes,p_city:city,p_street:street,p_house_number:number,
                         p_radius:radius,p_availability_days:days,p_availability_from:from,p_availability_until:until,
                         p_transport_mode:transport,p_strict_separation:separation,p_lat:coords.lat,p_lng:coords.lng
                     });
                 }else{
-                    result=await _supabase.rpc('add_family_child_v2',{
+                    result=await userRpc('add_family_child_v2',{
                         p_full_name:name,p_gender:gender,p_birth_year:birthYear,p_sector:sector,
                         p_event_type_preferences:eventTypes,p_city:city,p_street:street,p_house_number:number,
                         p_radius:radius,p_availability_days:days,p_availability_from:from,p_availability_until:until,
@@ -2205,7 +2227,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             activeFamilyChildId=childId;
             let child=familyChildrenCache.find(x=>x.id===childId);
             if(!child){
-                const {data,error}=await _supabase.rpc('get_family_children');
+                const {data,error}=await userRpc('get_family_children');
                 if(error)return showToast(readableError(error),'error');
                 familyChildrenCache=data||[];
                 child=familyChildrenCache.find(x=>x.id===childId);
@@ -2217,8 +2239,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const box=$('family-child-area-content');
             box.innerHTML='<div class="dashboard-skeleton">טוען אירועים...</div>';
             const [{data:regs,error:rErr},{data:matches,error:mErr}]=await Promise.all([
-                _supabase.rpc('get_family_child_registrations',{p_child_id:child.id}),
-                _supabase.rpc('get_family_child_matching_events',{p_child_id:child.id})
+                userRpc('get_family_child_registrations',{p_child_id:child.id}),
+                userRpc('get_family_child_matching_events',{p_child_id:child.id})
             ]);
             if(rErr||mErr){box.innerHTML='<div class="glass-card p-6 text-red-700">לא הצלחנו לטעון את נתוני הילד/ה כרגע.</div>';return;}
             const today=new Date().toISOString().slice(0,10);
@@ -2236,7 +2258,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const child=familyChildrenCache.find(x=>x.id===childId);
             const ok=await askConfirm('רישום לאירוע','לרשום את '+(child?.full_name||'הילד/ה')+' לאירוע?','כן, רשום/י');
             if(!ok)return;
-            const {error}=await _supabase.rpc('register_family_child_for_event',{p_child_id:childId,p_event_id:eventId});
+            const {error}=await userRpc('register_family_child_for_event',{p_child_id:childId,p_event_id:eventId});
             if(error)return showToast(readableError(error),'error');
             showToast('ההרשמה בוצעה.','success');await openFamilyChildArea(childId);
         }
@@ -2244,13 +2266,13 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function cancelFamilyChildRegistration(childId,eventId){
             const ok=await askConfirm('ביטול הרשמה','לבטל את הרשמת הילד/ה לאירוע?','בטל הרשמה');
             if(!ok)return;
-            const {error}=await _supabase.rpc('cancel_family_child_registration',{p_child_id:childId,p_event_id:eventId});
+            const {error}=await userRpc('cancel_family_child_registration',{p_child_id:childId,p_event_id:eventId});
             if(error)return showToast(readableError(error),'error');
             showToast('ההרשמה בוטלה.','success');await openFamilyChildArea(childId);
         }
 
         async function confirmFamilyChildAttendance(childId,eventId){
-            const {error}=await _supabase.rpc('confirm_family_child_attendance',{p_child_id:childId,p_event_id:eventId});
+            const {error}=await userRpc('confirm_family_child_attendance',{p_child_id:childId,p_event_id:eventId});
             if(error)return showToast(readableError(error),'error');
             showToast('ההגעה אושרה.','success');await openFamilyChildArea(childId);
         }
@@ -2259,7 +2281,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const child=familyChildrenCache.find(x=>x.id===childId);
             const ok=await askConfirm('הסרת ילד/ה מהחשבון','להסיר את '+(child?.full_name||'הילד/ה')+' מהחשבון? הרשמות פעילות יבוטלו.','הסר');
             if(!ok)return;
-            const {error}=await _supabase.rpc('delete_family_child',{p_child_id:childId});
+            const {error}=await userRpc('delete_family_child',{p_child_id:childId});
             if(error)return showToast(readableError(error),'error');
             showToast('הילד/ה הוסר/ה מהחשבון.','success');activeFamilyChildId=null;await loadDashboard();
         }
@@ -2312,13 +2334,13 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function markNotificationsRead(){
-            const {error}=await _supabase.rpc('mark_my_notifications_read');
+            const {error}=await userRpc('mark_my_notifications_read');
             if(error)return showToast(readableError(error),'error');
             setDashHtml('dash-notifications',await renderNotifications());
         }
 
         async function fetchMyRegistrations(){
-            const {data,error}=await _supabase.rpc('get_my_registrations_v2');
+            const {data,error}=await userRpc('get_my_registrations_v2');
             if(error) return [];
             return data||[];
         }
@@ -2363,7 +2385,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function confirmAttendance(eventId){
-            const {error}=await _supabase.rpc('confirm_attendance',{p_event_id:eventId});
+            const {error}=await userRpc('confirm_attendance',{p_event_id:eventId});
             if(error) return showToast(readableError(error),'error');
             showToast('ההגעה אושרה. תודה!','success');
             setDashHtml('dash-main-a',await renderMyRegistrations());
@@ -2458,7 +2480,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         }
 
         async function renderMatchingEvents(){
-            const {data:events,error}=await _supabase.rpc('get_matching_events_v2');
+            const {data:events,error}=await userRpc('get_matching_events_v2');
             if(error) return '<div class="glass-card p-6"><h3 class="text-xl font-bold mb-2">אירועים שמתאימים לך</h3><p class="text-slate-600">לא הצלחנו לטעון התאמות כרגע.</p></div>';
             matchingEventsCache=events||[];
             return '<div class="glass-card p-6"><div class="flex flex-wrap gap-3 justify-between items-start mb-4"><div><h3 class="text-xl font-bold">אירועים שמתאימים לך</h3><p class="text-sm text-slate-500">מוצגים רק אירועים שעומדים בכל הקריטריונים של שני הצדדים: מין ומכסה, גיל, מגזר, הפרדה, רדיוס, זמינות, דדליין והתנגשויות.</p></div><select id="match-sort" data-onchange="applyMatchingFilters()" class="input-clean bg-white !w-auto text-sm"><option value="date">לפי תאריך</option><option value="distance">הכי קרוב</option><option value="availability">הכי הרבה מקום</option></select></div><div id="matching-list" class="space-y-4">'+(matchingEventsCache.length?matchingCards(matchingEventsCache):'<p class="text-slate-500">אין כרגע אירועים שעומדים בכל הקריטריונים שלך. אפשר לשנות רדיוס, מגזרים או זמינות בהגדרות.</p>')+'</div></div>';
@@ -2467,7 +2489,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function reportEvent(eventId){
             const reason=await askText('דיווח על אירוע','כתוב בקצרה מה הבעיה באירוע.','סיבת הדיווח');
             if(!reason) return;
-            const {error}=await _supabase.rpc('report_event',{p_event_id:eventId,p_reason:reason});
+            const {error}=await userRpc('report_event',{p_event_id:eventId,p_reason:reason});
             if(error) showToast(readableError(error),'error'); else showToast('הדיווח נשלח למנהל המערכת.','success');
         }
 
@@ -2476,7 +2498,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const text=ev?'להירשם ל־'+ev.event_name+'\nבעל השמחה: '+ev.host_name+'\n'+formatDate(ev.event_date)+' · '+timeRange(ev.start_time,ev.close_time)+'\n'+(ev.hall_name?ev.hall_name+' · ':'')+ev.hall_address+(ev.exact_lat==null?'\nהכתובת המדויקת תוצג מיד לאחר ההרשמה.':''):'להירשם לאירוע הזה?';
             const ok=await askConfirm('אישור הרשמה',text,'כן, הירשם');
             if(!ok) return;
-            const {error}=await _supabase.rpc('register_for_event',{p_event_id:eventId});
+            const {error}=await userRpc('register_for_event',{p_event_id:eventId});
             if(error) return showToast(readableError(error),'error');
             showToast('נרשמת בהצלחה! הצ׳אט הקבוצתי של האירוע נפתח עבורך.','success');
             await loadDashboard();
@@ -2485,12 +2507,12 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function cancelMyRegistration(eventId){
             const ok=await askConfirm('ביטול הרשמה','לבטל את ההרשמה לאירוע? לאחר הביטול לא תהיה גישה לצ׳אט האירוע.','בטל הרשמה');
             if(!ok) return;
-            const {error}=await _supabase.rpc('cancel_registration',{p_event_id:eventId});
+            const {error}=await userRpc('cancel_registration',{p_event_id:eventId});
             if(error) showToast(readableError(error),'error'); else {showToast('ההרשמה בוטלה.');await loadDashboard();}
         }
 
         async function renderHostEvents(){
-            const {data:events,error}=await _supabase.rpc('get_host_events_v3');
+            const {data:events,error}=await userRpc('get_host_events_v3');
             if(error) return '<div class="glass-card p-6"><h3 class="text-xl font-bold">האירועים שלי</h3><p class="text-slate-500 mt-2">לא הצלחנו לטעון את האירועים כרגע.</p></div>';
             hostEventsCache=new Map((events||[]).map(e=>[e.id,e]));
             return '<div class="glass-card p-6"><div class="flex flex-wrap gap-3 justify-between items-center mb-4"><div><h3 class="text-xl font-bold">האירועים שלי</h3><p class="text-sm text-slate-500">ניהול נרשמים, קריטריונים, צ׳אט ואישורי הגעה.</p></div><button data-onclick="openAddEvent()" class="btn-dark px-4 py-2 text-sm"><i class="fa-solid fa-plus ml-1"></i> אירוע חדש</button></div><div class="space-y-4">'+((events||[]).length?(events||[]).map(e=>{
@@ -2513,7 +2535,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const action=present?'לאשר שהמשמח/ת השתתף/ה באירוע?':'לבטל את אישור ההגעה בפועל?';
             const ok=await askConfirm(present?'אישור השתתפות בפועל':'ביטול אישור השתתפות',action,present?'אשר הגעה':'בטל אישור');
             if(!ok)return;
-            const {error}=await _supabase.rpc('host_confirm_attendance',{p_event_id:eventId,p_user_id:userId,p_present:present});
+            const {error}=await userRpc('host_confirm_attendance',{p_event_id:eventId,p_user_id:userId,p_present:present});
             if(error)return showToast(readableError(error),'error');
             showToast(present?'ההגעה בפועל אושרה.':'אישור ההגעה בפועל בוטל.','success');
             const box=$('registrants-'+eventId);
@@ -2526,7 +2548,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const box=$('registrants-'+eventId); if(!box) return;
             if(!box.classList.contains('hidden')){box.classList.add('hidden');return;}
             box.classList.remove('hidden');box.innerHTML='<div class="text-sm text-slate-500" role="status">טוען נרשמים...</div>';
-            const {data,error}=await _supabase.rpc('get_event_registrants_v3',{p_event_id:eventId});
+            const {data,error}=await userRpc('get_event_registrants_v3',{p_event_id:eventId});
             if(error) return box.innerHTML='<div class="text-sm text-red-700" role="alert">לא הצלחנו לטעון את רשימת הנרשמים.</div>';
             const ended=eventHasEnded(eventId);
             box.innerHTML=data?.length?'<div class="border-t pt-3 space-y-3">'+data.map(r=>{
@@ -2568,7 +2590,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             try{
                 const ev=collectEventForm('edit-');validateEventPayload(ev);
                 const coords=await verifyTypedAddress(ev.city,ev.street,ev.house_number);
-                const {error}=await _supabase.rpc('update_event_v4',{
+                const {error}=await userRpc('update_event_v4',{
                     p_event_id:$('edit-event-id').value,p_event_name:ev.event_name,p_event_type:ev.event_type,
                     p_event_date:ev.event_date,p_registration_deadline:ev.registration_deadline,p_hall_name:ev.hall_name,
                     p_city:ev.city,p_street:ev.street,p_house_number:ev.house_number,p_start_time:ev.start_time,p_close_time:ev.close_time,
@@ -2585,7 +2607,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function cancelHostEvent(eventId){
             const ok=await askConfirm('ביטול אירוע','לבטל את האירוע? כל הנרשמים יקבלו התראה.','בטל אירוע');
             if(!ok) return;
-            const {error}=await _supabase.rpc('cancel_event',{p_event_id:eventId});
+            const {error}=await userRpc('cancel_event',{p_event_id:eventId});
             if(error) showToast(readableError(error),'error'); else {showToast('האירוע בוטל.');await loadDashboard();}
         }
 
@@ -2636,7 +2658,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const eventTypePrefs=checkedValues('profile-event-type-pref');
                 if(!days.length) throw new Error('יש לבחור לפחות יום זמינות אחד.');
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
-                const {error}=await _supabase.rpc('update_my_profile_v6',{
+                const {error}=await userRpc('update_my_profile_v6',{
                     p_full_name:$('profile-name').value.trim(),p_gender:$('profile-gender').value,p_sector:$('profile-sector').value,
                     p_volunteer_sector_preferences:checkedValues('profile-sector-pref'),p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:Number($('profile-birth-year').value),
                     p_city:city,p_street:street,p_house_number:number,p_radius:Number($('profile-radius').value||30),
@@ -2648,7 +2670,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 if(error) throw error;
                 await loadProfile();
                 if(currentProfile.role==='host'){
-                    const {error:modeErr}=await _supabase.rpc('enable_volunteer_mode');
+                    const {error:modeErr}=await userRpc('enable_volunteer_mode');
                     if(!modeErr){await loadProfile();dashboardArea='volunteer';localStorage.setItem('smachimDashboardArea','volunteer');}
                 }
                 showToast('הפרופיל עודכן.','success');await loadDashboard();
@@ -2685,7 +2707,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const box=$('chat-messages');if(!box)return;
             box.setAttribute('aria-busy','true');
             const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<100;
-            const {data,error}=await _supabase.rpc('get_event_chat',{p_event_id:activeChatEventId,p_limit:150});
+            const {data,error}=await userRpc('get_event_chat',{p_event_id:activeChatEventId,p_limit:150});
             if(error){box.innerHTML='<div class="text-sm text-red-600" role="alert">'+esc(readableError(error))+'</div>';box.setAttribute('aria-busy','false');return;}
             const rows=[...(data||[])].reverse();
             box.innerHTML=rows.length?rows.map(m=>{
@@ -2700,7 +2722,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const input=$('chat-input'),body=input.value.trim();
             if(!activeChatEventId||!body) return;
             setBusy('chat-send',true,'...');
-            const {error}=await _supabase.rpc('send_event_message',{p_event_id:activeChatEventId,p_body:body});
+            const {error}=await userRpc('send_event_message',{p_event_id:activeChatEventId,p_body:body});
             setBusy('chat-send',false);
             if(error) return showToast(readableError(error),'error');
             input.value='';await refreshEventChat(true);

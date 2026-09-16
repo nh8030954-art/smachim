@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-16-164201-ba3174b",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-164201",
+      "date": "2026-09-16",
+      "created_at": "2026-09-16T16:42:01Z",
+      "change_title": "Stabilize home hero and improve version history",
+      "commit": "ba3174b282624d9111bc3aed01b971c21de2c772",
+      "path": "versions/2026-09-16-164201-ba3174b.html",
+      "archive": "versions/2026-09-16-164201-ba3174b-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-152958-b0b1a31",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-152958",
       "date": "2026-09-16",

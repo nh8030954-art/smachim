@@ -422,11 +422,15 @@
                 <div id="admin-mfa-panel" class="hidden mt-6 text-right border border-slate-200 rounded-xl p-4 bg-slate-50">
                     <h2 class="font-bold text-lg">אימות דו־שלבי למנהל</h2>
                     <p id="admin-mfa-message" class="text-sm text-slate-600 mt-1">הזן קוד בן 6 ספרות מאפליקציית Authenticator.</p>
-                    <div id="admin-mfa-enroll" class="hidden mt-4 bg-white border rounded-lg p-3">
+                    <div id="admin-mfa-enroll" class="hidden mt-4 bg-white border rounded-lg p-4">
                         <div class="font-bold text-sm">הגדרה חד־פעמית</div>
-                        <p class="text-xs text-slate-500 mt-1">הוסף חשבון באפליקציית Authenticator באמצעות המפתח הבא. הוא לא נשמר בדפדפן.</p>
-                        <div id="admin-mfa-secret" class="font-mono text-sm font-bold break-all bg-slate-100 p-3 rounded mt-2" dir="ltr"></div>
+                        <p class="text-sm text-slate-600 mt-1">סרוק את קוד ה־QR באפליקציית Authenticator, ואז הזן למטה את הקוד בן 6 הספרות שמופיע באפליקציה.</p>
+                        <div id="admin-mfa-qr" class="mt-4 flex justify-center rounded-xl border border-slate-200 bg-white p-4 min-h-[220px] items-center" aria-label="קוד QR להגדרת אימות דו־שלבי"></div>
                         <a id="admin-mfa-open-app" href="#" class="btn-soft inline-flex px-3 py-2 mt-3 text-sm">פתח באפליקציית Authenticator</a>
+                        <details id="admin-mfa-manual-details" class="mt-3 text-xs text-slate-500">
+                            <summary class="cursor-pointer font-bold text-slate-600">לא מצליח לסרוק? הצג מפתח ידני</summary>
+                            <div id="admin-mfa-secret" class="font-mono text-sm font-bold break-all bg-slate-100 p-3 rounded mt-2 select-all" dir="ltr"></div>
+                        </details>
                     </div>
                     <form id="admin-mfa-form" data-onsubmit="event.preventDefault(); confirmAdminMfa();" class="space-y-3 mt-4">
                         <input id="admin-mfa-code" class="input-clean text-center text-xl tracking-[.35em]" dir="ltr" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required>
@@ -906,7 +910,8 @@
         </div>
     </footer>
 
-    <script src="assets/app.js?v=address-deadline-fix-20260916"></script>
+    <script src="assets/vendor/qrcode.min.js"></script>
+    <script src="assets/app.js?v=admin-mfa-qr-20260916"></script>
 </body>
 </html>
 

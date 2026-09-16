@@ -4208,8 +4208,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             cachePublicAppearance(publicSiteConfig);
             applyPublicSiteConfig();
 
+            await loadPublicSiteConfig();
             showToast('תוכן האתר והאפשרויות עודכנו.','success');
-            void loadPublicSiteConfig();
             await adminOpenTab('settings');
         }
 

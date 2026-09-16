@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-16-204156-6c13499",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-204156",
+      "date": "2026-09-16",
+      "created_at": "2026-09-16T20:41:56Z",
+      "change_title": "Move event coverage heading above time fields",
+      "commit": "6c13499a75a31b3056a7df167b450d58a87caa7b",
+      "path": "versions/2026-09-16-204156-6c13499.html",
+      "archive": "versions/2026-09-16-204156-6c13499-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-203644-3a8b3a0",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-203644",
       "date": "2026-09-16",

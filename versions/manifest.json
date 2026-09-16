@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-16-204627-c06926f",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-204627",
+      "date": "2026-09-16",
+      "created_at": "2026-09-16T20:46:27Z",
+      "change_title": "Deploy latest mobile navigation and coverage UI",
+      "commit": "c06926ff412f7d8e4da3ca6155e03a39da9e87df",
+      "path": "versions/2026-09-16-204627-c06926f.html",
+      "archive": "versions/2026-09-16-204627-c06926f-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-204319-b0425fc",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-204319",
       "date": "2026-09-16",

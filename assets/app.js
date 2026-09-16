@@ -46,6 +46,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             if (sessionToken) sessionStorage.setItem('smachimSession', sessionToken);
             else sessionStorage.removeItem('smachimSession');
             _supabase = createAppClient();
+            if(sessionToken) armUserIdleLogout();
+            else if(userIdleTimer){clearTimeout(userIdleTimer);userIdleTimer=null;}
         }
 
         function applyAdminSessionToken(token) {
@@ -61,6 +63,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 sessionStorage.removeItem('smachimAdminMode');
             }
             _supabase = createAppClient();
+            if(userIdleTimer){clearTimeout(userIdleTimer);userIdleTimer=null;}
         }
 
         let currentUser = null;
@@ -86,7 +89,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         let textOverrideObserver = null;
         let textOverrideScheduled = false;
         let adminIdleTimer = null;
+        let userIdleTimer = null;
         const ADMIN_IDLE_MS = 30 * 60 * 1000;
+        const USER_IDLE_MS = 2 * 60 * 60 * 1000;
         let calendarEventCache = new Map();
         let modalResolver = null;
         let dashboardArea = localStorage.getItem('smachimDashboardArea') || '';
@@ -110,6 +115,17 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     handleLogout();
                 }
             },ADMIN_IDLE_MS);
+        }
+
+        function armUserIdleLogout(){
+            if(userIdleTimer){clearTimeout(userIdleTimer);userIdleTimer=null;}
+            if(!sessionToken||adminMode)return;
+            userIdleTimer=setTimeout(()=>{
+                if(sessionToken&&!adminMode){
+                    showToast('החשבון נותק לאחר שעתיים ללא פעילות.','warning');
+                    handleLogout();
+                }
+            },USER_IDLE_MS);
         }
 
         function eventDraftKey() {
@@ -153,6 +169,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             currentIsAdmin=false;
             adminMode=false;
             if(adminIdleTimer){clearTimeout(adminIdleTimer);adminIdleTimer=null;}
+            if(userIdleTimer){clearTimeout(userIdleTimer);userIdleTimer=null;}
             dashboardArea='';
             hostEventsCache.clear();
             privateEventCache.clear();
@@ -1492,6 +1509,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             }
             updateHeaderActions();
             if(adminMode&&currentIsAdmin){armAdminIdleLogout();await loadAdminArea();}
+            else armUserIdleLogout();
         }
         async function openPersonalArea(){if(!sessionToken)return navigate('login');const profile=await loadProfile();if(!profile){applySessionToken('');updateHeaderActions();showToast('ההתחברות פגה. יש להתחבר מחדש.','warning');return navigate('login');}await loadDashboard();}
 
@@ -3495,5 +3513,14 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         updateHeaderActions();
         $('modal-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();resolveAppModal(true);}});
         $('chat-input')?.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();sendChatMessage();}});
-        ['pointerdown','keydown'].forEach(evt=>document.addEventListener(evt,()=>{if(adminMode)armAdminIdleLogout();},{passive:true}));
+        ['pointerdown','keydown'].forEach(evt=>document.addEventListener(evt,()=>{
+            if(adminMode)armAdminIdleLogout();
+            else if(sessionToken)armUserIdleLogout();
+        },{passive:true}));
+        document.addEventListener('visibilitychange',()=>{
+            if(document.visibilityState==='visible'){
+                if(adminMode)armAdminIdleLogout();
+                else if(sessionToken)armUserIdleLogout();
+            }
+        });
         loadPublicSiteConfig().finally(()=>initSession());

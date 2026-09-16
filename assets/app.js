@@ -249,39 +249,64 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         function parseDeclarativeArg(raw, element) {
             const v=String(raw||'').trim();
             if(v==='this.value') return element?.value;
+            if(v==='this.checked') return !!element?.checked;
             if(v==='this') return element;
             if(v==='true') return true;
             if(v==='false') return false;
             if(v==='null') return null;
             if(v==='undefined') return undefined;
-            if(/^-?(?:\\d+\\.?\\d*|\\.\\d+)$/.test(v)) return Number(v);
+            if(v!=='' && Number.isFinite(Number(v))) return Number(v);
             if((v.startsWith("'")&&v.endsWith("'"))||(v.startsWith('"')&&v.endsWith('"'))) {
-                return v.slice(1,-1).replace(/\\\\(['"\\\\])/g,'$1');
+                return v.slice(1,-1);
             }
             throw new Error('unsafe_declarative_argument');
         }
+
         function runDeclarativeHandler(code, element, event) {
             for(const statement of splitDeclarativeParts(code,';')) {
-                if(statement==='event.preventDefault()'){ event.preventDefault(); continue; }
-                const hide=statement.match(/^\\$\\((['"])([^'"]+)\\1\\)\\.classList\\.add\\((['"])hidden\\3\\)$/);
-                if(hide){ $(hide[2])?.classList.add('hidden'); continue; }
-                const match=statement.match(/^([A-Za-z_$][\\w$]*)\\((.*)\\)$/);
-                if(!match || !SAFE_UI_ACTIONS.has(match[1])) throw new Error('blocked_ui_action');
-                const fn=globalThis[match[1]];
+                if(statement==='event.preventDefault()') {
+                    event.preventDefault();
+                    continue;
+                }
+
+                // One narrowly allowed DOM helper used by the admin version preview.
+                if(statement.startsWith("$('") && statement.endsWith("').classList.add('hidden')")) {
+                    const close=statement.indexOf("')");
+                    const id=close>3 ? statement.slice(3,close) : '';
+                    if(id) $(id)?.classList.add('hidden');
+                    continue;
+                }
+
+                const open=statement.indexOf('(');
+                const close=statement.lastIndexOf(')');
+                if(open<=0 || close!==statement.length-1 || close<open) throw new Error('blocked_ui_action');
+
+                const action=statement.slice(0,open).trim();
+                if(!SAFE_UI_ACTIONS.has(action)) throw new Error('blocked_ui_action');
+
+                const fn=globalThis[action];
                 if(typeof fn!=='function') throw new Error('missing_ui_action');
-                const argText=match[2].trim();
+
+                const argText=statement.slice(open+1,close).trim();
                 const args=argText ? splitDeclarativeParts(argText,',').map(x=>parseDeclarativeArg(x,element)) : [];
                 const result=fn(...args);
-                if(result && typeof result.catch==='function') result.catch(err=>console.error('UI action failed',err));
+                if(result && typeof result.catch==='function') {
+                    result.catch(err=>console.error('UI action failed',err));
+                }
             }
         }
+
         function handleDelegatedAction(event, attr) {
             const origin=event.target instanceof Element ? event.target : null;
             const el=attr==='data-onsubmit' ? event.target : origin?.closest('['+attr+']');
             if(!el || !el.hasAttribute?.(attr)) return;
-            try { runDeclarativeHandler(el.getAttribute(attr)||'',el,event); }
-            catch(err){ console.error('Blocked declarative UI action',err); }
+            try {
+                runDeclarativeHandler(el.getAttribute(attr)||'',el,event);
+            } catch(err) {
+                console.error('Blocked declarative UI action',err,el.getAttribute(attr));
+            }
         }
+
         document.addEventListener('click',e=>handleDelegatedAction(e,'data-onclick'));
         document.addEventListener('submit',e=>handleDelegatedAction(e,'data-onsubmit'));
         document.addEventListener('change',e=>handleDelegatedAction(e,'data-onchange'));

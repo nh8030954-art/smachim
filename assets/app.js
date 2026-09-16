@@ -116,7 +116,8 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         const USER_IDLE_MS = 2 * 60 * 60 * 1000;
         let calendarEventCache = new Map();
         let modalResolver = null;
-        let dashboardArea = localStorage.getItem('smachimDashboardArea') || '';
+        try { localStorage.removeItem('smachimDashboardArea'); } catch(_) {}
+        let dashboardArea = sessionStorage.getItem('smachimDashboardArea') || '';
         let routeMapInstances = new Map();
         let matchingMapObserver = null;
         let addressCitiesCache = null;
@@ -127,6 +128,18 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         let chatPollTimer = null;
         const EVENT_DRAFT_PREFIX = 'smachimEventDraftV5:';
         const LEGACY_PERSONAL_STORAGE_KEYS = ['smachimEventDraftV4','pendingHostEvent'];
+
+        const authBroadcast = 'BroadcastChannel' in window ? new BroadcastChannel('smachim-auth') : null;
+        if(authBroadcast){
+            authBroadcast.onmessage=(event)=>{
+                if(event?.data?.type!=='logout') return;
+                applySessionToken('');
+                clearAllPersonalBrowserStorage();
+                clearRuntimeUserData();
+                updateHeaderActions();
+                navigate('home');
+            };
+        }
 
         function armAdminIdleLogout(){
             if(adminIdleTimer){clearTimeout(adminIdleTimer);adminIdleTimer=null;}
@@ -164,6 +177,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 });
                 LEGACY_PERSONAL_STORAGE_KEYS.forEach(key=>localStorage.removeItem(key));
                 localStorage.removeItem('smachimDashboardArea');
+                sessionStorage.removeItem('smachimDashboardArea');
                 sessionStorage.removeItem('smachimSession');
                 sessionStorage.removeItem('smachimAdminMode');
                 sessionStorage.removeItem('smachimAdminSession');
@@ -1750,6 +1764,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             clearAllPersonalBrowserStorage();
             clearRuntimeUserData();
             updateHeaderActions();
+            try{authBroadcast?.postMessage({type:'logout'});}catch(_){}
             navigate('home');
             showToast('התנתקת מהמערכת. כל הנתונים האישיים המקומיים נוקו מהדפדפן.');
         }
@@ -1990,7 +2005,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
         async function switchDashboardArea(mode) {
             if (!['volunteer','host'].includes(mode)) return;
             dashboardArea=mode;
-            localStorage.setItem('smachimDashboardArea',mode);
+            sessionStorage.setItem('smachimDashboardArea',mode);
             await loadDashboard();
         }
 
@@ -2038,7 +2053,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             }
             const {error}=await userRpc('enable_volunteer_mode');
             if(error) return showToast(readableError(error),'error');
-            await loadProfile(); dashboardArea='volunteer'; localStorage.setItem('smachimDashboardArea','volunteer');
+            await loadProfile(); dashboardArea='volunteer'; sessionStorage.setItem('smachimDashboardArea','volunteer');
             showToast('מצב משמח הופעל!','success'); await loadDashboard();
         }
 
@@ -2696,7 +2711,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 await loadProfile();
                 if(currentProfile.role==='host'){
                     const {error:modeErr}=await userRpc('enable_volunteer_mode');
-                    if(!modeErr){await loadProfile();dashboardArea='volunteer';localStorage.setItem('smachimDashboardArea','volunteer');}
+                    if(!modeErr){await loadProfile();dashboardArea='volunteer';sessionStorage.setItem('smachimDashboardArea','volunteer');}
                 }
                 showToast('הפרופיל עודכן.','success');await loadDashboard();
             }catch(e){showToast(String(e?.message||'').includes('לפחות יום')?String(e.message):readableError(e),'error');}

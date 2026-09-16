@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-16-170811-c231aec",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-170811",
+      "date": "2026-09-16",
+      "created_at": "2026-09-16T17:08:11Z",
+      "change_title": "Strengthen privacy notice and registration legal consent",
+      "commit": "c231aec958eca3741fadae4b78198f0bf2aced11",
+      "path": "versions/2026-09-16-170811-c231aec.html",
+      "archive": "versions/2026-09-16-170811-c231aec-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-165430-d5b231a",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-165430",
       "date": "2026-09-16",

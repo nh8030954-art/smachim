@@ -188,7 +188,14 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         function clearSensitiveForms() {
             ['login-form','admin-password-form','reset-password-form','volunteer-form','event-form','edit-event-form','profile-form','support-form'].forEach(id=>{
-                try { $(id)?.reset(); } catch(_) {}
+                try {
+                    const form=$(id);
+                    form?.reset();
+                    form?.querySelectorAll('input,select,textarea').forEach(el=>{
+                        el.setCustomValidity?.('');
+                        el.setAttribute?.('aria-invalid','false');
+                    });
+                } catch(_) {}
             });
             ['profile-phone-display','profile-role-display','user-greeting'].forEach(id=>{
                 const el=$(id); if(el) el.textContent='';
@@ -1964,7 +1971,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 if(existingText){
                     existingText.textContent='בעל השמחה: '+(currentProfile.full_name||'החשבון שלי')+' · טלפון: '+displayPhone(currentProfile.phone||'');
                 }
-                fields.forEach(id=>{const el=$(id);if(el){el.required=false;el.value='';}});
+                fields.forEach(id=>{const el=$(id);if(el){el.required=false;el.value='';el.setCustomValidity?.('');el.setAttribute('aria-invalid','false');}});
             } else {
                 accountFields?.classList.remove('hidden');
                 existingNote?.classList.add('hidden');

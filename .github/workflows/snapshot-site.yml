@@ -59,14 +59,28 @@ jobs:
           manifest_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
           PY
 
+          # When the bootstrap asset changes, change its query string in index.html too.
+          # This prevents mobile browsers/CDNs from continuing to use an older cached copy.
+          if git diff --name-only "$PARENT" HEAD | grep -qx 'assets/security-bootstrap.js'; then
+            python3 - "$STAMP" <<'PY'
+          import pathlib, re, sys
+          path = pathlib.Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          stamp = re.sub(r"[^0-9]", "", sys.argv[1])
+          text, count = re.subn(r'(assets/security-bootstrap\.js\?v=)[^"\x27]+', r'\g<1>deploy-' + stamp, text)
+          if count:
+              path.write_text(text, encoding="utf-8")
+          PY
+          fi
+
       - name: Commit snapshot
         shell: bash
         run: |
-          if git diff --quiet -- versions; then
+          if git diff --quiet -- versions index.html; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add versions
+          git add versions index.html
           git commit -m "Snapshot previous site version"
           git push

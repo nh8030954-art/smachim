@@ -833,19 +833,27 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const isPrivacy=kind==='privacy';
             const source=$(isPrivacy?'view-privacy':'view-terms')?.querySelector('.legal-document');
             const title=isPrivacy?'מדיניות פרטיות מלאה':'תנאי שימוש מלאים';
-            const text=(source?.innerText||'').trim();
             const promise=openAppModal({
                 title,
-                message:text || 'המסמך המלא זמין בקישור שבתחתית האתר.',
+                message:'',
                 confirmText:'קראתי',
                 cancelText:'סגור'
             });
             const messageEl=$('modal-message');
             if(messageEl){
+                messageEl.classList.add('legal-modal-content');
                 messageEl.style.maxHeight='60vh';
                 messageEl.style.overflowY='auto';
                 messageEl.style.textAlign='right';
                 messageEl.style.paddingInlineEnd='0.35rem';
+
+                if(source){
+                    const clone=source.cloneNode(true);
+                    clone.querySelectorAll('.hidden, button').forEach(node=>node.remove());
+                    messageEl.innerHTML=clone.innerHTML;
+                }else{
+                    messageEl.textContent='המסמך המלא זמין בקישור שבתחתית האתר.';
+                }
             }
             return promise;
         }

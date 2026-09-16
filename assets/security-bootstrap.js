@@ -15,7 +15,7 @@
 
     // Public visual settings only. No account, phone, address, session or other personal data is stored here.
     try {
-      const cached = JSON.parse(localStorage.getItem("smachimPublicAppearanceV2") || "null");
+      const cached = JSON.parse(localStorage.getItem("smachimPublicAppearanceV3") || "null");
       const d = cached?.design || {};
       const bounded = (v,fallback,min,max) => {
         const n=Number(v);
@@ -23,6 +23,10 @@
       };
       const logoDesktop=bounded(d.logo_width_desktop,380,220,700);
       const logoMobile=bounded(d.logo_width_mobile,220,140,320);
+      const logoPaddingDesktop=bounded(d.logo_padding_desktop,4,0,80);
+      const logoPaddingMobile=bounded(d.logo_padding_mobile,2,0,40);
+      const logoCropDesktop=Math.max(72,Math.round(logoDesktop*0.29));
+      const logoCropMobile=Math.max(46,Math.round(logoMobile*0.29));
       const requestedDesktop=bounded(d.header_height_desktop,112,72,340);
       const requestedMobile=bounded(d.header_height_mobile,52,48,180);
       const ratio=2048/938;
@@ -34,6 +38,10 @@
 
       root.style.setProperty("--site-logo-width-desktop",logoDesktop+"px");
       root.style.setProperty("--site-logo-width-mobile",logoMobile+"px");
+      root.style.setProperty("--site-logo-padding-desktop",logoPaddingDesktop+"px");
+      root.style.setProperty("--site-logo-padding-mobile",logoPaddingMobile+"px");
+      root.style.setProperty("--site-logo-crop-height-desktop",logoCropDesktop+"px");
+      root.style.setProperty("--site-logo-crop-height-mobile",logoCropMobile+"px");
       root.style.setProperty("--site-header-height-desktop",effectiveDesktop+"px");
       root.style.setProperty("--site-header-height-mobile",effectiveMobile+"px");
       root.style.setProperty("--site-hero-height-desktop",heroDesktop?heroDesktop+"px":"auto");

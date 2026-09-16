@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://ybccbyyrrxdzarsgylql.supabase.co; connect-src 'self' https://ybccbyyrrxdzarsgylql.supabase.co wss://ybccbyyrrxdzarsgylql.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'none'; worker-src 'self' blob:; upgrade-insecure-requests;">
+    <title>שמחים בשמחתם</title>
+    <script src="assets/security-bootstrap.js?v=security-20260916"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Frank+Ruhl+Libre:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/tailwind.generated.css">
+    <script src="assets/vendor/supabase.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/vendor/leaflet.css">
+    <script src="assets/vendor/leaflet.js"></script>
+    <style>
+        :root {
+            --site-logo-width-desktop: 380px;
+            --site-logo-width-mobile: 220px;
+            --site-header-height-desktop: 112px;
+            --site-header-height-mobile: 52px;
+            --site-hero-height-desktop: auto;
+            --site-hero-img-height-desktop: auto;
+            --site-hero-fit-desktop: contain;
+            --site-hero-overflow-desktop: visible;
+            --site-hero-height-mobile: auto;
+            --site-hero-img-height-mobile: auto;
+            --site-hero-fit-mobile: contain;
+            --site-hero-overflow-mobile: visible;
+            --site-button-font-size: 1rem;
+            --site-button-radius: 8px;
+            --site-card-radius: 16px;
+            --site-home-gap: 24px;
+        }
+        html { scroll-padding-top: 8rem; }
+        body { background-color: #F8FAFC; color: #0f172a; }
+        :where(h1,h2,h3,h4,h5,h6,[id]) { scroll-margin-top: 8rem; }
+        .screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .screen.active { display: block; opacity: 1; }
+        .glass-card { background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05); border-radius: var(--site-card-radius); overflow: hidden; }
+        .input-clean { width: 100%; padding: 0.75rem 1rem; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; color: #0f172a; transition: all 0.2s; font-family: 'Assistant', sans-serif; }
+        .input-clean:focus { background-color: #fff; border-color: #0d9488; outline: none; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
+        .btn-brand { background:#0d9488; color:#fff; font-weight:700; border-radius:var(--site-button-radius); transition:.2s; font-size:var(--site-button-font-size); }
+        .btn-brand:hover { background:#0f766e; }
+        .btn-dark { background:#0f172a; color:#fff; font-weight:700; border-radius:var(--site-button-radius); transition:.2s; font-size:var(--site-button-font-size); }
+        .btn-dark:hover { background:#1e293b; }
+        .btn-soft { background:#f1f5f9; color:#334155; font-weight:700; border-radius:var(--site-button-radius); transition:.2s; font-size:var(--site-button-font-size); }
+        .btn-soft:hover { background:#e2e8f0; }
+        .status-pill { display:inline-flex; align-items:center; padding:.25rem .65rem; border-radius:999px; font-size:.75rem; font-weight:700; }
+        button:disabled { opacity:.55; cursor:not-allowed; }
+        button, input, select, textarea, summary { min-height:24px; }
+        @media (pointer:coarse) {
+            button, summary { min-height:44px; }
+        }
+        .field-label { display:block; font-size:.8rem; font-weight:700; color:#475569; margin:0 0 .35rem .15rem; }
+        .field-help { font-size:.75rem; color:#64748b; margin-top:.35rem; }
+        .toast-card { background:#fff; border:1px solid #e2e8f0; box-shadow:0 12px 30px -8px rgba(15,23,42,.22); border-radius:.75rem; padding:.85rem 1rem; min-width:260px; max-width:390px; font-weight:600; }
+        .modal-shell { background:rgba(15,23,42,.48); backdrop-filter:blur(2px); }
+        .mini-stat { background:#fff; border:1px solid #e2e8f0; border-radius:.85rem; padding:1rem; }
+        .progress-track { height:.4rem; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+        .progress-fill { height:100%; background:#0d9488; border-radius:999px; }
+        .match-map { height:360px; border:1px solid #e2e8f0; border-radius:.85rem; overflow:hidden; background:#f1f5f9; }
+        .area-switch { display:inline-flex; gap:.35rem; background:#f1f5f9; padding:.35rem; border-radius:.8rem; border:1px solid #e2e8f0; }
+        .area-switch button { padding:.65rem 1rem; border-radius:.6rem; font-weight:700; font-size:.9rem; color:#64748b; }
+        .area-switch button.active { background:#fff; color:#0f766e; box-shadow:0 1px 4px rgba(15,23,42,.08); }
+        .home-hero { width:100%; height:var(--site-hero-height-desktop); min-height:1px; background:#f8fafc; display:block; visibility:visible; overflow:var(--site-hero-overflow-desktop); }
+        .home-hero img { width:100%; height:var(--site-hero-img-height-desktop); min-height:1px; display:block; object-fit:var(--site-hero-fit-desktop); object-position:center; visibility:visible; opacity:1; }
+        .site-header { background:#fff; position:sticky; top:0; z-index:50; display:block; width:100%; visibility:visible; opacity:1; border-bottom:1px solid rgba(226,232,240,.65); }
+        .site-header-inner { position:relative; min-height:var(--site-header-height-desktop); height:var(--site-header-height-desktop); display:flex; align-items:center; justify-content:center; max-width:80rem; margin:0 auto; padding:0 1.5rem; }
+        .site-title-wrap { width:var(--site-logo-width-desktop); height:calc(var(--site-header-height-desktop) - 2px); overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; background:#fff; border:0; padding:0; }
+        .site-title-wrap img { width:100%; max-width:100%; height:100%; display:block; object-fit:contain; object-position:center; transform:none; visibility:visible; opacity:1; }
+        .site-header-actions { position:absolute; left:1.5rem; top:50%; transform:translateY(-50%); z-index:2; }
+        @media (max-width:640px) {
+            .site-header {
+                position:relative !important;
+                top:auto !important;
+                display:block !important;
+                width:100% !important;
+                min-height:var(--site-header-height-mobile) !important;
+                height:var(--site-header-height-mobile) !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                overflow:hidden !important;
+                z-index:20 !important;
+            }
+            .site-header-inner {
+                position:relative !important;
+                width:100% !important;
+                min-height:var(--site-header-height-mobile) !important;
+                height:var(--site-header-height-mobile) !important;
+                padding:0 .75rem !important;
+                display:flex !important;
+                align-items:center !important;
+                justify-content:center !important;
+                overflow:hidden !important;
+            }
+            .site-title-wrap {
+                -webkit-appearance:none !important;
+                appearance:none !important;
+                width:min(var(--site-logo-width-mobile),64vw) !important;
+                height:calc(var(--site-header-height-mobile) - 2px) !important;
+                min-height:calc(var(--site-header-height-mobile) - 2px) !important;
+                display:flex !important;
+                align-items:center !important;
+                justify-content:center !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                overflow:hidden !important;
+                background-color:#fff !important;
+                background-image:url('./assets/site-title.jpg?v=mobilefix3') !important;
+                background-repeat:no-repeat !important;
+                background-position:center !important;
+                background-size:contain !important;
+                border:0 !important;
+                padding:0 !important;
+                margin:0 auto !important;
+            }
+            .site-title-wrap img {
+                display:block !important;
+                width:100% !important;
+                max-width:100% !important;
+                height:calc(var(--site-header-height-mobile) - 2px) !important;
+                max-height:calc(var(--site-header-height-mobile) - 2px) !important;
+                object-fit:contain !important;
+                object-position:center !important;
+                transform:none !important;
+                visibility:visible !important;
+                opacity:1 !important;
+            }
+            .home-hero {
+                position:relative !important;
+                display:block !important;
+                width:100% !important;
+                min-height:1px !important;
+                height:var(--site-hero-height-mobile) !important;
+                overflow:var(--site-hero-overflow-mobile) !important;
+                visibility:visible !important;
+                opacity:1 !important;
+            }
+            .home-hero img {
+                position:relative !important;
+                display:block !important;
+                width:100% !important;
+                max-width:100% !important;
+                height:var(--site-hero-img-height-mobile) !important;
+                min-height:1px !important;
+                object-fit:var(--site-hero-fit-mobile) !important;
+                visibility:visible !important;
+                opacity:1 !important;
+                margin:0 !important;
+            }
+            .site-header-actions { left:.5rem; }
+            .site-header-actions .header-home-action { display:none !important; }
+            .site-header-actions button { font-size:.72rem !important; }
+            .site-header-actions .flex { gap:.45rem !important; }
+        }
+        .site-home-card { border-radius:var(--site-card-radius) !important; }
+        #home-actions-section { padding-top:var(--site-home-gap) !important; }
+        .choice-grid { display:flex; flex-wrap:wrap; gap:.55rem; }
+        .choice-chip { display:inline-flex; align-items:center; gap:.4rem; padding:.55rem .75rem; border:1px solid #e2e8f0; border-radius:.75rem; background:#f8fafc; cursor:pointer; font-size:.85rem; font-weight:700; color:#475569; }
+        .choice-chip:has(input:checked) { border-color:#5eead4; background:#f0fdfa; color:#0f766e; }
+        .route-map { height:310px; border-radius:.8rem; border:1px solid #e2e8f0; overflow:hidden; background:#f1f5f9; }
+        .chat-messages { background:#f8fafc; border:1px solid #e2e8f0; border-radius:.9rem; }
+        .chat-bubble { max-width:82%; border-radius:1rem; padding:.65rem .8rem; }
+        .chat-bubble.mine { background:#ccfbf1; margin-right:auto; }
+        .chat-bubble.other { background:#fff; border:1px solid #e2e8f0; margin-left:auto; }
+        .dashboard-skeleton { min-height:70px; display:flex; align-items:center; color:#64748b; }
+
+        /* Accessibility layer — WCAG 2.2 AA oriented, without changing the visual language */
+        .sr-only {
+            position:absolute !important; width:1px !important; height:1px !important;
+            padding:0 !important; margin:-1px !important; overflow:hidden !important;
+            clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important;
+        }
+        .skip-link {
+            position:fixed; top:.5rem; right:.5rem; z-index:9999;
+            transform:translateY(-160%); background:#0f172a; color:#fff;
+            padding:.75rem 1rem; border-radius:.55rem; font-weight:700;
+            box-shadow:0 8px 24px rgba(15,23,42,.25);
+        }
+        .skip-link:focus { transform:translateY(0); }
+        :where(button,a,input,select,textarea,summary,[tabindex]):focus-visible {
+            outline:3px solid #0f766e !important;
+            outline-offset:3px !important;
+            box-shadow:none !important;
+        }
+        .input-clean:focus-visible {
+            border-color:#0f766e !important;
+            outline:3px solid #0f766e !important;
+            outline-offset:2px !important;
+        }
+        .btn-brand { background:#0f766e; }
+        .btn-brand:hover { background:#115e59; }
+        .text-brand-600 { color:#0f766e !important; }
+        .text-slate-400 { color:#64748b !important; }
+        [aria-invalid="true"] {
+            border-color:#b91c1c !important;
+            outline:2px solid #b91c1c !important;
+            outline-offset:1px;
+        }
+        [role="dialog"] { overscroll-behavior:contain; }
+        .input-clean::placeholder { color:#64748b; opacity:1; }
+        .route-map:focus-visible { outline:3px solid #0f766e !important; outline-offset:3px; }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior:auto !important; }
+            *,*::before,*::after {
+                animation-duration:.01ms !important;
+                animation-iteration-count:1 !important;
+                transition-duration:.01ms !important;
+                scroll-behavior:auto !important;
+            }
+        }
+        @media (forced-colors: active) {
+            .btn-brand,.btn-dark,.btn-soft,.choice-chip,.glass-card,.status-pill {
+                border:1px solid ButtonText;
+            }
+            :where(button,a,input,select,textarea,summary,[tabindex]):focus-visible {
+                outline:3px solid Highlight !important;
+            }
+        }
+
+        /* תפריט נגישות למשתמש */
+        html { font-size: calc(100% * var(--a11y-scale, 1)); }
+        .a11y-fab {
+            position:fixed; left:1rem; bottom:1rem; z-index:120;
+            width:58px; height:58px; border-radius:999px;
+            display:flex; align-items:center; justify-content:center;
+            background:#0f766e; color:#fff; border:3px solid #fff;
+            box-shadow:0 10px 28px rgba(15,23,42,.28);
+            font-size:1.55rem;
+        }
+        .a11y-fab:hover { background:#115e59; }
+        .a11y-panel {
+            position:fixed; left:1rem; bottom:5.5rem; z-index:119;
+            width:min(360px, calc(100vw - 2rem)); max-height:min(72vh, 620px);
+            overflow:auto; background:#fff; color:#0f172a;
+            border:1px solid #cbd5e1; border-radius:1rem;
+            box-shadow:0 18px 45px rgba(15,23,42,.28);
+            padding:1rem;
+        }
+        .a11y-panel.hidden { display:none !important; }
+        .a11y-control {
+            width:100%; min-height:46px; border:1px solid #cbd5e1;
+            border-radius:.7rem; background:#f8fafc; color:#0f172a;
+            font-weight:700; padding:.7rem .8rem; text-align:right;
+        }
+        .a11y-control:hover { background:#f1f5f9; }
+        .a11y-control[aria-pressed="true"] {
+            background:#ccfbf1; border-color:#0f766e; color:#134e4a;
+        }
+        .a11y-font-controls button {
+            min-width:48px; min-height:46px; border:1px solid #cbd5e1;
+            border-radius:.65rem; background:#f8fafc; font-weight:800;
+        }
+        .a11y-font-controls button:hover { background:#f1f5f9; }
+
+        html.a11y-high-contrast body { background:#fff !important; color:#000 !important; }
+        html.a11y-high-contrast .glass-card,
+        html.a11y-high-contrast .mini-stat,
+        html.a11y-high-contrast .chat-messages,
+        html.a11y-high-contrast .choice-chip,
+        html.a11y-high-contrast .input-clean,
+        html.a11y-high-contrast .a11y-panel {
+            background:#fff !important; color:#000 !important; border-color:#000 !important;
+        }
+        html.a11y-high-contrast [class*="text-slate-"],
+        html.a11y-high-contrast [class*="text-brand-"] { color:#000 !important; }
+        html.a11y-high-contrast .btn-brand,
+        html.a11y-high-contrast .btn-dark {
+            background:#000 !important; color:#fff !important; border:2px solid #000 !important;
+        }
+        html.a11y-high-contrast .btn-soft {
+            background:#fff !important; color:#000 !important; border:2px solid #000 !important;
+        }
+        html.a11y-grayscale body { filter:grayscale(1); }
+        html.a11y-underlined-links a,
+        html.a11y-underlined-links footer button,
+        html.a11y-underlined-links button.hover\:underline {
+            text-decoration:underline !important;
+            text-decoration-thickness:2px !important;
+            text-underline-offset:.18em !important;
+        }
+        html.a11y-readable-font body,
+        html.a11y-readable-font button,
+        html.a11y-readable-font input,
+        html.a11y-readable-font select,
+        html.a11y-readable-font textarea {
+            font-family:Arial,Helvetica,sans-serif !important;
+        }
+        html.a11y-reduce-motion *,
+        html.a11y-reduce-motion *::before,
+        html.a11y-reduce-motion *::after {
+            animation:none !important; transition:none !important; scroll-behavior:auto !important;
+        }
+        .site-footer { flex-shrink:0; }
+        .site-footer-links button { min-height:44px; padding:.5rem .75rem; border-radius:.55rem; }
+        @media (pointer:coarse) {
+            .btn-brand,.btn-dark,.btn-soft,a.btn-brand,a.btn-dark,a.btn-soft {
+                min-height:44px;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+            }
+        }
+        @media (max-width:640px) {
+            #view-home > .max-w-5xl { padding-bottom:1.5rem !important; }
+            .site-footer {
+                padding:.7rem .7rem calc(.7rem + env(safe-area-inset-bottom, 0px)) !important;
+            }
+            .site-footer-links {
+                display:grid !important;
+                grid-template-columns:repeat(2,minmax(0,1fr));
+                gap:.35rem !important;
+                width:100%;
+                max-width:32rem;
+                margin:0 auto;
+                font-size:.8rem !important;
+                line-height:1.25;
+            }
+            .site-footer-links button {
+                width:100%;
+                min-height:40px;
+                padding:.45rem .35rem;
+                background:#f8fafc;
+                border:1px solid #e2e8f0;
+                text-align:center;
+            }
+            .site-footer-links button:last-child { grid-column:1 / -1; }
+            .a11y-fab {
+                left:.7rem;
+                bottom:calc(6.25rem + env(safe-area-inset-bottom, 0px));
+                width:54px;
+                height:54px;
+            }
+            .a11y-panel {
+                left:.7rem;
+                bottom:calc(10.5rem + env(safe-area-inset-bottom, 0px));
+                width:calc(100vw - 1.4rem);
+                max-height:68vh;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+    <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
+    <div id="a11y-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <div id="a11y-alert-region" class="sr-only" role="alert" aria-live="assertive" aria-atomic="true"></div>
+    <header class="site-header sticky top-0 z-50" role="banner">
+        <div class="site-header-inner max-w-7xl mx-auto px-6">
+            <nav id="header-actions" class="site-header-actions" aria-label="ניווט ראשי">
+                <button data-onclick="navigate('home')" class="header-home-action text-sm font-semibold text-slate-500 hover:text-brand-600 transition">
+                    <i class="fa-solid fa-house ml-1"></i> דף הבית
+                </button>
+            </nav>
+            <button type="button" class="site-title-wrap" data-onclick="navigate('home')" aria-label="שמחים בשמחתם - דף הבית">
+                <img id="site-logo-img" src="./assets/site-title.jpg?v=mobilefix3" alt="" aria-hidden="true" width="2048" height="938" decoding="async" data-fallback-src="./assets/site-title.jpg?v=mobilefix3">
+            </button>
+        </div>
+    </header>
+
+    <main id="main-content" class="flex-grow w-full" tabindex="-1">
+        <!-- דף הבית -->
+        <div id="view-home" class="screen active">
+            <h1 class="sr-only">שמחים בשמחתם — חיבור בין בעלי שמחה למשמחים</h1>
+            <div class="home-hero"><img id="home-hero-img" src="./assets/hero-banner.jpg?v=mobilefix3" alt="ירושלים, בית המקדש וחופה עם הפסוק כל המשמח חתן וכלה כאילו בנה אחת מחורבות ירושלים" width="2048" height="508" fetchpriority="high" decoding="async" data-fallback-src="./assets/hero-banner.jpg?v=mobilefix3"></div>
+            <div id="home-actions-section" class="max-w-5xl mx-auto px-6 pt-6 pb-14">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <button data-onclick="navigate('register-volunteer')" class="site-home-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-4 text-brand-600 text-2xl"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                        <span data-site-text="home_volunteer_title" class="text-2xl font-bold text-slate-800 mb-2">אני רוצה לשמח</span>
+                        <span data-site-text="home_volunteer_subtitle" class="text-slate-500">הרשמה מלאה וחיפוש אירועים מתאימים.</span>
+                    </button>
+                    <button data-onclick="openAddEvent()" class="site-home-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-700 text-2xl"><i class="fa-solid fa-calendar-plus"></i></div>
+                        <span data-site-text="home_host_title" class="text-2xl font-bold text-slate-800 mb-2">יש לי אירוע</span>
+                        <span data-site-text="home_host_subtitle" class="text-slate-500">הרשמה כבעל שמחה ופרסום אירוע.</span>
+                    </button>
+                    <button data-onclick="openPersonalArea()" class="site-home-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-700 text-2xl"><i class="fa-solid fa-user"></i></div>
+                        <span data-site-text="home_account_title" class="text-2xl font-bold text-slate-800 mb-2">אזור אישי</span>
+                        <span data-site-text="home_account_subtitle" class="text-slate-500">התחברות וניהול אירועים או התנדבויות.</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- התחברות -->
+        <div id="view-login" class="screen max-w-md mx-auto px-6 py-20">
+            <div class="glass-card p-8 text-center">
+                <h1 data-site-text="login_title" class="text-2xl font-bold mb-2 text-brand-dark">התחברות לאזור האישי</h1>
+                <p data-site-text="login_subtitle" class="text-sm text-slate-500">ההתחברות המאובטחת מתבצעת באמצעות מספר טלפון וסיסמה.</p>
+                <form id="login-form" data-onsubmit="event.preventDefault(); handleLogin();" class="space-y-4 mt-6" autocomplete="on">
+                    <input type="text" id="login-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" required autocomplete="username">
+                    <input type="password" id="login-password" class="input-clean" placeholder="סיסמה" required autocomplete="current-password">
+                    <button id="login-submit" type="submit" class="w-full btn-dark py-3">כניסה למערכת</button>
+                </form>
+                <div id="admin-mfa-panel" class="hidden mt-6 text-right border border-slate-200 rounded-xl p-4 bg-slate-50">
+                    <h2 class="font-bold text-lg">אימות דו־שלבי למנהל</h2>
+                    <p id="admin-mfa-message" class="text-sm text-slate-600 mt-1">הזן קוד בן 6 ספרות מאפליקציית Authenticator.</p>
+                    <div id="admin-mfa-enroll" class="hidden mt-4 bg-white border rounded-lg p-3">
+                        <div class="font-bold text-sm">הגדרה חד־פעמית</div>
+                        <p class="text-xs text-slate-500 mt-1">הוסף חשבון באפליקציית Authenticator באמצעות המפתח הבא. הוא לא נשמר בדפדפן.</p>
+                        <div id="admin-mfa-secret" class="font-mono text-sm font-bold break-all bg-slate-100 p-3 rounded mt-2" dir="ltr"></div>
+                        <a id="admin-mfa-open-app" href="#" class="btn-soft inline-flex px-3 py-2 mt-3 text-sm">פתח באפליקציית Authenticator</a>
+                    </div>
+                    <form id="admin-mfa-form" data-onsubmit="event.preventDefault(); confirmAdminMfa();" class="space-y-3 mt-4">
+                        <input id="admin-mfa-code" class="input-clean text-center text-xl tracking-[.35em]" dir="ltr" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required>
+                        <button id="admin-mfa-submit" type="submit" class="w-full btn-dark py-3">אמת והיכנס לניהול</button>
+                    </form>
+                    <button type="button" data-onclick="cancelAdminMfa()" class="w-full mt-2 text-sm font-bold text-slate-500 hover:text-slate-800">ביטול</button>
+                </div>
+                <button type="button" data-onclick="navigate('reset-password')" class="mt-4 text-sm font-bold text-brand-700 hover:underline">שכחתי סיסמה</button>
+            </div>
+        </div>
+
+        <!-- פאנל מנהל -->
+        <div id="view-admin" class="screen max-w-7xl mx-auto px-4 md:px-6 py-10">
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+                <div><h1 class="text-3xl font-bold text-brand-dark">ניהול שמחים בשמחתם</h1><p class="text-sm text-slate-500 mt-1">אזור מנהל נפרד מחשבונות המשתמשים.</p></div>
+                <button type="button" data-onclick="handleLogout()" class="btn-soft px-4 py-2">יציאה מניהול</button>
+            </div>
+            <div id="admin-area-root"></div>
+        </div>
+
+        <!-- איפוס סיסמה -->
+        <div id="view-reset-password" class="screen max-w-md mx-auto px-6 py-16">
+            <div class="glass-card p-8">
+                <h1 class="text-2xl font-bold text-brand-dark">איפוס סיסמה</h1>
+                <p class="text-sm text-slate-500 mt-2">נשלח קוד אימות ב-SMS למספר הרשום בחשבון.</p>
+                <form id="reset-password-form" data-onsubmit="event.preventDefault(); handlePasswordReset();" class="space-y-4 mt-6">
+                    <input type="tel" id="reset-phone" class="input-clean" placeholder="מספר טלפון" dir="ltr" inputmode="tel" required>
+                    <input type="password" id="reset-password" class="input-clean" placeholder="סיסמה חדשה" minlength="8" maxlength="72" required>
+                    <input type="password" id="reset-password-confirm" class="input-clean" placeholder="אימות סיסמה חדשה" minlength="8" maxlength="72" required>
+                    <button id="reset-password-submit" type="submit" class="w-full btn-brand py-3">שלח קוד ואפס סיסמה</button>
+                </form>
+                <button type="button" data-onclick="navigate('login')" class="mt-4 text-sm font-bold text-slate-500 hover:text-brand-700">חזרה להתחברות</button>
+            </div>
+        </div>
+
+        <!-- הרשמה למשמח -->
+        <div id="view-register-volunteer" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <h1 data-site-text="volunteer_registration_title" class="text-2xl font-bold mb-2 text-brand-dark">הרשמה כמשמח/ת</h1>
+                <p data-site-text="volunteer_registration_subtitle" class="text-sm text-slate-500">הפרטים משמשים להתאמה מדויקת. אירוע שלא עומד בקריטריונים שלך או של בעל השמחה לא יוצג לך.</p>
+                <form id="volunteer-form" data-onsubmit="event.preventDefault(); handleRegisterVolunteer();" class="space-y-6 mt-6" autocomplete="on">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span id="vol-name-label" data-field-label="vol_name" class="field-label">שם מלא</span><input type="text" id="vol-name" class="input-clean" autocomplete="name" required></label>
+                        <label><span id="vol-phone-label" data-field-label="vol_phone" class="field-label">מספר טלפון — שם המשתמש</span><input type="tel" id="vol-phone" class="input-clean" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">סיסמה</span><input type="password" id="vol-pass" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                        <label><span class="field-label">אימות סיסמה</span><input type="password" id="vol-pass-confirm" class="input-clean" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label><span data-field-label="vol_gender" class="field-label">איך לפנות אליך?</span><select id="vol-gender" class="input-clean bg-white" required><option value="" disabled selected>בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
+                        <label><span data-field-label="vol_birth_year" class="field-label">שנת לידה</span><select id="vol-birth-year" class="input-clean bg-white birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
+                        <label><span data-field-label="vol_sector" class="field-label">המגזר שאני משתייך אליו</span><select id="vol-sector" class="input-clean bg-white" required><option value="" disabled selected>בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
+                    </div>
+                    <div>
+                        <span class="field-label">באילו מגזרים אני מוכן לשמח?</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="all" checked> כל המגזרים</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="haredi"> חרדי</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="religious"> דתי לאומי</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="traditional"> מסורתי</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-sector-pref" value="secular"> חילוני</label>
+                        </div>
+                    </div>
+                    <div>
+                        <span id="vol-event-type-heading" class="field-label">באילו סוגי אירועים תרצה/י לשמח?</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="all"> כל סוגי האירועים</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="wedding" checked> חתונה</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="engagement"> אירוסין</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="bar_mitzvah"> בר מצווה</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-event-type-pref" value="bat_mitzvah"> בת מצווה</label>
+                        </div>
+                    </div>
+                    <div>
+                        <span data-field-label="vol_address" class="field-label">כתובת מגורים</span>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <input id="vol-city" class="input-clean" placeholder="עיר" autocomplete="address-level2" list="israel-cities-list" required>
+                            <input id="vol-street" class="input-clean" placeholder="רחוב" autocomplete="address-line1" list="vol-streets-list" required>
+                            <input id="vol-house-number" class="input-clean" placeholder="מספר בית" autocomplete="address-line2" required>
+                        </div>
+                        <div class="field-help">יש להקליד עיר, רחוב ומספר בית. לפני יצירת החשבון נוודא שהכתובת ניתנת לזיהוי במפה.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label><span class="field-label">רדיוס מקסימלי מהבית</span><select id="vol-radius" class="input-clean bg-white" required><option value="10" selected>עד 10 ק״מ</option><option value="20">עד 20 ק״מ</option><option value="50">עד 50 ק״מ</option><option value="100">עד 100 ק״מ</option><option value="999">כל הארץ</option></select></label>
+                        <label><span class="field-label">מספר ימי התנדבות בשבוע</span><select id="vol-days" class="input-clean bg-white"><option value="1">עד יום אחד</option><option value="2">עד יומיים</option><option value="3" selected>עד 3 ימים</option><option value="4">עד 4 ימים</option><option value="5">עד 5 ימים</option><option value="7">ללא הגבלה</option></select></label>
+                        <label><span class="field-label">אמצעי הגעה מועדף</span><select id="vol-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">לא משנה</option></select></label>
+                    </div>
+                    <div>
+                        <span class="field-label">ימים שבהם אני פנוי</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="0" checked> א׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="1" checked> ב׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="2" checked> ג׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="3" checked> ד׳</label>
+                            <label class="choice-chip"><input type="checkbox" name="vol-available-day" value="4" checked> ה׳</label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">פנוי החל משעה</span><input type="time" id="vol-available-from" class="input-clean"><div class="field-help">אפשר להשאיר ריק אם אין הגבלת שעות.</div></label>
+                        <label><span class="field-label">פנוי עד שעה</span><input type="time" id="vol-available-until" class="input-clean"></label>
+                    </div>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"><input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700 text-sm">הצג לי רק אירועים בהפרדה מלאה</span></label>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל הודעות SMS תפעוליות לצורך אימות החשבון, הזמנות לאירועים, אישורים, שינויים ותזכורות.</span></label>
+                    </div>
+                    <button id="vol-submit" type="submit" class="w-full btn-brand py-4">השלם הרשמה</button>
+                </form>
+            </div>
+        </div>
+
+                <!-- פרסום כבעל שמחה -->
+        <div id="view-add-event" class="screen max-w-4xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <div class="flex flex-wrap justify-between gap-3 items-center border-b pb-4 mb-6">
+                    <div><h1 class="text-2xl font-bold text-brand-dark">הרשמה ופרסום כבעל שמחה</h1><p class="text-sm text-slate-500 mt-1">טיוטה נשמרת אוטומטית רק לחשבון מחובר ונמחקת בהתנתקות. אורח שאינו מחובר לא נשמר בדפדפן.</p></div>
+                    <span id="draft-indicator" class="text-xs font-bold text-slate-400"></span>
+                </div>
+                <form id="event-form" data-onsubmit="event.preventDefault(); handleCreateEvent();" class="space-y-6" autocomplete="on">
+                    <div id="host-account-block" class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                        <div id="host-existing-account-note" class="hidden">
+                            <h3 class="font-bold text-slate-800">פרסום מתוך החשבון המחובר</h3>
+                            <p id="host-existing-account-text" class="text-sm text-slate-600 mt-1"></p>
+                            <p class="text-xs text-slate-500 mt-1">אין צורך להזין שוב סיסמה כשכבר מחוברים לחשבון.</p>
+                        </div>
+                        <div id="host-account-fields" class="space-y-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800">פתיחת חשבון בעל שמחה</h3>
+                            <p class="text-xs text-slate-500 mt-1">הטלפון ישמש כשם המשתמש להתחברות לאזור האישי.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label><span data-field-label="host_name" class="field-label">שם בעל השמחה</span><input type="text" id="host-name" class="input-clean bg-white" autocomplete="name" minlength="2" maxlength="100" required></label>
+                            <label><span data-field-label="host_phone" class="field-label">טלפון — שם המשתמש</span><input type="tel" id="host-phone" class="input-clean bg-white" placeholder="05XXXXXXXX" dir="ltr" inputmode="tel" autocomplete="tel" required></label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label><span data-field-label="host_password" class="field-label">סיסמה</span><input type="password" id="host-pass" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                            <label><span data-field-label="host_password_confirm" class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+                        </div>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל SMS תפעולי לצורך אימות החשבון וניהול האירוע.</span></label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span data-field-label="event_name" class="field-label">שם האירוע</span><input type="text" id="ev-name" class="input-clean" placeholder="לדוגמה: חתונת משפחת כהן" required></label>
+                        <label><span data-field-label="event_type" class="field-label">סוג האירוע</span><select id="ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="engagement">אירוסין</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option></select></label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label><span data-field-label="event_date" class="field-label">תאריך האירוע</span><input type="date" id="ev-date" class="input-clean" required><div class="field-help">לא ניתן לפרסם אירוע ביום שישי או בשבת.</div></label>
+                        <label><span data-field-label="event_start" class="field-label">שעת התחלה</span><input type="time" id="ev-start" class="input-clean" required></label>
+                        <label><span data-field-label="event_end" class="field-label">שעת סיום</span><input type="time" id="ev-close" class="input-clean" required></label>
+                    </div>
+                    <label><span data-field-label="event_deadline" class="field-label">עד מתי אפשר להירשם?</span><input type="datetime-local" id="ev-registration-deadline" class="input-clean" required><div class="field-help">אחרי המועד הזה האירוע יפסיק להופיע למשמחים חדשים.</div></label>
+                    <div>
+                        <span data-field-label="event_venue" class="field-label">האולם</span>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <input id="ev-hall-name" class="input-clean" placeholder="שם האולם">
+                            <input id="ev-city" class="input-clean" placeholder="עיר" list="israel-cities-list" required>
+                            <input id="ev-street" class="input-clean" placeholder="רחוב" list="ev-streets-list" required>
+                            <input id="ev-house-number" class="input-clean" placeholder="מספר" required>
+                        </div>
+                        <div class="field-help">יש להקליד עיר, רחוב ומספר. הכתובת תיבדק במפה לפני פרסום האירוע.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">מגזר האירוע</span><select id="ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי / לא משנה</option></select></label>
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">אירוע בהפרדה מלאה</span></label>
+                    </div>
+                    <div>
+                        <span class="field-label">מאילו מגזרים בעל השמחה מעוניין לקבל משמחים?</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="all" checked> כולם</label>
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="haredi"> חרדי</label>
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="religious"> דתי לאומי</label>
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="traditional"> מסורתי</label>
+                            <label class="choice-chip"><input type="checkbox" name="ev-accepted-sector" value="secular"> חילוני</label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">מכסת משמחים</span><input type="number" id="ev-men" class="input-clean" value="0" min="0" max="500" required></label>
+                        <label><span class="field-label">מכסת משמחות</span><input type="number" id="ev-women" class="input-clean" value="0" min="0" max="500" required></label>
+                    </div>
+                    <label><span data-field-label="event_age_range" class="field-label">טווח גילאים למשמחים</span><select id="ev-age-range" class="input-clean bg-white"><option value="all" selected>ללא הגבלת גיל</option><option value="12-18" data-minor-age hidden disabled>12–18</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
+                    <label><span class="field-label">הערה למשמחים</span><textarea id="ev-note" class="input-clean min-h-24" maxlength="600" placeholder="לדוגמה: מחפשים בעיקר ריקודים, יש הסעה מירושלים, נא להגיע עד 20:00..."></textarea></label>
+                    <div class="bg-slate-50 border rounded-xl p-4">
+                        <div class="flex flex-wrap gap-3 justify-between items-center">
+                            <div><div class="font-bold">בדיקת התאמות לפני הפרסום</div><div class="text-xs text-slate-500">אפשר לראות כמה משמחים קיימים כרגע שעומדים בקריטריונים.</div></div>
+                            <button type="button" data-onclick="previewEventMatches()" class="btn-soft px-4 py-2">בדוק התאמות</button>
+                        </div>
+                        <div id="event-preview-count" class="text-sm mt-3"></div>
+                    </div>
+                    <button id="event-submit" type="submit" class="w-full btn-dark py-4">פרסם אירוע</button>
+                </form>
+            </div>
+        </div>
+
+                <!-- עריכת אירוע -->
+        <div id="view-edit-event" class="screen max-w-4xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <h1 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">עריכת אירוע</h1>
+                <form id="edit-event-form" data-onsubmit="event.preventDefault(); saveEditEvent();" class="space-y-6">
+                    <input type="hidden" id="edit-event-id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">שם האירוע</span><input type="text" id="edit-ev-name" class="input-clean" required></label>
+                        <label><span class="field-label">סוג האירוע</span><select id="edit-ev-type" class="input-clean bg-white"><option value="wedding">חתונה</option><option value="engagement">אירוסין</option><option value="bar_mitzvah">בר מצווה</option><option value="bat_mitzvah">בת מצווה</option></select></label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">תאריך</span><input type="date" id="edit-ev-date" class="input-clean" required><div class="field-help">לא ניתן לבחור שישי או שבת.</div></label><label><span class="field-label">התחלה</span><input type="time" id="edit-ev-start" class="input-clean" required></label><label><span class="field-label">סיום</span><input type="time" id="edit-ev-close" class="input-clean" required></label></div>
+                    <label><span class="field-label">סגירת הרשמה</span><input type="datetime-local" id="edit-ev-registration-deadline" class="input-clean" required></label>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3"><input id="edit-ev-hall-name" class="input-clean" placeholder="שם האולם"><input id="edit-ev-city" class="input-clean" placeholder="עיר" list="israel-cities-list" required><input id="edit-ev-street" class="input-clean" placeholder="רחוב" list="edit-ev-streets-list" required><input id="edit-ev-house-number" class="input-clean" placeholder="מספר" required></div>
+                    <div class="field-help">הכתובת תיבדק במפה לפני שמירת השינויים.</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מגזר האירוע</span><select id="edit-ev-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option><option value="all">כללי</option></select></label><label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer mt-5"><input type="checkbox" id="edit-ev-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold">הפרדה מלאה</span></label></div>
+                    <div><span class="field-label">מגזרי משמחים מתאימים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="all"> כולם</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="edit-ev-accepted-sector" value="secular"> חילוני</label></div></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">מכסת משמחים</span><input type="number" id="edit-ev-men" class="input-clean" min="0" max="500" required></label><label><span class="field-label">מכסת משמחות</span><input type="number" id="edit-ev-women" class="input-clean" min="0" max="500" required></label></div>
+                    <label><span class="field-label">טווח גילאים למשמחים</span><select id="edit-ev-age-range" class="input-clean bg-white"><option value="all">ללא הגבלת גיל</option><option value="12-18" data-minor-age hidden disabled>12–18</option><option value="18-25">18–25</option><option value="26-35">26–35</option><option value="36-50">36–50</option><option value="51-65">51–65</option><option value="66+">66 ומעלה</option></select></label>
+                    <label><span class="field-label">הערה למשמחים</span><textarea id="edit-ev-note" class="input-clean min-h-24" maxlength="600"></textarea></label>
+                    <div class="grid grid-cols-2 gap-3"><button type="button" data-onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="edit-event-submit" type="submit" class="btn-dark py-3">שמור שינויים</button></div>
+                </form>
+            </div>
+        </div>
+
+                <!-- הגדרות פרופיל -->
+        <div id="view-profile-settings" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <h1 class="text-2xl font-bold mb-6 text-brand-dark border-b pb-4">הגדרות משמח</h1>
+                <div class="bg-slate-50 border rounded-xl p-4 mb-5"><div class="text-xs font-bold text-slate-500">שם המשתמש</div><div id="profile-phone-display" class="font-bold text-lg mt-1" dir="ltr"></div><div id="profile-role-display" class="mt-2 text-xs font-bold text-brand-700"></div><div id="profile-guardian-note" class="hidden mt-3 text-sm text-slate-600 bg-white border rounded-lg p-3"></div></div>
+                <form id="profile-form" data-onsubmit="event.preventDefault(); saveProfileSettings();" class="space-y-6">
+                    <label><span class="field-label">שם מלא</span><input type="text" id="profile-name" class="input-clean" required></label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">איך לפנות אליך?</span><select id="profile-gender" class="input-clean bg-white"><option value="male">משמח</option><option value="female">משמחת</option></select></label><label><span class="field-label">שנת לידה</span><select id="profile-birth-year" class="input-clean bg-white birth-year-select"><option value="">בחר</option></select></label><label><span class="field-label">המגזר שאני משתייך אליו</span><select id="profile-sector" class="input-clean bg-white"><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label></div>
+                    <div><span class="field-label">באילו מגזרים אני מוכן לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="all"> כל המגזרים</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="haredi"> חרדי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="religious"> דתי לאומי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="traditional"> מסורתי</label><label class="choice-chip"><input type="checkbox" name="profile-sector-pref" value="secular"> חילוני</label></div></div>
+                    <div><span class="field-label">באילו סוגי אירועים תרצה/י לשמח?</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="all"> כל סוגי האירועים</label><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="wedding"> חתונה</label><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="engagement"> אירוסין</label><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="bar_mitzvah"> בר מצווה</label><label class="choice-chip"><input type="checkbox" name="profile-event-type-pref" value="bat_mitzvah"> בת מצווה</label></div></div>
+                    <div><span class="field-label">כתובת מגורים</span><div class="grid grid-cols-1 md:grid-cols-3 gap-3"><input id="profile-city" class="input-clean" placeholder="עיר" list="israel-cities-list" required><input id="profile-street" class="input-clean" placeholder="רחוב" list="profile-streets-list" required><input id="profile-house-number" class="input-clean" placeholder="מספר בית" required></div><div class="field-help">הכתובת נבדקת מחדש לפני שמירת השינויים.</div></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><label><span class="field-label">רדיוס מקסימלי</span><select id="profile-radius" class="input-clean bg-white"><option value="10">עד 10 ק״מ</option><option value="20">עד 20 ק״מ</option><option value="50">עד 50 ק״מ</option><option value="100">עד 100 ק״מ</option><option value="999">כל הארץ</option></select></label><label><span class="field-label">ימים בשבוע</span><select id="profile-days" class="input-clean bg-white"><option value="1">עד יום אחד</option><option value="2">עד יומיים</option><option value="3">עד 3 ימים</option><option value="4">עד 4 ימים</option><option value="5">עד 5 ימים</option><option value="7">ללא הגבלה</option></select></label><label><span class="field-label">אמצעי הגעה</span><select id="profile-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">לא משנה</option></select></label></div>
+                    <div><span class="field-label">ימים פנויים</span><div class="choice-grid"><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="0"> א׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="1"> ב׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="2"> ג׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="3"> ד׳</label><label class="choice-chip"><input type="checkbox" name="profile-available-day" value="4"> ה׳</label></div></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label><span class="field-label">פנוי החל משעה</span><input type="time" id="profile-available-from" class="input-clean"></label><label><span class="field-label">פנוי עד שעה</span><input type="time" id="profile-available-until" class="input-clean"></label></div>
+                    <label class="flex items-center gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer"><input type="checkbox" id="profile-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700">הצג לי רק אירועים בהפרדה מלאה</span></label>
+                    <div class="grid grid-cols-2 gap-3"><button type="button" data-onclick="loadDashboard()" class="btn-soft py-3">ביטול</button><button id="profile-submit" type="submit" class="btn-brand py-3">שמור</button></div>
+                </form>
+                <div class="mt-8 pt-6 border-t border-red-100">
+                    <h3 class="font-bold text-red-700">מחיקת חשבון</h3>
+                    <p class="text-sm text-slate-500 mt-1">מחיקה מסירה את החשבון והמידע האישי המקושר אליו. אם יש אירועים עתידיים שפרסמת, יש לבטל אותם קודם.</p>
+                    <button type="button" data-onclick="deleteMyAccount()" class="mt-3 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-2 font-bold text-sm">מחק את החשבון שלי</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- פנייה למנהל -->
+        <div id="view-support" class="screen max-w-2xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <h1 class="text-3xl font-bold text-brand-dark">פנייה למנהל המערכת</h1>
+                <p class="text-sm text-slate-500 mt-2">אפשר לפנות בנושאי חשבון, אירועים, SMS או תקלה באתר. הפרטים ישמשו רק לצורך טיפול בפנייה.</p>
+                <form id="support-form" data-onsubmit="event.preventDefault(); submitSupportRequest();" class="space-y-4 mt-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">שם</span><input id="support-name" class="input-clean" maxlength="100" required autocomplete="name"></label>
+                        <label><span class="field-label">מספר טלפון לחזרה</span><input id="support-phone" type="tel" class="input-clean" maxlength="20" required dir="ltr" autocomplete="tel"></label>
+                    </div>
+                    <label><span class="field-label">נושא הפנייה</span><select id="support-subject" class="input-clean bg-white" required><option value="חשבון והתחברות">חשבון והתחברות</option><option value="אירוע או הרשמה">אירוע או הרשמה</option><option value="SMS והודעות">SMS והודעות</option><option value="נגישות">נגישות</option><option value="בטיחות או דיווח">בטיחות או דיווח</option><option value="תקלה טכנית">תקלה טכנית</option><option value="אחר">אחר</option></select></label>
+                    <label><span class="field-label">הודעה</span><textarea id="support-message" class="input-clean min-h-36" minlength="5" maxlength="3000" required placeholder="כתוב/י כאן את פרטי הפנייה"></textarea></label>
+                    <div class="text-xs text-slate-500">אין לכלול סיסמאות, קודי אימות או מידע סודי בהודעה.</div>
+                    <button id="support-submit" type="submit" class="w-full btn-dark py-3">שלח פנייה</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- מדיניות פרטיות -->
+        <div id="view-privacy" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8 space-y-5">
+                <h1 class="text-3xl font-bold text-brand-dark">מדיניות פרטיות</h1>
+                <p class="text-slate-600">שמחים בשמחתם משתמשת במידע לצורך הפעלת השירות, התאמת משמחים לאירועים, אבטחת החשבון, טיפול בפניות ותקשורת תפעולית.</p>
+                <div><h3 class="font-bold">איזה מידע נשמר?</h3><p class="text-sm text-slate-600 mt-1">נשמרים פרטי חשבון ופרופיל כגון שם, מספר טלפון, שנת לידה, מגזר והעדפות, כתובת וקואורדינטות לצורך חישוב מרחק, הרשמות לאירועים, הודעות ותגובות תפעוליות. אם הורה/אפוטרופוס מוסיף ילד/ה בגיל 12–17 לחשבון, נשמרים גם פרטי הילד/ה הדרושים להתאמה ולניהול ההשתתפות. פנייה למנהל כוללת את השם, הטלפון ותוכן הפנייה.</p></div>
+                <div><h3 class="font-bold">מי רואה את המידע?</h3><p class="text-sm text-slate-600 mt-1">בעלי אירועים רואים רק מידע הנדרש לניהול הנרשמים. כתובת המגורים של משמח/ת אינה מוצגת לבעל האירוע. פרטי אירוע רגישים נחשפים בהתאם לצורך; כברירת מחדל הכתובת המדויקת והניווט ניתנים לאחר הרשמה ולא בשלב ההתאמה. ספקי התשתית מקבלים רק מידע הנדרש להפעלת השירות.</p></div>
+                <div><h3 class="font-bold">ילדים וחשבון משפחתי</h3><p class="text-sm text-slate-600 mt-1">לילד/ה שמנוהל/ת בחשבון משפחתי אין סיסמה או מספר טלפון נפרדים. ההורה/האפוטרופוס מנהל את ההרשמות והביטולים ומקבל את הודעות ה-SMS עבור הילד/ה.</p></div>
+                <div><h3 class="font-bold">SMS</h3><p class="text-sm text-slate-600 mt-1">הודעות SMS משמשות לאימות מספר הטלפון, הזמנות, אישורים, שינויים ותזכורות. המערכת אינה מיועדת לשליחת פרסום מסחרי ללא הסכמה נפרדת.</p></div>
+                <div><h3 class="font-bold">אבטחה ושמירת מידע</h3><p class="text-sm text-slate-600 mt-1">המערכת משתמשת בבקרות גישה, סשנים מוגבלים, רישום פעולות מנהל והגבלות קצב. מידע עשוי להישמר כל עוד החשבון פעיל או ככל שנדרש לצרכים תפעוליים, אבטחתיים או משפטיים.</p></div>
+                <div><h3 class="font-bold">מחיקת חשבון</h3><p class="text-sm text-slate-600 mt-1">ניתן למחוק את החשבון מתוך הגדרות הפרופיל. לפני מחיקה יש לבטל אירועים עתידיים שפורסמו. מחיקת חשבון הורה מסירה גם את פרופילי הילדים המנוהלים בחשבון, בכפוף למידע שנדרש לשמור כדין או לצורך אבטחה.</p></div>
+                <button type="button" data-onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
+            </div>
+        </div>
+
+        <!-- תנאי שימוש -->
+        <div id="view-terms" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8 space-y-5">
+                <h1 class="text-3xl font-bold text-brand-dark">תנאי שימוש</h1>
+                <p class="text-slate-600">השירות מחבר בין בעלי שמחה לבין אנשים המעוניינים לשמח באירועים. השימוש באתר כפוף לכללים הבאים.</p>
+                <div><h3 class="font-bold">פרטים נכונים</h3><p class="text-sm text-slate-600 mt-1">יש למסור פרטים אמיתיים ועדכניים. בעל אירוע אחראי לנכונות פרטי האירוע והמשמח/ת אחראי/ת לעדכן אם אינו/ה יכול/ה להגיע.</p></div>
+                <div><h3 class="font-bold">גיל וחשבון משפחתי</h3><p class="text-sm text-slate-600 mt-1">חשבון משמח/ת עצמאי מיועד מגיל 18. ילד/ה בגיל 12–17 יכול/ה להשתתף רק כשהורה/אפוטרופוס מוסיף ומנהל אותו/ה מתוך חשבונו ומאשר את ההשתתפות. ההתאמה של בני 12–17 מוגבלת לאירועי בר מצווה ובת מצווה.</p></div>
+                <div><h3 class="font-bold">שימוש ראוי ובטיחות</h3><p class="text-sm text-slate-600 mt-1">אין להשתמש בשירות להטרדה, התחזות, הפצת תוכן אסור או שימוש שאינו קשור למטרת המיזם. יש לכבד את פרטיות המשתתפים ואת פרטי מקום האירוע. ניתן לחסום חשבון או לבטל גישה במקרה של שימוש לרעה.</p></div>
+                <div><h3 class="font-bold">התאמות והגעה</h3><p class="text-sm text-slate-600 mt-1">המערכת מסייעת בהתאמה אך אינה יכולה להבטיח הגעה בפועל, זמינות תחבורה, התנהגות של משתמשים או התאמה מושלמת בכל מצב. כל משתמש אחראי לשיקול דעתו ולהתנהלותו באירוע.</p></div>
+                <div><h3 class="font-bold">שינויים וביטולים</h3><p class="text-sm text-slate-600 mt-1">יש לעדכן שינוי מהותי או ביטול מוקדם ככל האפשר כדי שניתן יהיה לעדכן את המשתתפים. בעל אירוע אחראי לעדכן את פרטי האירוע והמשמח/ת אחראי/ת לבטל בזמן אם אינו/ה יכול/ה להגיע.</p></div>
+                <div><h3 class="font-bold">פניות ודיווחים</h3><p class="text-sm text-slate-600 mt-1">ניתן לדווח על אירוע מתוך המערכת או לפנות למנהל באמצעות טופס הפנייה באתר. במקרה חירום יש לפנות לגורמי החירום המתאימים ולא להסתמך על האתר.</p></div>
+                <button type="button" data-onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
+            </div>
+        </div>
+
+        <!-- הצהרת נגישות -->
+        <div id="view-accessibility" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8 space-y-5">
+                <h1 class="text-3xl font-bold text-brand-dark">הצהרת נגישות</h1>
+                <p class="text-slate-600">אנו פועלים כדי שהאתר יהיה נגיש, ברור ונוח לשימוש עבור אנשים עם מוגבלויות. יעד הנגישות שלנו הוא התאמה לת״י 5568 חלק 1 ברמת AA, ובנוסף אנו משתמשים ב־WCAG 2.2 ברמת AA כיעד טכני משלים ומחמיר יותר.</p>
+                <div>
+                    <h2 class="font-bold text-lg">התאמות שבוצעו באתר</h2>
+                    <ul class="list-disc pr-6 mt-2 space-y-1 text-sm text-slate-600">
+                        <li>כפתור נגישות קבוע עם הגדלת טקסט עד 200%, ניגודיות גבוהה, גווני אפור, הדגשת קישורים, פונט קריא והפחתת תנועה.</li>
+                        <li>ניווט מלא באמצעות מקלדת, קישור דילוג לתוכן וסימון פוקוס ברור.</li>
+                        <li>מבנה כותרות, אזורי ניווט ושמות נגישים לטפסים ולכפתורים.</li>
+                        <li>הודעות מערכת, שגיאות ומצבי טעינה שמועברים גם לקוראי מסך.</li>
+                        <li>מודאלים וצ׳אט עם ניהול פוקוס ותמיכה במקש Escape.</li>
+                        <li>ניגודיות טקסט משופרת, תמיכה בהגדלה, Reflow, מצב ניגודיות מאולצת והפחתת תנועה.</li>
+                        <li>חלופה טקסטואלית למידע שמופיע במפה, כולל כתובת, מרחק ונתוני מסלול.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h2 class="font-bold text-lg">נתקלת בבעיית נגישות?</h2>
+                    <p class="text-sm text-slate-600 mt-1">אם משהו באתר אינו נגיש עבורך, אפשר לפנות אלינו דרך טופס הפנייה. נשמח לקבל תיאור של הפעולה שניסית לבצע, סוג המכשיר או טכנולוגיית העזר שבה השתמשת והבעיה שנתקלת בה.</p>
+                    <button type="button" data-onclick="openSupport('נגישות')" class="btn-brand px-4 py-2 mt-3">פנייה בנושא נגישות</button>
+                </div>
+                <p class="text-xs text-slate-500">בדיקה פנימית אחרונה: 15.09.2026. הבדיקה כוללת מבנה סמנטי, מקלדת, פוקוס, הודעות לקוראי מסך, הגדלת טקסט, Reflow, ניגודיות, טפסים, מודאלים, קישורים חיצוניים ומובייל. ההצהרה אינה אישור חיצוני או תעודת עמידה משפטית; בדיקת עמידה מלאה מחייבת גם בדיקות ידניות עם קוראי מסך וטכנולוגיות מסייעות אמיתיות.</p>
+                <button type="button" data-onclick="navigate('home')" class="btn-soft px-4 py-2">חזרה לדף הבית</button>
+            </div>
+        </div>
+
+        <!-- הוספת / עריכת ילד לחשבון משפחתי -->
+        <div id="view-family-child-form" class="screen max-w-3xl mx-auto px-6 py-12">
+            <div class="glass-card p-8">
+                <div class="flex justify-between gap-3 items-start">
+                    <div><h1 id="family-form-title" class="text-2xl font-bold text-brand-dark">הוספת ילד/ה לחשבון</h1><p class="text-sm text-slate-500 mt-1">הילד/ה מנוהל/ת מתוך החשבון שלך. אין צורך במספר טלפון, סיסמה או חשבון נפרד.</p></div>
+                    <button type="button" data-onclick="loadDashboard()" class="btn-soft px-3 py-2">חזרה</button>
+                </div>
+                <form id="family-child-form" data-onsubmit="event.preventDefault(); saveFamilyChild();" class="space-y-5 mt-6">
+                    <input type="hidden" id="family-child-id">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label><span data-field-label="family_name" class="field-label">שם הילד/ה</span><input id="family-child-name" class="input-clean" required></label>
+                        <label><span data-field-label="family_gender" class="field-label">איך לפנות?</span><select id="family-child-gender" class="input-clean bg-white" required data-onchange="syncFamilyChildEventDefault()"><option value="">בחר/י</option><option value="male">משמח</option><option value="female">משמחת</option></select></label>
+                        <label><span data-field-label="family_birth_year" class="field-label">שנת לידה</span><select id="family-child-birth-year" class="input-clean bg-white family-birth-year-select" required><option value="">בחר שנת לידה</option></select></label>
+                    </div>
+                    <label><span data-field-label="family_sector" class="field-label">מגזר</span><select id="family-child-sector" class="input-clean bg-white" required><option value="">בחר</option><option value="haredi">חרדי</option><option value="religious">דתי לאומי</option><option value="traditional">מסורתי</option><option value="secular">חילוני</option></select></label>
+                    <div>
+                        <span class="field-label">באילו אירועים הילד/ה מעוניין/ת לשמח?</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="family-event-type" value="bar_mitzvah"> בר מצווה</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-event-type" value="bat_mitzvah"> בת מצווה</label>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="field-label">כתובת מגורים</span>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <input id="family-child-city" class="input-clean" placeholder="עיר" list="israel-cities-list" required>
+                            <input id="family-child-street" class="input-clean" placeholder="רחוב" list="family-streets-list" required>
+                            <input id="family-child-house-number" class="input-clean" placeholder="מספר" required>
+                        </div>
+                        <div class="field-help">הכתובת משמשת רק לחישוב מרחק ותיבדק במפה לפני השמירה.</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <label><span class="field-label">מרחק מקסימלי</span><select id="family-child-radius" class="input-clean bg-white"><option value="10">עד 10 ק״מ</option><option value="20">עד 20 ק״מ</option><option value="50">עד 50 ק״מ</option><option value="100">עד 100 ק״מ</option><option value="999">כל הארץ</option></select></label>
+                        <label><span class="field-label">תחבורה</span><select id="family-child-transport" class="input-clean bg-white"><option value="car">רכב</option><option value="transit">תחבורה ציבורית</option><option value="any">כל אמצעי</option></select></label>
+                        <label class="flex items-center gap-2 mt-6"><input type="checkbox" id="family-child-separation"> רק אירועים בהפרדה מלאה</label>
+                    </div>
+                    <div>
+                        <span class="field-label">ימים זמינים</span>
+                        <div class="choice-grid">
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="0" checked> ראשון</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="1" checked> שני</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="2" checked> שלישי</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="3" checked> רביעי</label>
+                            <label class="choice-chip"><input type="checkbox" name="family-available-day" value="4" checked> חמישי</label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label><span class="field-label">זמין/ה החל מ־</span><input id="family-child-from" type="time" class="input-clean"></label>
+                        <label><span class="field-label">זמין/ה עד</span><input id="family-child-until" type="time" class="input-clean"></label>
+                    </div>
+                    <label id="family-guardian-consent-wrap" class="flex items-start gap-3 bg-brand-50 border border-brand-100 rounded-xl p-4">
+                        <input type="checkbox" id="family-guardian-consent" class="mt-1">
+                        <span class="text-sm">אני ההורה/האפוטרופוס של הילד/ה ומאשר/ת לנהל עבורו/ה את ההשתתפות באירועים ולקבל עבורו/ה הודעות SMS.</span>
+                    </label>
+                    <button id="family-child-submit" type="submit" class="w-full btn-brand py-3">שמור ילד/ה</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- אזור ילד/ה בחשבון המשפחתי -->
+        <div id="view-family-child-area" class="screen max-w-6xl mx-auto px-6 py-10">
+            <div class="flex flex-wrap justify-between gap-3 items-center mb-6">
+                <div><h1 id="family-child-area-title" class="text-3xl font-bold text-brand-dark">ילד/ה</h1><p class="text-sm text-slate-500">ניהול ההתנדבויות מתוך חשבון ההורה.</p></div>
+                <div class="flex gap-2"><button id="family-child-edit-button" class="btn-soft px-4 py-2">עריכת פרטים</button><button data-onclick="loadDashboard()" class="btn-dark px-4 py-2">חזרה לאזור האישי</button></div>
+            </div>
+            <div id="family-child-area-content" class="space-y-6"></div>
+        </div>
+
+                <!-- אזור אישי -->
+        <div id="view-dashboard" class="screen max-w-6xl mx-auto px-6 py-10">
+            <div class="flex flex-wrap gap-3 justify-between items-center mb-8">
+                <h1 id="user-greeting" class="text-3xl font-bold text-brand-dark">אזור אישי</h1>
+                <div class="flex gap-2">
+                    <button data-onclick="openProfileSettings()" class="btn-soft px-4 py-2 text-sm"><i class="fa-solid fa-gear ml-1"></i> הגדרות</button>
+                    <button data-onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold text-sm">התנתק</button>
+                </div>
+            </div>
+            <div id="dashboard-content" class="space-y-8"></div>
+        </div>
+
+        <datalist id="israel-cities-list"></datalist>
+        <datalist id="vol-streets-list"></datalist>
+        <datalist id="ev-streets-list"></datalist>
+        <datalist id="edit-ev-streets-list"></datalist>
+        <datalist id="profile-streets-list"></datalist>
+        <datalist id="family-streets-list"></datalist>
+        <div id="toast-container" class="fixed top-20 left-4 z-[90] flex flex-col gap-2" aria-label="הודעות מערכת"></div>
+        <div id="chat-modal" class="hidden fixed inset-0 z-[105] modal-shell p-4 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="chat-title" aria-describedby="chat-description">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl h-[78vh] p-5 flex flex-col">
+                <div class="flex items-center justify-between gap-3 border-b pb-3">
+                    <div><h3 id="chat-title" class="text-xl font-bold text-brand-dark">צ׳אט האירוע</h3><p id="chat-description" class="text-xs text-slate-500">בעל השמחה והמשמחים הרשומים בלבד</p></div>
+                    <button type="button" data-onclick="closeEventChat()" class="btn-soft px-3 py-2" aria-label="סגור צ׳אט"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                </div>
+                <div id="chat-messages" class="chat-messages flex-1 overflow-y-auto p-3 my-4 space-y-2" role="log" aria-label="הודעות בצ׳אט" aria-live="polite" aria-atomic="false" aria-relevant="additions text" tabindex="0"></div>
+                <form data-onsubmit="event.preventDefault(); sendChatMessage();" class="flex gap-2">
+                    <label for="chat-input" class="sr-only">כתוב הודעה לצ׳אט האירוע</label><textarea id="chat-input" maxlength="1000" class="input-clean min-h-12 max-h-28" placeholder="כתוב הודעה..." aria-describedby="chat-description"></textarea>
+                    <button id="chat-send" type="submit" class="btn-brand px-5">שלח</button>
+                </form>
+            </div>
+        </div>
+        <div id="app-modal" class="hidden fixed inset-0 z-[100] modal-shell p-4 items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message"><div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6"><h3 id="modal-title" class="text-xl font-bold text-brand-dark mb-2"></h3><p id="modal-message" class="text-sm text-slate-600 whitespace-pre-line"></p><label for="modal-input" id="modal-input-label" class="sr-only">הקלדת תשובה</label><input id="modal-input" class="input-clean mt-4 hidden" type="text" aria-labelledby="modal-input-label"><div class="grid grid-cols-2 gap-3 mt-6"><button id="modal-cancel" type="button" data-onclick="resolveAppModal(false)" class="btn-soft py-3">ביטול</button><button id="modal-confirm" type="button" data-onclick="resolveAppModal(true)" class="btn-dark py-3">אישור</button></div></div></div>
+    </main>
+    <aside id="accessibility-panel" class="a11y-panel hidden" role="dialog" aria-modal="false" aria-labelledby="accessibility-panel-title">
+        <div class="flex items-center justify-between gap-3 border-b border-slate-200 pb-3 mb-3">
+            <div>
+                <h2 id="accessibility-panel-title" class="text-lg font-bold text-brand-dark">הגדרות נגישות</h2>
+                <p class="text-xs text-slate-500 mt-1">ההתאמות נשמרות במכשיר הזה בלבד.</p>
+            </div>
+            <button type="button" data-onclick="toggleAccessibilityPanel(false)" class="btn-soft px-3 py-2" aria-label="סגור הגדרות נגישות">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <section aria-labelledby="a11y-font-title" class="mb-4">
+            <h3 id="a11y-font-title" class="font-bold mb-2">גודל טקסט</h3>
+            <div class="a11y-font-controls flex items-center gap-2">
+                <button type="button" data-onclick="changeAccessibilityFont(-0.1)" aria-label="הקטן טקסט">א−</button>
+                <div id="a11y-font-value" class="flex-1 text-center font-bold" aria-live="polite">100%</div>
+                <button type="button" data-onclick="changeAccessibilityFont(0.1)" aria-label="הגדל טקסט">א+</button>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 gap-2">
+            <button id="a11y-high-contrast-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('highContrast')">
+                <i class="fa-solid fa-circle-half-stroke ml-2" aria-hidden="true"></i>ניגודיות גבוהה
+            </button>
+            <button id="a11y-grayscale-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('grayscale')">
+                <i class="fa-solid fa-palette ml-2" aria-hidden="true"></i>גווני אפור
+            </button>
+            <button id="a11y-links-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('underlineLinks')">
+                <i class="fa-solid fa-link ml-2" aria-hidden="true"></i>הדגשת קישורים
+            </button>
+            <button id="a11y-font-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('readableFont')">
+                <i class="fa-solid fa-font ml-2" aria-hidden="true"></i>פונט קריא
+            </button>
+            <button id="a11y-motion-btn" type="button" class="a11y-control" aria-pressed="false" data-onclick="toggleAccessibilityPreference('reduceMotion')">
+                <i class="fa-solid fa-person-walking ml-2" aria-hidden="true"></i>הפחתת תנועה
+            </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-4">
+            <button type="button" data-onclick="resetAccessibilityPreferences()" class="btn-soft py-3">איפוס</button>
+            <button type="button" data-onclick="navigate('accessibility');toggleAccessibilityPanel(false);" class="btn-dark py-3">הצהרת נגישות</button>
+        </div>
+    </aside>
+
+    <button id="accessibility-toggle" type="button" class="a11y-fab" data-onclick="toggleAccessibilityPanel()" aria-label="פתח הגדרות נגישות" aria-expanded="false" aria-controls="accessibility-panel">
+        <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+    </button>
+
+    <footer class="site-footer border-t border-slate-200 bg-white py-5 px-6" role="contentinfo" aria-label="קישורים ומידע">
+        <div class="site-footer-links max-w-7xl mx-auto flex flex-wrap justify-center gap-5 text-sm text-slate-500">
+            <button type="button" data-site-text="footer_privacy_label" data-onclick="navigate('privacy')" class="hover:text-brand-700">מדיניות פרטיות</button>
+            <button type="button" data-site-text="footer_terms_label" data-onclick="navigate('terms')" class="hover:text-brand-700">תנאי שימוש</button>
+            <button type="button" data-onclick="toggleAccessibilityPanel(true)" class="hover:text-brand-700">הגדרות נגישות</button>
+            <button type="button" data-onclick="navigate('accessibility')" class="hover:text-brand-700">הצהרת נגישות</button>
+            <button type="button" data-onclick="openSupport()" class="hover:text-brand-700">פנייה למנהל</button>
+        </div>
+    </footer>
+
+    <script src="assets/app.js?v=security-hardened-20260916b"></script>
+</body>
+</html>
+
+

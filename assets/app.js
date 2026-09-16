@@ -901,6 +901,28 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             return typeof v==='string'&&v.trim()?v:fallback;
         }
 
+        function currentLegalVersion(){
+            return siteText('legal_version',LEGAL_VERSION);
+        }
+
+        function applyLegalDocumentOverrides(){
+            for(const kind of ['privacy','terms']){
+                const text=siteText(kind+'_document','').trim();
+                const custom=$(kind+'-admin-document');
+                const fallback=$(kind+'-default-document');
+                if(!custom||!fallback)continue;
+                if(text){
+                    custom.textContent=text;
+                    custom.classList.remove('hidden');
+                    fallback.classList.add('hidden');
+                }else{
+                    custom.textContent='';
+                    custom.classList.add('hidden');
+                    fallback.classList.remove('hidden');
+                }
+            }
+        }
+
         function configuredItems(key,fallback=[]){
             const v=publicSiteConfig?.field_config?.[key];
             return Array.isArray(v)&&v.length?v:fallback;
@@ -1230,6 +1252,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const v=publicSiteConfig?.content?.[key];
                 if(typeof v==='string'&&v.trim())el.textContent=v;
             });
+            applyLegalDocumentOverrides();
             applyFieldConfig();
             applyTextOverridesToNode(document.body);
             ensureTextOverrideObserver();
@@ -2094,7 +2117,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await userRpc('username_register_v9',{
+                const {data:token,error}=await userRpc('username_register_v10',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'volunteer',
                     p_gender:gender,p_sector:sector,p_volunteer_sector_preferences:prefs,
                     p_volunteer_event_type_preferences:eventTypePrefs,p_birth_year:birthYear,p_city:city,p_street:street,p_house_number:number,
@@ -2103,7 +2126,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     p_transport_mode:transport,p_lat:coords.lat,p_lng:coords.lng,
                     p_verification_token:verificationToken,p_privacy_accepted:privacyConsent,p_terms_accepted:termsConsent,p_sms_consent:smsConsent,
                     p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false,
-                    p_privacy_version:LEGAL_VERSION,p_terms_version:LEGAL_VERSION,p_sms_notice_version:LEGAL_VERSION
+                    p_privacy_version:currentLegalVersion(),p_terms_version:currentLegalVersion(),p_sms_notice_version:currentLegalVersion()
                 });
                 if(error) throw error;
                 applySessionToken(token); await loadProfile(); updateHeaderActions();
@@ -2633,7 +2656,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 if(!termsConsent||!privacyConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
-                const {data:token,error}=await userRpc('username_register_v9',{
+                const {data:token,error}=await userRpc('username_register_v10',{
                     p_phone:phone,p_password:password,p_full_name:name,p_role:'host',
                     p_gender:null,p_sector:'all',p_volunteer_sector_preferences:['all'],p_volunteer_event_type_preferences:['all'],p_birth_year:null,
                     p_city:'',p_street:'',p_house_number:'',p_radius:30,p_max_days_per_week:3,
@@ -2641,7 +2664,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     p_availability_from:null,p_availability_until:null,p_transport_mode:'car',p_lat:null,p_lng:null,
                     p_verification_token:verificationToken,p_privacy_accepted:privacyConsent,p_terms_accepted:termsConsent,p_sms_consent:smsConsent,
                     p_guardian_managed:false,p_guardian_name:null,p_guardian_consent:false,
-                    p_privacy_version:LEGAL_VERSION,p_terms_version:LEGAL_VERSION,p_sms_notice_version:LEGAL_VERSION
+                    p_privacy_version:currentLegalVersion(),p_terms_version:currentLegalVersion(),p_sms_notice_version:currentLegalVersion()
                 });
                 if(error){
                     if(String(error.message).includes('already_registered')){
@@ -3882,11 +3905,22 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             })[kind]||kind;
         }
 
-        function adminContentField(key,label,multiline=false){
-            const value=adminEditorState?.content?.[key]||'';
+        function adminContentField(key,label,multiline=false,fallback=''){
+            const stored=adminEditorState?.content?.[key];
+            const value=typeof stored==='string'&&stored.length?stored:fallback;
             return '<label><span class="field-label">'+esc(label)+'</span>'+
                 (multiline?'<textarea id="admin-content-'+key+'" class="input-clean min-h-24">'+esc(value)+'</textarea>':'<input id="admin-content-'+key+'" class="input-clean" value="'+esc(value)+'">')+
             '</label>';
+        }
+
+        function adminLegalFallback(kind){
+            return ($(kind+'-default-document')?.innerText||'').trim();
+        }
+
+        function adminLegalDocumentField(key,label,kind){
+            const stored=adminEditorState?.content?.[key];
+            const value=typeof stored==='string'&&stored.trim()?stored:adminLegalFallback(kind);
+            return '<label class="block"><span class="field-label">'+esc(label)+'</span><textarea id="admin-content-'+key+'" class="input-clean min-h-80" dir="rtl">'+esc(value)+'</textarea><span class="field-help">טקסט בלבד. ירידות שורה נשמרות; HTML וקוד אינם מופעלים.</span></label>';
         }
 
         function adminConfigRows(kind,items){
@@ -4001,6 +4035,24 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     adminContentField('footer_terms_label','טקסט קישור תנאי שימוש')+
                 '</div><button data-onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3 mt-5">שמור תוכן ועיצוב</button></div>'+
 
+                '<div class="glass-card p-6"><div class="flex flex-wrap justify-between gap-3 items-center"><div><h3 class="text-2xl font-bold">מדיניות פרטיות, תנאי שימוש והסכמות</h3><p class="text-sm text-slate-500">כאן אפשר לערוך את המסמכים המלאים ואת הנוסח שהמשתמש רואה ליד תיבות ההסכמה בהרשמה.</p></div><button data-onclick="adminSaveContentEditor()" class="btn-dark px-5 py-3">שמור מסמכים והסכמות</button></div>'+
+                    '<div class="grid grid-cols-1 gap-5 mt-5">'+
+                        adminLegalDocumentField('privacy_document','מדיניות הפרטיות המלאה','privacy')+
+                        adminLegalDocumentField('terms_document','תנאי השימוש המלאים','terms')+
+                    '</div>'+
+                    '<div class="border-t mt-6 pt-5"><h4 class="font-bold mb-3">נוסח ההסכמה בהרשמה כמשמח/ת</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4">'+
+                        adminContentField('volunteer_consent_heading','כותרת מעל תיבות ההסכמה',false,'אישורים והסכמות')+
+                        adminContentField('volunteer_terms_consent_label','נוסח ליד אישור תנאי השימוש',true,'קראתי ואני מסכים/ה ל')+
+                        adminContentField('volunteer_privacy_consent_label','נוסח ליד אישור מדיניות הפרטיות',true,'קראתי את מדיניות הפרטיות ואני מסכים/ה לאיסוף ולעיבוד המידע כמפורט בה. לקריאת ')+
+                    '</div></div>'+
+                    '<div class="border-t mt-6 pt-5"><h4 class="font-bold mb-3">נוסח ההסכמה בהרשמה כבעל שמחה</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-4">'+
+                        adminContentField('host_consent_heading','כותרת מעל תיבות ההסכמה',false,'אישורים והסכמות לפתיחת חשבון')+
+                        adminContentField('host_terms_consent_label','נוסח ליד אישור תנאי השימוש',true,'קראתי ואני מסכים/ה ל')+
+                        adminContentField('host_privacy_consent_label','נוסח ליד אישור מדיניות הפרטיות',true,'קראתי את מדיניות הפרטיות ואני מסכים/ה לאיסוף ולעיבוד המידע כמפורט בה. לקריאת ')+
+                    '</div></div>'+
+                    '<p class="text-xs text-slate-400 mt-4">שינוי במסמכים או בנוסחי ההסכמה יוצר גרסת הסכמה חדשה אוטומטית עבור הרשמות חדשות.</p>'+
+                '</div>'+
+
                 '<div class="glass-card p-6"><h3 class="text-2xl font-bold">אפשרויות ושדות</h3><p class="text-sm text-slate-500">אפשר לשנות שמות ולהסתיר אפשרויות קיימות. הערכים הפנימיים נשארים קבועים כדי לא לפגוע בהתאמות ובנתונים קיימים.</p>'+
                     '<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-5">'+
                         '<div><h4 class="font-bold mb-3">סוגי אירועים</h4>'+adminConfigRows('event',eventTypes)+'<label class="block mt-3"><span class="field-label">ברירת מחדל בהרשמת משמח/ת</span><select id="admin-config-event-default" class="input-clean bg-white">'+eventTypes.filter(x=>x.enabled!==false).map(x=>'<option value="'+esc(x.value)+'" '+(cfg.volunteer_event_default===x.value?'selected':'')+'>'+esc(x.label)+'</option>').join('')+'</select></label></div>'+
@@ -4083,7 +4135,10 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 'home_volunteer_title','home_volunteer_subtitle','home_host_title','home_host_subtitle',
                 'home_account_title','home_account_subtitle','login_title','login_subtitle',
                 'volunteer_registration_title','volunteer_registration_subtitle','family_title','family_subtitle',
-                'footer_privacy_label','footer_terms_label'
+                'footer_privacy_label','footer_terms_label',
+                'privacy_document','terms_document',
+                'volunteer_consent_heading','volunteer_terms_consent_label','volunteer_privacy_consent_label',
+                'host_consent_heading','host_terms_consent_label','host_privacy_consent_label'
             ]) content[key]=$('admin-content-'+key)?.value.trim()||adminEditorState.content?.[key]||'';
 
             const base=adminEditorState.field_config||{};
@@ -4135,7 +4190,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
             const nextLogo=$('admin-logo-url')?.value||adminEditorState.logo_url;
             const nextHero=$('admin-hero-url')?.value||adminEditorState.hero_url;
-            const {error}=await adminRpc('admin_update_site_editor',{
+            const {error}=await adminRpc('admin_update_site_editor_v2',{
                 p_logo_url:nextLogo,
                 p_hero_url:nextHero,
                 p_content:content,

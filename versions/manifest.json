@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-16-202303-ebb96c6",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-202303",
+      "date": "2026-09-16",
+      "created_at": "2026-09-16T20:23:03Z",
+      "change_title": "Simplify time selection to 15-minute choices from 17:00 to 02:00",
+      "commit": "ebb96c6c5c6e607a21f828c22e161039bcc0cb98",
+      "path": "versions/2026-09-16-202303-ebb96c6.html",
+      "archive": "versions/2026-09-16-202303-ebb96c6-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-173610-51df9d6",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-173610",
       "date": "2026-09-16",

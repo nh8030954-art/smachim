@@ -6,7 +6,7 @@
     <meta name="referrer" content="no-referrer">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://ybccbyyrrxdzarsgylql.supabase.co; connect-src 'self' https://ybccbyyrrxdzarsgylql.supabase.co wss://ybccbyyrrxdzarsgylql.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'none'; worker-src 'self' blob:; upgrade-insecure-requests;">
     <title>שמחים בשמחתם</title>
-    <script src="assets/security-bootstrap.js?v=appearance-security-20260916-2"></script>
+    <script src="assets/security-bootstrap.js?v=appearance-security-20260916-3"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Frank+Ruhl+Libre:wght@700;900&display=swap" rel="stylesheet">
@@ -22,6 +22,8 @@
             --site-logo-width-mobile: 220px;
             --site-logo-padding-desktop: 4px;
             --site-logo-padding-mobile: 2px;
+            --site-logo-crop-height-desktop: 110px;
+            --site-logo-crop-height-mobile: 64px;
             --site-header-height-desktop: auto;
             --site-header-height-mobile: auto;
             --site-hero-height-desktop: auto;
@@ -72,8 +74,8 @@
         .home-hero img { width:100%; height:var(--site-hero-img-height-desktop); min-height:1px; display:block; object-fit:var(--site-hero-fit-desktop); object-position:center center; visibility:visible; opacity:1; }
         .site-header { background:#fff; position:sticky; top:0; z-index:50; display:block; width:100%; visibility:visible; opacity:1; border-bottom:1px solid rgba(226,232,240,.65); }
         .site-header-inner { position:relative; min-height:0; height:auto; display:flex; align-items:center; justify-content:center; max-width:80rem; margin:0 auto; padding:var(--site-logo-padding-desktop) 1.5rem; }
-        .site-title-wrap { width:var(--site-logo-width-desktop); height:auto; overflow:visible; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; background:#fff; border:0; padding:0; }
-        .site-title-wrap img { width:100%; max-width:100%; height:auto; display:block; object-fit:contain; object-position:center; transform:none; visibility:visible; opacity:1; }
+        .site-title-wrap { width:var(--site-logo-width-desktop); height:var(--site-logo-crop-height-desktop); overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; background:#fff; border:0; padding:0; }
+        .site-title-wrap img { position:absolute; left:50%; top:50%; width:100%; max-width:100%; height:auto; display:block; object-fit:contain; object-position:center; transform:translate(-50%,-50%); visibility:visible; opacity:1; }
         .site-header-actions { position:absolute; left:1.5rem; top:50%; transform:translateY(-50%); z-index:2; }
         @media (max-width:640px) {
             .site-header {
@@ -103,14 +105,15 @@
                 -webkit-appearance:none !important;
                 appearance:none !important;
                 width:min(var(--site-logo-width-mobile),64vw) !important;
-                height:auto !important;
+                height:var(--site-logo-crop-height-mobile) !important;
                 min-height:0 !important;
                 display:flex !important;
                 align-items:center !important;
                 justify-content:center !important;
                 visibility:visible !important;
                 opacity:1 !important;
-                overflow:visible !important;
+                overflow:hidden !important;
+                position:relative !important;
                 background-color:#fff !important;
                 background-image:none !important;
                 border:0 !important;
@@ -118,6 +121,9 @@
                 margin:0 auto !important;
             }
             .site-title-wrap img {
+                position:absolute !important;
+                left:50% !important;
+                top:50% !important;
                 display:block !important;
                 width:100% !important;
                 max-width:100% !important;
@@ -125,7 +131,7 @@
                 max-height:none !important;
                 object-fit:contain !important;
                 object-position:center !important;
-                transform:none !important;
+                transform:translate(-50%,-50%) !important;
                 visibility:visible !important;
                 opacity:1 !important;
             }
@@ -912,7 +918,7 @@
     </footer>
 
     <script src="assets/vendor/qrcode.min.js"></script>
-    <script src="assets/app.js?v=privacy-mobilefix-20260916-3"></script>
+    <script src="assets/app.js?v=design-controls-20260916-1"></script>
 </body>
 </html>
 

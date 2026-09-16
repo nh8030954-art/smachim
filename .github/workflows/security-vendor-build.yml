@@ -1,0 +1,71 @@
+name: Build local frontend dependencies
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/security-vendor-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download pinned browser libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/vendor/images
+          curl --fail --location --silent --show-error             'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js'             -o assets/vendor/supabase.min.js
+          curl --fail --location --silent --show-error             'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'             -o assets/vendor/leaflet.js
+          curl --fail --location --silent --show-error             'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'             -o assets/vendor/leaflet.css
+          for f in marker-icon.png marker-icon-2x.png marker-shadow.png layers.png layers-2x.png; do
+            curl --fail --location --silent --show-error               "https://unpkg.com/leaflet@1.9.4/dist/images/$f"               -o "assets/vendor/images/$f"
+          done
+
+      - name: Build static Tailwind CSS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/tailwind.config.cjs <<'EOF'
+          module.exports = {
+            content: ['./index.html', './assets/app.js'],
+            theme: {
+              extend: {
+                fontFamily: { sans: ['Assistant', 'sans-serif'], serif: ['Frank Ruhl Libre', 'serif'] },
+                colors: { brand: { 50:'#f0fdfa',100:'#ccfbf1',500:'#14b8a6',600:'#0d9488',700:'#0f766e',900:'#134e4a',dark:'#0f172a' } }
+              }
+            }
+          }
+          EOF
+          cat > /tmp/tailwind-input.css <<'EOF'
+          @tailwind base;
+          @tailwind components;
+          @tailwind utilities;
+          EOF
+          npx --yes tailwindcss@3.4.17             -c /tmp/tailwind.config.cjs             -i /tmp/tailwind-input.css             -o assets/tailwind.generated.css             --minify
+
+      - name: Record integrity hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum             assets/vendor/supabase.min.js             assets/vendor/leaflet.js             assets/vendor/leaflet.css             assets/tailwind.generated.css             > assets/vendor/SHA256SUMS
+
+      - name: Commit generated local dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- assets/vendor assets/tailwind.generated.css; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/vendor assets/tailwind.generated.css
+          git commit -m "Vendor pinned frontend dependencies"
+          git push

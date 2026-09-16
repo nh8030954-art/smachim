@@ -2005,7 +2005,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 ['invalid_support_status','סטטוס הפנייה אינו תקין.'],
                 ['volunteer_profile_required','יש להפעיל קודם מצב משמח בפרופיל.'],
                 ['criteria_mismatch','האירוע כבר לא עומד בכל קריטריוני ההתאמה.'],
-                ['consent_required','יש לאשר בנפרד את תנאי השימוש, את מדיניות הפרטיות ואת קבלת ה-SMS התפעולי.'],
+                ['consent_required','יש לאשר את תנאי השימוש ומדיניות הפרטיות, ואת קבלת ה-SMS התפעולי.'],
                 ['legal_version_mismatch','מסמכי הפרטיות והתנאים עודכנו. יש לרענן את הדף, לקרוא ולאשר את הגרסה העדכנית.'],
                 ['phone_verification_required','יש לאמת את מספר הטלפון לפני המשך ההרשמה.'],
                 ['verification_rate_limited','נשלח קוד לאחרונה. יש להמתין כדקה לפני שליחת קוד נוסף.'],
@@ -2101,8 +2101,9 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 const availableUntil=$('vol-available-until').value||null;
                 const transport=$('vol-transport').value;
                 const separation=$('vol-separation').checked;
-                const termsConsent=!!$('vol-terms-consent')?.checked;
-                const privacyConsent=!!$('vol-privacy-consent')?.checked;
+                const legalConsent=!!$('vol-legal-consent')?.checked;
+                const termsConsent=legalConsent;
+                const privacyConsent=legalConsent;
                 const smsConsent=!!$('vol-sms-consent')?.checked;
 
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
@@ -2112,7 +2113,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                 if(!eventTypePrefs.length) throw new Error('invalid_event_type_preferences');
                 const calculatedAge=new Date().getFullYear()-birthYear;
                 if(calculatedAge<18) throw new Error('adult_account_required');
-                if(!termsConsent||!privacyConsent||!smsConsent) throw new Error('consent_required');
+                if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 if(!city||!street||!number) throw new Error('address_incomplete');
                 const coords=await verifyTypedAddress(city,street,number);
                 const verificationToken=await ensurePhoneVerification(phone,'register');
@@ -2381,7 +2382,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
             const accountFields=$('host-account-fields');
             const existingNote=$('host-existing-account-note');
             const existingText=$('host-existing-account-text');
-            const fields=['host-name','host-phone','host-pass','host-pass-confirm','host-terms-consent','host-privacy-consent','host-sms-consent'];
+            const fields=['host-name','host-phone','host-pass','host-pass-confirm','host-legal-consent','host-sms-consent'];
             block?.classList.remove('hidden');
             if(currentProfile){
                 $('event-form')?.setAttribute('autocomplete','on');
@@ -2646,14 +2647,15 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
                 const name=$('host-name').value.trim(),phone=normalizePhone($('host-phone').value);
                 const password=$('host-pass').value,confirmPassword=$('host-pass-confirm').value;
-                const termsConsent=!!$('host-terms-consent')?.checked;
-                const privacyConsent=!!$('host-privacy-consent')?.checked;
+                const legalConsent=!!$('host-legal-consent')?.checked;
+                const termsConsent=legalConsent;
+                const privacyConsent=legalConsent;
                 const smsConsent=!!$('host-sms-consent')?.checked;
                 if(name.length<2) throw new Error('invalid_name');
                 if(!isValidPhone(phone)) throw new Error('invalid_phone');
                 if(password.length<12) throw new Error('invalid_password');
                 if(password!==confirmPassword) throw new Error('הסיסמאות אינן זהות.');
-                if(!termsConsent||!privacyConsent||!smsConsent) throw new Error('consent_required');
+                if(!legalConsent||!smsConsent) throw new Error('consent_required');
                 const verificationToken=await ensurePhoneVerification(phone,'register');
 
                 const {data:token,error}=await userRpc('username_register_v10',{

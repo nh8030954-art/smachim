@@ -545,8 +545,7 @@
                     <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer"><input type="checkbox" id="vol-separation" class="w-5 h-5 text-brand-600 rounded"><span class="font-bold text-slate-700 text-sm">הצג לי רק אירועים בהפרדה מלאה</span></label>
                     <div class="space-y-2">
                         <div data-site-text="volunteer_consent_heading" class="font-bold text-sm text-slate-700">אישורים והסכמות</div>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-terms-consent" class="mt-1" required><span><span data-site-text="volunteer_terms_consent_label">קראתי ואני מסכים/ה ל</span><button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש המלאים</button>.</span></label>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-privacy-consent" class="mt-1" required><span><span data-site-text="volunteer_privacy_consent_label">קראתי את מדיניות הפרטיות ואני מסכים/ה לאיסוף ולעיבוד המידע כמפורט בה. לקריאת </span><button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות המלאה</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="vol-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל הודעות SMS תפעוליות לצורך אימות החשבון, הזמנות לאירועים, אישורים, שינויים ותזכורות.</span></label>
                     </div>
                     <button id="vol-submit" type="submit" class="w-full btn-brand py-4">השלם הרשמה</button>
@@ -582,8 +581,7 @@
                             <label><span data-field-label="host_password_confirm" class="field-label">אימות סיסמה</span><input type="password" id="host-pass-confirm" class="input-clean bg-white" minlength="12" maxlength="72" autocomplete="new-password" required></label>
                         </div>
                         <div data-site-text="host_consent_heading" class="font-bold text-sm text-slate-700">אישורים והסכמות לפתיחת חשבון</div>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-terms-consent" class="mt-1" required><span><span data-site-text="host_terms_consent_label">קראתי ואני מסכים/ה ל</span><button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש המלאים</button>.</span></label>
-                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-privacy-consent" class="mt-1" required><span><span data-site-text="host_privacy_consent_label">קראתי את מדיניות הפרטיות ואני מסכים/ה לאיסוף ולעיבוד המידע כמפורט בה. לקריאת </span><button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות המלאה</button>.</span></label>
+                        <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-legal-consent" class="mt-1" required><span>קראתי ואני מסכים/ה ל<button type="button" data-onclick="showLegalSummary('terms')" class="font-bold text-brand-700 hover:underline">תנאי השימוש</button> ול<button type="button" data-onclick="showLegalSummary('privacy')" class="font-bold text-brand-700 hover:underline">מדיניות הפרטיות</button>.</span></label>
                         <label class="flex items-start gap-3 text-sm text-slate-600"><input type="checkbox" id="host-sms-consent" class="mt-1" required><span>אני מסכים/ה לקבל SMS תפעולי לצורך אימות החשבון וניהול האירוע.</span></label>
                         </div>
                     </div>
@@ -987,7 +985,7 @@
     </footer>
 
     <script src="assets/vendor/qrcode.min.js"></script>
-    <script src="assets/app.js?v=admin-legal-editor-20260916-1"></script>
+    <script src="assets/app.js?v=legal-consent-20260916-1"></script>
 </body>
 </html>
 

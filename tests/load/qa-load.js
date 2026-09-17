@@ -22,14 +22,20 @@ export const options = {
   thresholds: {
     http_req_failed: ['rate<0.01'],
     http_req_duration: ['p(95)<5000'],
+    checks: ['rate>0.99'],
   },
   gracefulStop: '30s',
 };
 
 const headers = { 'Content-Type':'application/json', 'Origin': ORIGIN };
 export default function () {
-  // Read-only/public operation: no SMS, no Production, no destructive mutations.
-  const r = http.post(`${QA}/functions/v1/user-rpc`, JSON.stringify({ rpc:'public_site_config', args:{} }), { headers, timeout:'15s' });
-  check(r, { 'non-5xx': x => x.status < 500, 'response under 5s': x => x.timings.duration < 5000 });
+  const r = http.post(`${QA}/functions/v1/user-rpc`, JSON.stringify({ name:'public_site_config', args:{} }), { headers, timeout:'15s' });
+  let body = null;
+  try { body = r.json(); } catch (_) {}
+  check(r, {
+    'HTTP 200': x => x.status === 200,
+    'valid RPC payload': () => body !== null && Object.prototype.hasOwnProperty.call(body, 'data'),
+    'response under 5s': x => x.timings.duration < 5000,
+  });
   sleep(0.5 + Math.random());
 }

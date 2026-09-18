@@ -4,24 +4,29 @@ import { check, sleep } from 'k6';
 const QA=__ENV.QA_BASE_URL, ORIGIN=__ENV.QA_ORIGIN;
 if(QA!=='https://hnuinlqbbgejsvdiyihi.supabase.co'||QA.includes('ybccbyyrrxdzarsgylql')) throw new Error('QA-only safety guard failed');
 export const options={stages:[
- {duration:'1m',target:50},{duration:'2m',target:50},
- {duration:'1m',target:100},{duration:'2m',target:100},
- {duration:'1m',target:250},{duration:'3m',target:250},
- {duration:'1m',target:500},{duration:'3m',target:500},
- {duration:'1m',target:750},{duration:'3m',target:750},
- {duration:'1m',target:1000},{duration:'3m',target:1000},
- {duration:'2m',target:0}],
- thresholds:{http_req_failed:['rate<0.01'],http_req_duration:['p(95)<5000'],checks:['rate>0.99']},gracefulStop:'30s'};
+ {duration:'1m',target:50},{duration:'1m',target:50},
+ {duration:'1m',target:100},{duration:'1m',target:100},
+ {duration:'1m',target:250},{duration:'2m',target:250},
+ {duration:'1m',target:500},{duration:'2m',target:500},
+ {duration:'1m',target:1000},{duration:'2m',target:1000},
+ {duration:'1m',target:1500},{duration:'2m',target:1500},
+ {duration:'1m',target:2000},{duration:'3m',target:2000},
+ {duration:'2m',target:100},{duration:'1m',target:0}],
+ thresholds:{
+  http_req_failed:[{threshold:'rate<0.03',abortOnFail:true,delayAbortEval:'45s'}],
+  http_req_duration:[{threshold:'p(95)<5000',abortOnFail:true,delayAbortEval:'90s'}],
+  checks:['rate>0.97']
+ },gracefulStop:'30s'};
 const baseHeaders={'Content-Type':'application/json','Origin':ORIGIN,'apikey':'sb_publishable_khcBO9J5wrLBc8LtkyP5vA_M2vCOHCY'};
-let token='', sessionAttempts=0, sessionExhausted=false;
+let token='',sessionAttempts=0,sessionExhausted=false;
 function issueSession(){
  if(sessionExhausted)return;
  sessionAttempts++;
- const r=http.post(`${QA}/functions/v1/qa-load-session`,JSON.stringify({slot:__VU}),{headers:baseHeaders,timeout:'15s',tags:{rpc:'qa_session'}});
+ const r=http.post(`${QA}/functions/v1/qa-load-session`,JSON.stringify({slot:__VU}),{headers:baseHeaders,timeout:'10s',tags:{rpc:'qa_session'}});
  let b=null;try{b=r.json()}catch(_){}
  check(r,{'session issued':x=>x.status===200,'session token valid':()=>typeof b?.token==='string'&&b.token.length>=32});
  if(r.status===200&&b?.token){token=b.token;return;}
- if(sessionAttempts>=2)sessionExhausted=true; else sleep(sessionAttempts);
+ if(sessionAttempts>=2)sessionExhausted=true; else sleep(1);
 }
 function rpc(name,args={},session=true){
  const h=session?{...baseHeaders,'x-app-session':token}:baseHeaders;

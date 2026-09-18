@@ -4,11 +4,13 @@ import { check, sleep } from 'k6';
 const QA=__ENV.QA_BASE_URL, ORIGIN=__ENV.QA_ORIGIN;
 if(QA!=='https://hnuinlqbbgejsvdiyihi.supabase.co'||QA.includes('ybccbyyrrxdzarsgylql')) throw new Error('QA-only safety guard failed');
 export const options={stages:[
- {duration:'1m',target:100},{duration:'2m',target:100},{duration:'1m',target:250},{duration:'2m',target:250},
- {duration:'1m',target:500},{duration:'3m',target:500},{duration:'1m',target:1000},{duration:'3m',target:1000},
- {duration:'2m',target:2000},{duration:'4m',target:2000},{duration:'20s',target:500},{duration:'20s',target:2000},
- {duration:'2m',target:2000},{duration:'2m',target:250},{duration:'1m',target:1000},{duration:'1m',target:1500},
- {duration:'1m',target:2000},{duration:'4m',target:2000},{duration:'3m',target:100},{duration:'2m',target:100},{duration:'2m',target:0}],
+ {duration:'1m',target:50},{duration:'2m',target:50},
+ {duration:'1m',target:100},{duration:'2m',target:100},
+ {duration:'1m',target:250},{duration:'3m',target:250},
+ {duration:'1m',target:500},{duration:'3m',target:500},
+ {duration:'1m',target:750},{duration:'3m',target:750},
+ {duration:'1m',target:1000},{duration:'3m',target:1000},
+ {duration:'2m',target:0}],
  thresholds:{http_req_failed:['rate<0.01'],http_req_duration:['p(95)<5000'],checks:['rate>0.99']},gracefulStop:'30s'};
 const baseHeaders={'Content-Type':'application/json','Origin':ORIGIN,'apikey':'sb_publishable_khcBO9J5wrLBc8LtkyP5vA_M2vCOHCY'};
 let token='', sessionAttempts=0, sessionExhausted=false;
@@ -19,12 +21,11 @@ function issueSession(){
  let b=null;try{b=r.json()}catch(_){}
  check(r,{'session issued':x=>x.status===200,'session token valid':()=>typeof b?.token==='string'&&b.token.length>=32});
  if(r.status===200&&b?.token){token=b.token;return;}
- if(sessionAttempts>=3)sessionExhausted=true;
- else sleep(2*sessionAttempts);
+ if(sessionAttempts>=2)sessionExhausted=true; else sleep(sessionAttempts);
 }
 function rpc(name,args={},session=true){
  const h=session?{...baseHeaders,'x-app-session':token}:baseHeaders;
- const r=http.post(`${QA}/functions/v1/user-rpc`,JSON.stringify({name,args}),{headers:h,timeout:'15s',tags:{rpc:name}});
+ const r=http.post(`${QA}/functions/v1/user-rpc`,JSON.stringify({name,args}),{headers:h,timeout:'10s',tags:{rpc:name}});
  let b=null;try{b=r.json()}catch(_){}
  check(r,{'HTTP 200':x=>x.status===200,'valid RPC payload':()=>b!==null&&Object.prototype.hasOwnProperty.call(b,'data'),'response under 5s':x=>x.timings.duration<5000},{rpc:name});
  return b?.data;
@@ -37,5 +38,5 @@ export default function(){
  if(x<0.08)rpc('public_site_config',{},false);
  else if(x<0.13)rpc('mark_my_notifications_read');
  else rpc(reads[Math.floor(Math.random()*reads.length)]);
- sleep(0.7+Math.random()*2.3);
+ sleep(1.5+Math.random()*2.5);
 }

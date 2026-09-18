@@ -1,6 +1,17 @@
 {
   "versions": [
     {
+      "id": "2026-09-18-080922-15b7c18",
+      "label": "גיבוי אוטומטי לפני שינוי 2026-09-18-080922",
+      "date": "2026-09-18",
+      "created_at": "2026-09-18T08:09:22Z",
+      "change_title": "Bust cache for direct read client",
+      "commit": "15b7c18c18b508976a922e9269ac438af5bae406",
+      "path": "versions/2026-09-18-080922-15b7c18.html",
+      "archive": "versions/2026-09-18-080922-15b7c18-site.zip",
+      "note": "נוצר אוטומטית לפני שינוי באתר. כולל index.html ותיקיית assets."
+    },
+    {
       "id": "2026-09-16-205108-e7b52a6",
       "label": "גיבוי אוטומטי לפני שינוי 2026-09-16-205108",
       "date": "2026-09-16",

@@ -10,13 +10,17 @@ export const options={stages:[
  {duration:'2m',target:2000},{duration:'2m',target:250},{duration:'1m',target:1000},{duration:'1m',target:1500},
  {duration:'1m',target:2000},{duration:'4m',target:2000},{duration:'3m',target:100},{duration:'2m',target:100},{duration:'2m',target:0}],
  thresholds:{http_req_failed:['rate<0.01'],http_req_duration:['p(95)<5000'],checks:['rate>0.99']},gracefulStop:'30s'};
-const baseHeaders={'Content-Type':'application/json','Origin':ORIGIN};
-let token='';
+const baseHeaders={'Content-Type':'application/json','Origin':ORIGIN,'apikey':'sb_publishable_khcBO9J5wrLBc8LtkyP5vA_M2vCOHCY'};
+let token='', sessionAttempts=0, sessionExhausted=false;
 function issueSession(){
+ if(sessionExhausted)return;
+ sessionAttempts++;
  const r=http.post(`${QA}/functions/v1/qa-load-session`,JSON.stringify({slot:__VU}),{headers:baseHeaders,timeout:'15s',tags:{rpc:'qa_session'}});
  let b=null;try{b=r.json()}catch(_){}
  check(r,{'session issued':x=>x.status===200,'session token valid':()=>typeof b?.token==='string'&&b.token.length>=32});
- if(r.status===200&&b?.token) token=b.token;
+ if(r.status===200&&b?.token){token=b.token;return;}
+ if(sessionAttempts>=3)sessionExhausted=true;
+ else sleep(2*sessionAttempts);
 }
 function rpc(name,args={},session=true){
  const h=session?{...baseHeaders,'x-app-session':token}:baseHeaders;
@@ -27,11 +31,11 @@ function rpc(name,args={},session=true){
 }
 const reads=['username_my_profile','get_dashboard_stats','get_matching_events_v2','get_my_registrations_v2','get_my_notifications','get_my_volunteer_score','get_family_children','get_host_events_v3'];
 export default function(){
- if(!token) issueSession();
- if(!token){sleep(1);return;}
+ if(!token&&!sessionExhausted)issueSession();
+ if(!token){sleep(10);return;}
  const x=Math.random();
- if(x<0.08) rpc('public_site_config',{},false);
- else if(x<0.13) rpc('mark_my_notifications_read');
+ if(x<0.08)rpc('public_site_config',{},false);
+ else if(x<0.13)rpc('mark_my_notifications_read');
  else rpc(reads[Math.floor(Math.random()*reads.length)]);
  sleep(0.7+Math.random()*2.3);
 }

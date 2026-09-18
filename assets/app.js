@@ -14,6 +14,7 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
 
         let _supabase = createAppClient();
 
+        const DIRECT_READ_RPCS=new Set(['get_dashboard_stats','get_matching_events_v2','get_my_notifications','get_my_registrations_v2','get_my_volunteer_score','username_my_profile']);
         async function userRpc(name,args={}) {
             try{
                 const headers={
@@ -21,20 +22,40 @@ const SUPABASE_URL = 'https://ybccbyyrrxdzarsgylql.supabase.co';
                     'apikey':SUPABASE_PUBLISHABLE_KEY
                 };
                 if(sessionToken) headers['x-app-session']=sessionToken;
-                const res=await fetch(SUPABASE_URL+'/functions/v1/user-rpc',{
-                    method:'POST',
-                    headers,
-                    body:JSON.stringify({name,args:args||{}}),
-                    cache:'no-store',
-                    credentials:'omit'
-                });
+                const direct=DIRECT_READ_RPCS.has(name);
+                const url=direct?SUPABASE_URL+'/rest/v1/rpc/'+encodeURIComponent(name):SUPABASE_URL+'/functions/v1/user-rpc';
+                const body=JSON.stringify(direct?(args||{}):{name,args:args||{}});
+                let res;
+                for(let attempt=0;attempt<(direct?2:1);attempt++){
+                    try{
+                        res=await fetch(url,{method:'POST',headers,body,cache:'no-store',credentials:'omit'});
+                    }catch(error){
+                        if(attempt===0&&direct){await new Promise(resolve=>setTimeout(resolve,150));continue;}
+                        throw error;
+                    }
+                    if(attempt===0&&direct&&[502,503,504].includes(res.status)){
+                        await new Promise(resolve=>setTimeout(resolve,150));
+                        continue;
+                    }
+                    break;
+                }
                 const payload=await res.json().catch(()=>({}));
-                if(!res.ok) return {data:null,error:{message:String(payload?.error||'rpc_failed')}};
-                return {data:payload?.data??null,error:null};
+                if(!res.ok) return {data:null,error:{message:String((direct?payload?.message:payload?.error)||'rpc_failed')}};
+                return {data:direct?(payload??null):(payload?.data??null),error:null};
             }catch(_){
                 return {data:null,error:{message:'network_error'}};
             }
         }
+
+        setInterval(()=>{
+            if(!sessionToken)return;
+            fetch(SUPABASE_URL+'/functions/v1/user-rpc',{
+                method:'POST',
+                headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'x-app-session':sessionToken},
+                body:JSON.stringify({name:'username_my_profile',args:{}}),
+                cache:'no-store',credentials:'omit'
+            }).catch(()=>{});
+        },4*60*1000);
 
         async function adminRpc(name,args={}) {
             const token=sessionStorage.getItem('smachimAdminSession') || (adminMode ? sessionToken : '');
